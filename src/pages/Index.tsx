@@ -1,16 +1,25 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { LanguageProvider } from '@/hooks/useLanguage';
+import { Header } from '@/components/layout/Header';
+import { HeroSection } from '@/components/home/HeroSection';
+import { PublicTestList } from '@/components/home/PublicTestList';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
-    </div>
+    <LanguageProvider>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1">
+          <HeroSection />
+          <PublicTestList />
+        </main>
+        <footer className="border-t py-8">
+          <div className="test-container text-center text-sm text-muted-foreground">
+            <p>© 2026 TestHub. Barcha huquqlar himoyalangan.</p>
+          </div>
+        </footer>
+      </div>
+    </LanguageProvider>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
