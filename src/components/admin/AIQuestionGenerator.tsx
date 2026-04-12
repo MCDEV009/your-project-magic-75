@@ -343,7 +343,17 @@ export function AIQuestionGenerator({ testId, subjects, onQuestionsAdded }: AIQu
                                   <span className="font-medium">b-shart:</span> <LatexRenderer text={q.condition_b} />
                                 </div>
                               )}
-                              {q.model_answer && (
+                              {q.model_answer_a && (
+                                <div className="p-2 bg-success/10 rounded text-sm">
+                                  <span className="font-medium text-success">a-javob:</span> {q.model_answer_a}
+                                </div>
+                              )}
+                              {q.model_answer_b && (
+                                <div className="p-2 bg-success/10 rounded text-sm">
+                                  <span className="font-medium text-success">b-javob:</span> {q.model_answer_b}
+                                </div>
+                              )}
+                              {!q.model_answer_a && q.model_answer && (
                                 <div className="p-2 bg-muted rounded text-sm">
                                   <span className="font-medium">Namunaviy javob:</span> {q.model_answer}
                                 </div>
