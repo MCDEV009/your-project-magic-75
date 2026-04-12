@@ -238,7 +238,7 @@ serve(async (req) => {
     // --- Rasch Model Scoring for Milliy Sertifikat ---
     let raschData: any = null;
     
-    if (isMilliySertifikat && mcqQuestions.length > 0) {
+    if (mcqQuestions.length > 0) {
       try {
         // Get all finished attempts for this test to estimate item difficulties
         const { data: allAttempts } = await supabase
