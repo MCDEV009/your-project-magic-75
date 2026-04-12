@@ -29,6 +29,10 @@ interface GeneratedQuestion {
   correct_option?: number;
   explanation?: string;
   model_answer?: string;
+  model_answer_a?: string;
+  model_answer_b?: string;
+  keywords_a?: string[];
+  keywords_b?: string[];
   rubric?: string;
   condition_a?: string;
   condition_b?: string;
