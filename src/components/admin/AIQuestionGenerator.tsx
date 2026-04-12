@@ -128,7 +128,14 @@ export function AIQuestionGenerator({ testId, subjects, onQuestionsAdded }: AIQu
         points: q.type === 'single_choice' ? 1 : 0,
         max_points: q.type === 'written' ? 2 : 1,
         order_index: startIndex + 1 + i,
-        model_answer_uz: q.model_answer,
+        model_answer_uz: q.type === 'written' 
+          ? JSON.stringify({
+              answer_a: q.model_answer_a || '',
+              answer_b: q.model_answer_b || '',
+              keywords_a: q.keywords_a || [],
+              keywords_b: q.keywords_b || []
+            })
+          : q.model_answer,
         rubric_uz: q.rubric,
         condition_a_uz: q.condition_a || null,
         condition_b_uz: q.condition_b || null
