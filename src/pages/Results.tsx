@@ -192,7 +192,7 @@ function ResultsContent() {
               </div>
 
               {/* Rasch Model T-Score for Milliy Sertifikat */}
-              {test.test_format === 'milliy_sertifikat' && raschData && (
+              {raschData && (
                 <div className="p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
                   <div className="text-sm text-muted-foreground mb-2 font-medium">Rasch modeli natijalari</div>
                   <div className="grid grid-cols-3 gap-4 text-center">
