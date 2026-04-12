@@ -456,11 +456,7 @@ serve(async (req) => {
       };
       totalWrittenScore += totalScore;
     }
-          strengths: [],
-          missing_points: ["Texnik xatolik / Техническая ошибка"]
-        };
-      }
-    }
+    
     
     // Add Rasch data to evaluations
     if (raschData) {
