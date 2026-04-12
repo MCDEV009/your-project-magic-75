@@ -125,25 +125,22 @@ Your task is to generate high-quality written/open-ended questions that match th
 IMPORTANT FORMAT: Each written question in Milliy Sertifikat has:
 1. A main problem/scenario text (masala)
 2. Two conditions/tasks (a-shart and b-shart) that the student must answer separately
-3. A CORRECT ANSWER for each condition (a-shart and b-shart) — these will be used to automatically check student answers
 
 Rules:
 1. The main question text should present a scenario, problem, or context
 2. a-shart (Condition A) should be the first specific task/question based on the scenario
 3. b-shart (Condition B) should be the second specific task/question based on the scenario
 4. Both conditions should be related but test different aspects
-5. model_answer_a must be the EXACT correct answer for a-shart
-6. model_answer_b must be the EXACT correct answer for b-shart
-7. Include KEY WORDS that must appear in a correct answer
-8. ${languageInstructions[language as keyof typeof languageInstructions] || languageInstructions.uz}
-9. Do not include inappropriate, offensive, or harmful content`;
+5. Create clear grading rubrics for 0-2 point scoring (1 point per condition)
+6. Model answers should cover both conditions
+7. ${languageInstructions[language as keyof typeof languageInstructions] || languageInstructions.uz}
+8. Do not include inappropriate, offensive, or harmful content`;
 
       userPrompt = `Generate ${count} written (open-ended) questions for the subject "${subject}".
 Difficulty level: ${difficultyDescriptions[difficulty]}
 ${topic ? `Focus on the topic: ${topic}` : "Cover various topics within the subject"}
 
 Each question must have a main problem text and TWO conditions (a-shart and b-shart).
-For each condition, provide the CORRECT answer and KEY WORDS for checking.
 
 Return a JSON object with this exact structure:
 {
@@ -153,11 +150,8 @@ Return a JSON object with this exact structure:
       "question_text": "Main problem/scenario text here",
       "condition_a": "First condition/task (a-shart)",
       "condition_b": "Second condition/task (b-shart)",
-      "model_answer_a": "Exact correct answer for a-shart",
-      "model_answer_b": "Exact correct answer for b-shart",
-      "keywords_a": ["keyword1", "keyword2", "keyword3"],
-      "keywords_b": ["keyword1", "keyword2", "keyword3"],
-      "rubric": "Scoring criteria"
+      "model_answer": "Expected model answer covering both conditions (0-2 points)",
+      "rubric": "Scoring: 0 = no answer; 0.5 = weak attempt; 1 = one condition correct; 1.5 = both partially; 2 = both fully correct"
     }
   ]
 }`;

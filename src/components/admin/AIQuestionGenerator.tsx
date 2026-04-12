@@ -29,10 +29,6 @@ interface GeneratedQuestion {
   correct_option?: number;
   explanation?: string;
   model_answer?: string;
-  model_answer_a?: string;
-  model_answer_b?: string;
-  keywords_a?: string[];
-  keywords_b?: string[];
   rubric?: string;
   condition_a?: string;
   condition_b?: string;
@@ -128,14 +124,7 @@ export function AIQuestionGenerator({ testId, subjects, onQuestionsAdded }: AIQu
         points: q.type === 'single_choice' ? 1 : 0,
         max_points: q.type === 'written' ? 2 : 1,
         order_index: startIndex + 1 + i,
-        model_answer_uz: q.type === 'written' 
-          ? JSON.stringify({
-              answer_a: q.model_answer_a || '',
-              answer_b: q.model_answer_b || '',
-              keywords_a: q.keywords_a || [],
-              keywords_b: q.keywords_b || []
-            })
-          : q.model_answer,
+        model_answer_uz: q.model_answer,
         rubric_uz: q.rubric,
         condition_a_uz: q.condition_a || null,
         condition_b_uz: q.condition_b || null
@@ -343,17 +332,7 @@ export function AIQuestionGenerator({ testId, subjects, onQuestionsAdded }: AIQu
                                   <span className="font-medium">b-shart:</span> <LatexRenderer text={q.condition_b} />
                                 </div>
                               )}
-                              {q.model_answer_a && (
-                                <div className="p-2 bg-success/10 rounded text-sm">
-                                  <span className="font-medium text-success">a-javob:</span> {q.model_answer_a}
-                                </div>
-                              )}
-                              {q.model_answer_b && (
-                                <div className="p-2 bg-success/10 rounded text-sm">
-                                  <span className="font-medium text-success">b-javob:</span> {q.model_answer_b}
-                                </div>
-                              )}
-                              {!q.model_answer_a && q.model_answer && (
+                              {q.model_answer && (
                                 <div className="p-2 bg-muted rounded text-sm">
                                   <span className="font-medium">Namunaviy javob:</span> {q.model_answer}
                                 </div>

@@ -11,85 +11,12 @@ interface WrittenAnswer {
   answer_b: string;
 }
 
-interface ModelAnswerData {
-  answer_a: string;
-  answer_b: string;
-  keywords_a: string[];
-  keywords_b: string[];
-}
-
 interface EvaluationResult {
   score: number;
-  score_a: number;
-  score_b: number;
-  max_points_a: number;
-  max_points_b: number;
   feedback_uz: string;
   feedback_ru: string;
   strengths: string[];
   missing_points: string[];
-}
-
-/**
- * Keyword-based scoring: compare student answer against model answer keywords.
- * Returns a score between 0 and maxPoints.
- */
-function evaluateByKeywords(
-  studentAnswer: string,
-  modelAnswer: string,
-  keywords: string[],
-  maxPoints: number
-): { score: number; matchedKeywords: string[]; missingKeywords: string[] } {
-  if (!studentAnswer || !studentAnswer.trim()) {
-    return { score: 0, matchedKeywords: [], missingKeywords: keywords };
-  }
-
-  const normalizedAnswer = studentAnswer.toLowerCase().trim();
-  
-  // If no keywords provided, do basic text similarity with model answer
-  if (!keywords || keywords.length === 0) {
-    if (!modelAnswer) return { score: 0, matchedKeywords: [], missingKeywords: [] };
-    const modelWords = modelAnswer.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-    keywords = [...new Set(modelWords)];
-    if (keywords.length === 0) return { score: maxPoints * 0.5, matchedKeywords: [], missingKeywords: [] };
-  }
-
-  const matchedKeywords: string[] = [];
-  const missingKeywords: string[] = [];
-
-  for (const keyword of keywords) {
-    if (normalizedAnswer.includes(keyword.toLowerCase())) {
-      matchedKeywords.push(keyword);
-    } else {
-      missingKeywords.push(keyword);
-    }
-  }
-
-  const matchRatio = keywords.length > 0 ? matchedKeywords.length / keywords.length : 0;
-  // Round to 1 decimal
-  const score = Math.round(matchRatio * maxPoints * 10) / 10;
-
-  return { score, matchedKeywords, missingKeywords };
-}
-
-/**
- * Parse model_answer_uz field which may be JSON with keywords or plain text.
- */
-function parseModelAnswer(modelAnswerUz: string | null): ModelAnswerData {
-  if (!modelAnswerUz) return { answer_a: '', answer_b: '', keywords_a: [], keywords_b: [] };
-  
-  try {
-    const parsed = JSON.parse(modelAnswerUz);
-    return {
-      answer_a: parsed.answer_a || '',
-      answer_b: parsed.answer_b || '',
-      keywords_a: parsed.keywords_a || [],
-      keywords_b: parsed.keywords_b || []
-    };
-  } catch {
-    // Plain text model answer — split by lines or use as-is
-    return { answer_a: modelAnswerUz, answer_b: '', keywords_a: [], keywords_b: [] };
-  }
 }
 
 // --- Rasch Model & T-Score Functions ---
@@ -210,8 +137,13 @@ serve(async (req) => {
       );
     }
 
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!LOVABLE_API_KEY) {
+      throw new Error("Server configuration error");
+    }
     
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     
@@ -400,58 +332,154 @@ serve(async (req) => {
       );
     }
     
-    // Evaluate each written question using keyword matching against model answer
+    // Evaluate each written question — only call AI for those with answers
     for (const question of writtenQuestions) {
       const answer = writtenAnswers[question.id] as WrittenAnswer | undefined;
-      const pointsA = question.points_a || 1.5;
-      const pointsB = question.points_b || 1.7;
       
       if (!answer || (!answer.answer_a?.trim() && !answer.answer_b?.trim())) {
+        // Empty answer = 0 ball, no AI needed
         allEvaluations[question.id] = {
-          score: 0, score_a: 0, score_b: 0,
-          max_points_a: pointsA, max_points_b: pointsB,
+          score: 0,
+          score_a: 0,
+          score_b: 0,
+          max_points_a: question.points_a || 1.5,
+          max_points_b: question.points_b || 1.7,
           feedback_uz: "Javob berilmagan",
           feedback_ru: "Ответ не предоставлен",
           strengths: [],
-          missing_points: ["Javob yozilmagan"]
+          missing_points: ["Javob yozilmagan / Ответ не написан"]
         };
         continue;
       }
+      
+      const pointsA = question.points_a || 1.5;
+      const pointsB = question.points_b || 1.7;
+      const totalMaxPoints = pointsA + pointsB;
+      
+      const systemPrompt = `You are an expert exam evaluator for the Uzbekistan National Certificate (Milliy Sertifikat) exam.
 
-      // Parse model answer (may be JSON with keywords or plain text)
-      const modelData = parseModelAnswer(question.model_answer_uz);
+EVALUATION METHOD: RUSH (Rubric-based, Understanding-focused, Structured feedback, Human-like judgment)
 
-      // Evaluate a-shart
-      const evalA = evaluateByKeywords(answer.answer_a || '', modelData.answer_a, modelData.keywords_a, pointsA);
-      // Evaluate b-shart
-      const evalB = evaluateByKeywords(answer.answer_b || '', modelData.answer_b, modelData.keywords_b, pointsB);
+CRITICAL RULES:
+1. MEANING over exact wording - evaluate understanding, not memorization
+2. PARTIAL CREDIT - give partial points for partially correct answers
+3. SPELLING/GRAMMAR - minor errors should NOT heavily reduce score
+4. STRUCTURED FEEDBACK - provide clear strengths and missing points
+5. Evaluate a-shart and b-shart SEPARATELY
 
-      const totalScore = evalA.score + evalB.score;
-      const strengths: string[] = [];
-      const missingPoints: string[] = [];
+SCORING:
+- a-shart: 0 to ${pointsA} ball (${pointsA} = to'liq to'g'ri)
+- b-shart: 0 to ${pointsB} ball (${pointsB} = to'liq to'g'ri)
+- Jami: 0 to ${totalMaxPoints} ball
 
-      if (evalA.matchedKeywords.length > 0) strengths.push(`a-shart: ${evalA.matchedKeywords.join(', ')} topildi`);
-      if (evalB.matchedKeywords.length > 0) strengths.push(`b-shart: ${evalB.matchedKeywords.join(', ')} topildi`);
-      if (evalA.missingKeywords.length > 0) missingPoints.push(`a-shart: ${evalA.missingKeywords.join(', ')} yetishmayapti`);
-      if (evalB.missingKeywords.length > 0) missingPoints.push(`b-shart: ${evalB.missingKeywords.join(', ')} yetishmayapti`);
+You MUST respond with a JSON object in this exact format:
+{
+  "score_a": <number between 0 and ${pointsA}>,
+  "score_b": <number between 0 and ${pointsB}>,
+  "score": <total = score_a + score_b>,
+  "feedback_uz": "<feedback in Uzbek>",
+  "feedback_ru": "<feedback in Russian>",
+  "strengths": ["<strength 1>", "<strength 2>"],
+  "missing_points": ["<missing point 1>"]
+}`;
 
-      const feedbackUz = `a-shart: ${evalA.score}/${pointsA} ball, b-shart: ${evalB.score}/${pointsB} ball. Jami: ${totalScore}/${pointsA + pointsB} ball.`;
-      const feedbackRu = `a-условие: ${evalA.score}/${pointsA} балл, b-условие: ${evalB.score}/${pointsB} балл. Итого: ${totalScore}/${pointsA + pointsB} балл.`;
+      const userPrompt = `QUESTION (Masala):
+${question.question_text_uz}
+${question.question_text_ru ? `\n(Russian): ${question.question_text_ru}` : ''}
 
-      allEvaluations[question.id] = {
-        score: totalScore,
-        score_a: evalA.score,
-        score_b: evalB.score,
-        max_points_a: pointsA,
-        max_points_b: pointsB,
-        feedback_uz: feedbackUz,
-        feedback_ru: feedbackRu,
-        strengths,
-        missing_points: missingPoints
-      };
-      totalWrittenScore += totalScore;
+${question.condition_a_uz ? `a-shart (Condition A): ${question.condition_a_uz}` : ''}
+${question.condition_a_ru ? `(Russian): ${question.condition_a_ru}` : ''}
+
+${question.condition_b_uz ? `b-shart (Condition B): ${question.condition_b_uz}` : ''}
+${question.condition_b_ru ? `(Russian): ${question.condition_b_ru}` : ''}
+
+MODEL ANSWER (Namunaviy javob):
+${question.model_answer_uz || 'Not provided'}
+${question.model_answer_ru ? `\n(Russian): ${question.model_answer_ru}` : ''}
+
+EVALUATION RUBRIC:
+${question.rubric_uz || 'Evaluate based on correctness and completeness. 1 point per condition (a-shart and b-shart).'}
+${question.rubric_ru ? `\n(Russian): ${question.rubric_ru}` : ''}
+
+STUDENT'S ANSWER (O'quvchining javobi):
+Answer for a-shart: ${answer.answer_a || '(empty)'}
+Answer for b-shart: ${answer.answer_b || '(empty)'}
+
+Evaluate each condition separately. The total score should reflect performance on both a-shart and b-shart.
+Respond with JSON only.`;
+
+      try {
+        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-3-flash-preview",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            temperature: 0.3
+          }),
+        });
+
+        if (!aiResponse.ok) {
+          const errorText = await aiResponse.text();
+          console.error("AI gateway error:", aiResponse.status, errorText);
+          
+          if (aiResponse.status === 429) {
+            return new Response(
+              JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+              { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+          if (aiResponse.status === 402) {
+            return new Response(
+              JSON.stringify({ error: "Payment required. Please add credits to your workspace." }),
+              { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+          throw new Error(`AI gateway error: ${aiResponse.status}`);
+        }
+
+        const aiData = await aiResponse.json();
+        const content = aiData.choices?.[0]?.message?.content;
+        
+        if (!content) {
+          throw new Error("Empty AI response");
+        }
+        
+        let jsonStr = content;
+        const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+          jsonStr = jsonMatch[1].trim();
+        }
+        
+        const evaluation = JSON.parse(jsonStr);
+        const pA = question.points_a || 1.5;
+        const pB = question.points_b || 1.7;
+        evaluation.score_a = Math.max(0, Math.min(pA, evaluation.score_a || 0));
+        evaluation.score_b = Math.max(0, Math.min(pB, evaluation.score_b || 0));
+        evaluation.score = evaluation.score_a + evaluation.score_b;
+        evaluation.max_points_a = pA;
+        evaluation.max_points_b = pB;
+        
+        allEvaluations[question.id] = evaluation;
+        totalWrittenScore += evaluation.score;
+        
+      } catch (evalError) {
+        console.error(`Error evaluating question ${question.id}:`, evalError);
+        allEvaluations[question.id] = {
+          score: 0,
+          feedback_uz: "Baholashda xatolik yuz berdi",
+          feedback_ru: "Произошла ошибка при оценке",
+          strengths: [],
+          missing_points: ["Texnik xatolik / Техническая ошибка"]
+        };
+      }
     }
-    
     
     // Add Rasch data to evaluations
     if (raschData) {
