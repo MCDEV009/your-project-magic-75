@@ -11,12 +11,85 @@ interface WrittenAnswer {
   answer_b: string;
 }
 
+interface ModelAnswerData {
+  answer_a: string;
+  answer_b: string;
+  keywords_a: string[];
+  keywords_b: string[];
+}
+
 interface EvaluationResult {
   score: number;
+  score_a: number;
+  score_b: number;
+  max_points_a: number;
+  max_points_b: number;
   feedback_uz: string;
   feedback_ru: string;
   strengths: string[];
   missing_points: string[];
+}
+
+/**
+ * Keyword-based scoring: compare student answer against model answer keywords.
+ * Returns a score between 0 and maxPoints.
+ */
+function evaluateByKeywords(
+  studentAnswer: string,
+  modelAnswer: string,
+  keywords: string[],
+  maxPoints: number
+): { score: number; matchedKeywords: string[]; missingKeywords: string[] } {
+  if (!studentAnswer || !studentAnswer.trim()) {
+    return { score: 0, matchedKeywords: [], missingKeywords: keywords };
+  }
+
+  const normalizedAnswer = studentAnswer.toLowerCase().trim();
+  
+  // If no keywords provided, do basic text similarity with model answer
+  if (!keywords || keywords.length === 0) {
+    if (!modelAnswer) return { score: 0, matchedKeywords: [], missingKeywords: [] };
+    const modelWords = modelAnswer.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    keywords = [...new Set(modelWords)];
+    if (keywords.length === 0) return { score: maxPoints * 0.5, matchedKeywords: [], missingKeywords: [] };
+  }
+
+  const matchedKeywords: string[] = [];
+  const missingKeywords: string[] = [];
+
+  for (const keyword of keywords) {
+    if (normalizedAnswer.includes(keyword.toLowerCase())) {
+      matchedKeywords.push(keyword);
+    } else {
+      missingKeywords.push(keyword);
+    }
+  }
+
+  const matchRatio = keywords.length > 0 ? matchedKeywords.length / keywords.length : 0;
+  // Round to 1 decimal
+  const score = Math.round(matchRatio * maxPoints * 10) / 10;
+
+  return { score, matchedKeywords, missingKeywords };
+}
+
+/**
+ * Parse model_answer_uz field which may be JSON with keywords or plain text.
+ */
+function parseModelAnswer(modelAnswerUz: string | null): ModelAnswerData {
+  if (!modelAnswerUz) return { answer_a: '', answer_b: '', keywords_a: [], keywords_b: [] };
+  
+  try {
+    const parsed = JSON.parse(modelAnswerUz);
+    return {
+      answer_a: parsed.answer_a || '',
+      answer_b: parsed.answer_b || '',
+      keywords_a: parsed.keywords_a || [],
+      keywords_b: parsed.keywords_b || []
+    };
+  } catch {
+    // Plain text model answer — split by lines or use as-is
+    return { answer_a: modelAnswerUz, answer_b: '', keywords_a: [], keywords_b: [] };
+  }
 }
 
 // --- Rasch Model & T-Score Functions ---
