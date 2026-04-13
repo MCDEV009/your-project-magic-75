@@ -331,10 +331,10 @@ function TestInterfaceContent() {
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b">
         <div className="test-container">
-          <div className="flex h-14 items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Badge variant={timeLeft < 60 ? 'destructive' : 'secondary'} className="font-mono text-base px-3 py-1">
-                <Clock className="h-4 w-4 mr-1.5" />
+          <div className="flex h-14 items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Badge variant={timeLeft < 60 ? 'destructive' : 'secondary'} className="font-mono text-sm sm:text-base px-2 sm:px-3 py-1">
+                <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
                 {formatTime(timeLeft)}
               </Badge>
               {test?.test_format === 'milliy_sertifikat' && (
@@ -344,22 +344,27 @@ function TestInterfaceContent() {
               )}
             </div>
             
+            {/* Mobile progress */}
+            <div className="flex-1 mx-2 sm:hidden">
+              <Progress value={progress} className="h-1.5" />
+            </div>
             <div className="flex-1 max-w-xs hidden sm:block">
               <Progress value={progress} className="h-2" />
             </div>
             
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={toggleFullscreen}>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="hidden sm:inline-flex">
                 {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
               </Button>
               <Button
                 onClick={() => handleFinish(false)}
                 variant="destructive"
                 size="sm"
-                className="gap-1.5"
+                className="gap-1 sm:gap-1.5 text-xs sm:text-sm px-2 sm:px-3"
               >
-                <Flag className="h-4 w-4" />
-                {t('finish')}
+                <Flag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">{t('finish')}</span>
+                <span className="sm:hidden">Tugatish</span>
               </Button>
             </div>
           </div>
@@ -380,8 +385,8 @@ function TestInterfaceContent() {
       </div>
 
       {/* Main content */}
-      <main className="flex-1 py-6">
-        <div className="test-container">
+      <main className="flex-1 py-3 sm:py-6">
+        <div className="test-container px-3 sm:px-4">
           {currentQuestion && (
             <Card className="shadow-card animate-fade-in">
               <CardContent className="pt-6">
@@ -412,26 +417,26 @@ function TestInterfaceContent() {
                   </div>
                 )}
                 
-                <div className="text-lg font-medium mb-6 whitespace-pre-wrap">
+                <div className="text-base sm:text-lg font-medium mb-4 sm:mb-6 whitespace-pre-wrap">
                   <LatexRenderer text={questionText} />
                 </div>
                 
                 {/* MCQ Options */}
                 {currentQuestion.question_type === 'single_choice' && currentOptions && (
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {currentOptions.options.map((option, i) => (
                       <button
                         key={i}
                         onClick={() => handleSelectOption(currentQuestion.id, i)}
                         className={`
-                          w-full p-4 rounded-lg border-2 text-left transition-all
+                          w-full p-3 sm:p-4 rounded-lg border-2 text-left transition-all text-sm sm:text-base
                           ${currentDisplayAnswer === i 
                             ? 'border-primary bg-primary/5 shadow-soft' 
                             : 'border-muted hover:border-primary/50 hover:bg-muted/50'
                           }
                         `}
                       >
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted font-semibold mr-3">
+                        <span className="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-muted font-semibold mr-2 sm:mr-3 text-sm">
                           {String.fromCharCode(65 + i)}
                         </span>
                         <LatexRenderer text={String(option)} />

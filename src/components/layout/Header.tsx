@@ -34,41 +34,41 @@ export function Header() {
             </div>
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
              <ThemeToggle />
             <LanguageSelector />
             {user && (
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => navigate('/dashboard')}
-                className="gap-2"
+                className="sm:gap-2 sm:w-auto sm:px-3"
               >
                 <LayoutDashboard className="h-4 w-4" />
-                <span className="hidden sm:inline">Kabinet</span>
+                <span className="hidden sm:inline text-sm">Kabinet</span>
               </Button>
             )}
             {user && (
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full text-sm">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full text-sm">
                 <User className="h-4 w-4" />
                 <span className="truncate max-w-[120px]">{user.email}</span>
               </div>
             )}
             <Button
               variant={user ? "outline" : "default"}
-              size="sm"
+              size="icon"
               onClick={handleAuth}
-              className={user ? "gap-2" : "gap-2 gradient-primary border-0 shadow-soft hover:shadow-glow transition-shadow"}
+              className={user ? "sm:gap-2 sm:w-auto sm:px-3" : "sm:gap-2 sm:w-auto sm:px-3 gradient-primary border-0 shadow-soft hover:shadow-glow transition-shadow"}
             >
               {user ? (
                 <>
                   <LogOut className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('logout')}</span>
+                  <span className="hidden sm:inline text-sm">{t('logout')}</span>
                 </>
               ) : (
                 <>
                   <LogIn className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('login')}</span>
+                  <span className="hidden sm:inline text-sm">{t('login')}</span>
                 </>
               )}
             </Button>
