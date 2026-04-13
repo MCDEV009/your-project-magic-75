@@ -142,8 +142,8 @@ function ResultsContent() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 py-8">
-        <div className="test-container">
+      <main className="flex-1 py-4 sm:py-8">
+        <div className="test-container px-3 sm:px-4">
           {/* Score card */}
           <Card className="shadow-elevated mb-8 overflow-hidden">
             <div className={`p-1 ${percentage >= 60 ? 'gradient-accent' : 'bg-destructive'}`} />
@@ -191,25 +191,25 @@ function ResultsContent() {
                 </div>
               </div>
 
-              {/* Rasch Model T-Score for Milliy Sertifikat */}
+              {/* Rasch Model T-Score */}
               {raschData && (
-                <div className="p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
+                <div className="p-3 sm:p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
                   <div className="text-sm text-muted-foreground mb-2 font-medium">Rasch modeli natijalari</div>
-                  <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
                     <div>
-                      <div className="text-xs text-muted-foreground">Qobiliyat (θ)</div>
-                      <div className="text-xl font-bold text-primary">{raschData.theta}</div>
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">Qobiliyat (θ)</div>
+                      <div className="text-lg sm:text-xl font-bold text-primary">{raschData.theta}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-muted-foreground">T-ball</div>
-                      <div className="text-xl font-bold text-primary">{raschData.t_score}</div>
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">T-ball</div>
+                      <div className="text-lg sm:text-xl font-bold text-primary">{raschData.t_score}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-muted-foreground">Tahlil qilingan urinishlar</div>
-                      <div className="text-xl font-bold">{raschData.total_attempts_analyzed}</div>
+                      <div className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Urinishlar</div>
+                      <div className="text-lg sm:text-xl font-bold">{raschData.total_attempts_analyzed}</div>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 text-center">
                     T = 50 + 10 × Z, Z = (θ - μ) / σ
                   </p>
                 </div>
@@ -245,19 +245,21 @@ function ResultsContent() {
           {/* MCQ Question review */}
           {mcqQuestions.length > 0 && (
             <div className="space-y-4 mb-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
                   <CheckSquare className="h-5 w-5" />
                   Test savollari ({mcqQuestions.length})
                 </h2>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={expandAll}>
+                <div className="flex gap-1 sm:gap-2">
+                  <Button variant="ghost" size="sm" onClick={expandAll} className="text-xs sm:text-sm">
                     <ChevronDown className="h-4 w-4 mr-1" />
-                    Barchasini ochish
+                    <span className="hidden sm:inline">Barchasini ochish</span>
+                    <span className="sm:hidden">Ochish</span>
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={collapseAll}>
+                  <Button variant="ghost" size="sm" onClick={collapseAll} className="text-xs sm:text-sm">
                     <ChevronUp className="h-4 w-4 mr-1" />
-                    Barchasini yopish
+                    <span className="hidden sm:inline">Barchasini yopish</span>
+                    <span className="sm:hidden">Yopish</span>
                   </Button>
                 </div>
               </div>
