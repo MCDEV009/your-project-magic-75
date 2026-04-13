@@ -460,30 +460,32 @@ function TestInterfaceContent() {
           )}
 
           {/* Navigation buttons */}
-          <div className="flex justify-between mt-6">
+          <div className="flex justify-between mt-4 sm:mt-6 pb-4">
             <Button
               variant="outline"
               onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
               disabled={currentIndex === 0}
-              className="gap-2"
+              className="gap-1 sm:gap-2 text-sm"
             >
               <ChevronLeft className="h-4 w-4" />
-              {t('previous')}
+              <span className="hidden sm:inline">{t('previous')}</span>
+              <span className="sm:hidden">Oldingi</span>
             </Button>
             
             {currentIndex < questions.length - 1 ? (
               <Button
                 onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-                className="gap-2 gradient-primary border-0"
+                className="gap-1 sm:gap-2 gradient-primary border-0 text-sm"
               >
-                {t('next')}
+                <span className="hidden sm:inline">{t('next')}</span>
+                <span className="sm:hidden">Keyingi</span>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             ) : (
               <Button
                 onClick={() => handleFinish(false)}
                 variant="destructive"
-                className="gap-2"
+                className="gap-1 sm:gap-2 text-sm"
               >
                 <Flag className="h-4 w-4" />
                 {t('finish')}
