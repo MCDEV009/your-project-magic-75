@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { WrittenQuestionReview } from '@/components/results/WrittenQuestionReview';
+import { AIAnalysis } from '@/components/results/AIAnalysis';
 import { Trophy, CheckCircle, XCircle, Home, RotateCcw, ChevronDown, ChevronUp, Loader2, PenLine, CheckSquare } from 'lucide-react';
 
 function ResultsContent() {
@@ -241,6 +242,13 @@ function ResultsContent() {
               </div>
             </CardContent>
           </Card>
+
+          {/* AI Analysis */}
+          {attempt.evaluation_status === 'completed' && (
+            <div className="mb-8">
+              <AIAnalysis attemptId={attemptId!} />
+            </div>
+          )}
 
           {/* MCQ Question review */}
           {mcqQuestions.length > 0 && (

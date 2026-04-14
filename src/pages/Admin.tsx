@@ -72,6 +72,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
  import { useTheme } from 'next-themes';
+import { AIAnalyticsDashboard } from '@/components/admin/AIAnalyticsDashboard';
 
 function AdminContent() {
   const navigate = useNavigate();
@@ -900,6 +901,9 @@ function AdminContent() {
             <div className="space-y-6 animate-fade-in">
               <h1 className="text-2xl font-bold">{t('analytics')}</h1>
               
+              {/* AI Analytics Dashboard */}
+              <AIAnalyticsDashboard />
+
               <div className="grid gap-6 lg:grid-cols-2">
                 <Card className="shadow-card">
                   <CardHeader>
