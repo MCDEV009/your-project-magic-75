@@ -73,6 +73,9 @@ import {
 import { toast } from 'sonner';
  import { useTheme } from 'next-themes';
 import { AIAnalyticsDashboard } from '@/components/admin/AIAnalyticsDashboard';
+import { QuestionAnalyticsTable } from '@/components/admin/QuestionAnalyticsTable';
+import { StudentRankingsTable } from '@/components/admin/StudentRankingsTable';
+import { AIAnalysisHistory } from '@/components/admin/AIAnalysisHistory';
 
 function AdminContent() {
   const navigate = useNavigate();
@@ -904,6 +907,12 @@ function AdminContent() {
               {/* AI Analytics Dashboard */}
               <AIAnalyticsDashboard />
 
+              {/* Question Analytics */}
+              <QuestionAnalyticsTable />
+
+              {/* Student Rankings */}
+              <StudentRankingsTable />
+
               <div className="grid gap-6 lg:grid-cols-2">
                 <Card className="shadow-card">
                   <CardHeader>
@@ -955,6 +964,9 @@ function AdminContent() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* AI Analysis History */}
+              <AIAnalysisHistory />
             </div>
           )}
         </div>
