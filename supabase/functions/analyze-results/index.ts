@@ -139,6 +139,13 @@ serve(async (req) => {
         analysis = { summary: aiData.choices[0].message.content };
       }
 
+      // Save to analysis history
+      await supabase.from('ai_analysis_history').insert({
+        analysis_type: 'dashboard',
+        analysis_result: { totalAttempts, avgScore: avgScore.toFixed(1), testStats, analysis },
+        model_used: 'google/gemini-3-flash-preview',
+      });
+
       return new Response(JSON.stringify({
         totalAttempts,
         avgScore: avgScore.toFixed(1),
@@ -253,6 +260,16 @@ Umumiy ball: ${attempt.score}, MCQ ball: ${attempt.mcq_score}, Yozma ball: ${att
     } catch {
       analysis = { overall_assessment: aiData.choices[0].message.content };
     }
+
+    // Save to analysis history
+    await supabase.from('ai_analysis_history').insert({
+      analysis_type: 'attempt',
+      attempt_id: attempt_id,
+      test_id: attempt.test_id,
+      participant_id: attempt.participant_id,
+      analysis_result: analysis,
+      model_used: 'google/gemini-3-flash-preview',
+    });
 
     return new Response(JSON.stringify({ analysis }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_analysis_history: {
+        Row: {
+          analysis_result: Json
+          analysis_type: string
+          attempt_id: string | null
+          created_at: string
+          id: string
+          model_used: string | null
+          participant_id: string | null
+          test_id: string | null
+        }
+        Insert: {
+          analysis_result?: Json
+          analysis_type?: string
+          attempt_id?: string | null
+          created_at?: string
+          id?: string
+          model_used?: string | null
+          participant_id?: string | null
+          test_id?: string | null
+        }
+        Update: {
+          analysis_result?: Json
+          analysis_type?: string
+          attempt_id?: string | null
+          created_at?: string
+          id?: string
+          model_used?: string | null
+          participant_id?: string | null
+          test_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analysis_history_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "test_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_analysis_history_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -37,6 +85,63 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      question_analytics: {
+        Row: {
+          avg_time_seconds: number | null
+          correct_count: number
+          difficulty_score: number | null
+          discrimination_index: number | null
+          id: string
+          incorrect_count: number
+          question_id: string
+          skipped_count: number
+          test_id: string
+          total_attempts: number
+          updated_at: string
+        }
+        Insert: {
+          avg_time_seconds?: number | null
+          correct_count?: number
+          difficulty_score?: number | null
+          discrimination_index?: number | null
+          id?: string
+          incorrect_count?: number
+          question_id: string
+          skipped_count?: number
+          test_id: string
+          total_attempts?: number
+          updated_at?: string
+        }
+        Update: {
+          avg_time_seconds?: number | null
+          correct_count?: number
+          difficulty_score?: number | null
+          discrimination_index?: number | null
+          id?: string
+          incorrect_count?: number
+          question_id?: string
+          skipped_count?: number
+          test_id?: string
+          total_attempts?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_analytics_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_analytics_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       questions: {
         Row: {
@@ -126,6 +231,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      student_rankings: {
+        Row: {
+          avg_score: number
+          best_score: number
+          full_name: string
+          grade: string | null
+          id: string
+          last_test_at: string | null
+          participant_id: string
+          rank_position: number | null
+          total_score: number
+          total_tests: number
+          updated_at: string
+        }
+        Insert: {
+          avg_score?: number
+          best_score?: number
+          full_name: string
+          grade?: string | null
+          id?: string
+          last_test_at?: string | null
+          participant_id: string
+          rank_position?: number | null
+          total_score?: number
+          total_tests?: number
+          updated_at?: string
+        }
+        Update: {
+          avg_score?: number
+          best_score?: number
+          full_name?: string
+          grade?: string | null
+          id?: string
+          last_test_at?: string | null
+          participant_id?: string
+          rank_position?: number | null
+          total_score?: number
+          total_tests?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       subjects: {
         Row: {
