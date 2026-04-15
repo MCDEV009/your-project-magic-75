@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import katex from 'katex';
+import DOMPurify from 'dompurify';
 import 'katex/dist/katex.min.css';
 
 interface LatexRendererProps {
@@ -11,7 +12,7 @@ const LatexRenderer = ({ text, className }: LatexRendererProps) => {
   const rendered = useMemo(() => {
     if (!text) return '';
     // Replace $...$ with rendered KaTeX HTML
-    return text.replace(/\$([^$]+)\$/g, (_, math) => {
+    const html = text.replace(/\$([^$]+)\$/g, (_, math) => {
       try {
         return katex.renderToString(math, {
           throwOnError: false,
@@ -21,6 +22,7 @@ const LatexRenderer = ({ text, className }: LatexRendererProps) => {
         return math;
       }
     });
+    return DOMPurify.sanitize(html);
   }, [text]);
 
   return (
