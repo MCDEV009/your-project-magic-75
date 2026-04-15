@@ -31,6 +31,8 @@ export function WrittenQuestionInput({
     ? question.condition_b_ru 
     : question.condition_b_uz;
 
+  const hasTwoParts = !!(question.condition_b_uz || question.condition_b_ru);
+
   const handleChange = (field: 'answer_a' | 'answer_b', value: string) => {
     onChange(questionId, {
       ...currentAnswer,
@@ -41,12 +43,14 @@ export function WrittenQuestionInput({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label htmlFor={`${questionId}-a`} className="text-base font-medium">
-            a-shart
-          </Label>
-          <Badge variant="outline" className="text-xs">Condition A</Badge>
-        </div>
+        {hasTwoParts && (
+          <div className="flex items-center gap-2">
+            <Label htmlFor={`${questionId}-a`} className="text-base font-medium">
+              a-shart
+            </Label>
+            <Badge variant="outline" className="text-xs">Condition A</Badge>
+          </div>
+        )}
         {conditionA && (
           <div className="p-3 rounded-lg bg-muted/50 border text-sm font-medium whitespace-pre-wrap">
             <LatexRenderer text={conditionA} />
@@ -56,8 +60,8 @@ export function WrittenQuestionInput({
           id={`${questionId}-a`}
           value={currentAnswer.answer_a}
           onChange={(e) => handleChange('answer_a', e.target.value)}
-          placeholder="a-shart bo'yicha javobingizni yozing..."
-          rows={4}
+          placeholder={hasTwoParts ? "a-shart bo'yicha javobingizni yozing..." : "Javobingizni yozing..."}
+          rows={hasTwoParts ? 4 : 2}
           disabled={disabled}
           className="resize-none"
         />
@@ -66,31 +70,33 @@ export function WrittenQuestionInput({
         </p>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label htmlFor={`${questionId}-b`} className="text-base font-medium">
-            b-shart
-          </Label>
-          <Badge variant="outline" className="text-xs">Condition B</Badge>
-        </div>
-        {conditionB && (
-          <div className="p-3 rounded-lg bg-muted/50 border text-sm font-medium whitespace-pre-wrap">
-            <LatexRenderer text={conditionB} />
+      {hasTwoParts && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Label htmlFor={`${questionId}-b`} className="text-base font-medium">
+              b-shart
+            </Label>
+            <Badge variant="outline" className="text-xs">Condition B</Badge>
           </div>
-        )}
-        <Textarea
-          id={`${questionId}-b`}
-          value={currentAnswer.answer_b}
-          onChange={(e) => handleChange('answer_b', e.target.value)}
-          placeholder="b-shart bo'yicha javobingizni yozing..."
-          rows={4}
-          disabled={disabled}
-          className="resize-none"
-        />
-        <p className="text-xs text-muted-foreground">
-          {currentAnswer.answer_b.length} / 2000 belgi
-        </p>
-      </div>
+          {conditionB && (
+            <div className="p-3 rounded-lg bg-muted/50 border text-sm font-medium whitespace-pre-wrap">
+              <LatexRenderer text={conditionB} />
+            </div>
+          )}
+          <Textarea
+            id={`${questionId}-b`}
+            value={currentAnswer.answer_b}
+            onChange={(e) => handleChange('answer_b', e.target.value)}
+            placeholder="b-shart bo'yicha javobingizni yozing..."
+            rows={4}
+            disabled={disabled}
+            className="resize-none"
+          />
+          <p className="text-xs text-muted-foreground">
+            {currentAnswer.answer_b.length} / 2000 belgi
+          </p>
+        </div>
+      )}
     </div>
   );
 }
