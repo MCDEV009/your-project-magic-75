@@ -490,6 +490,15 @@ export type Database = {
     Functions: {
       generate_participant_id: { Args: never; Returns: string }
       generate_test_code: { Args: never; Returns: string }
+      get_attempt_status: {
+        Args: { p_attempt_id: string }
+        Returns: {
+          ai_evaluation: Json
+          evaluation_status: string
+          score: number
+          written_score: number
+        }[]
+      }
       get_public_questions: {
         Args: { p_test_id: string }
         Returns: {
@@ -510,6 +519,32 @@ export type Database = {
           question_type: Database["public"]["Enums"]["question_type"]
           test_id: string
         }[]
+      }
+      get_test_attempt_by_id: {
+        Args: { p_attempt_id: string }
+        Returns: {
+          ai_evaluation: Json | null
+          answers: Json
+          correct_answers: number | null
+          evaluation_status: string | null
+          finished_at: string | null
+          id: string
+          mcq_score: number | null
+          participant_id: string
+          score: number | null
+          started_at: string
+          status: Database["public"]["Enums"]["attempt_status"]
+          test_id: string
+          total_questions: number | null
+          written_answers: Json | null
+          written_score: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "test_attempts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       has_role: {
         Args: {
