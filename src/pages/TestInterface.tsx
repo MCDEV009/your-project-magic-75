@@ -61,9 +61,7 @@ function TestInterfaceContent() {
       
       // Get attempt
       const { data: attemptData, error: attemptError } = await supabase
-        .from('test_attempts')
-        .select('*')
-        .eq('id', attemptId)
+        .rpc('get_test_attempt_by_id', { p_attempt_id: attemptId })
         .single();
       
       if (attemptError || !attemptData) {

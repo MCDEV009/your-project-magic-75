@@ -30,9 +30,7 @@ function ResultsContent() {
     
     const interval = setInterval(async () => {
       const { data } = await supabase
-        .from('test_attempts')
-        .select('evaluation_status, ai_evaluation, written_score, score')
-        .eq('id', attemptId)
+        .rpc('get_attempt_status', { p_attempt_id: attemptId })
         .single();
       
       if (data) {
@@ -51,9 +49,7 @@ function ResultsContent() {
       if (!attemptId) return;
       
       const { data: attemptData, error } = await supabase
-        .from('test_attempts')
-        .select('*')
-        .eq('id', attemptId)
+        .rpc('get_test_attempt_by_id', { p_attempt_id: attemptId })
         .single();
       
       if (error || !attemptData) {
