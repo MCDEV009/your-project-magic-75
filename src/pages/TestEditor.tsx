@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WrittenQuestionForm } from '@/components/admin/WrittenQuestionForm';
 import { AIQuestionGenerator } from '@/components/admin/AIQuestionGenerator';
+import { QuestionImageInput } from '@/components/admin/QuestionImageInput';
 import LatexRenderer from '@/components/ui/LatexRenderer';
 import {
   Dialog,
