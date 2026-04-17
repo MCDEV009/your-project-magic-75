@@ -505,7 +505,44 @@ Respond with JSON only.`;
       console.error("Error updating attempt:", updateError);
       throw updateError;
     }
-    
+
+    // --- Persist per-question analyses ---
+    try {
+      const analysisRows: any[] = [];
+      for (const q of mcqQuestions) {
+        const ev = allEvaluations[q.id] || {};
+        analysisRows.push({
+          attempt_id,
+          question_id: q.id,
+          question_type: 'single_choice',
+          user_answer: { selected: answers[q.id] ?? null },
+          is_correct: ev.is_correct ?? null,
+          points_earned: ev.points_earned ?? 0,
+          max_points: ev.max_points ?? (q.points || 1),
+          ai_feedback: null,
+        });
+      }
+      for (const q of writtenQuestions) {
+        const ev = allEvaluations[q.id] || {};
+        const ans = writtenAnswers[q.id] || {};
+        analysisRows.push({
+          attempt_id,
+          question_id: q.id,
+          question_type: 'written',
+          user_answer: ans,
+          is_correct: null,
+          points_earned: ev.score ?? 0,
+          max_points: (q.points_a || 0) + (q.points_b || 0),
+          ai_feedback: ev,
+        });
+      }
+      if (analysisRows.length > 0) {
+        await supabase.from('question_analyses').upsert(analysisRows, { onConflict: 'attempt_id,question_id' });
+      }
+    } catch (analysisErr) {
+      console.error("Error saving question_analyses:", analysisErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
