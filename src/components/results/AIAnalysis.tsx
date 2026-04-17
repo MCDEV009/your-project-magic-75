@@ -138,6 +138,22 @@ export function AIAnalysis({ attemptId }: AIAnalysisProps) {
           </div>
         )}
 
+        {analysis.unmastered_topics && analysis.unmastered_topics.length > 0 && (
+          <div className="space-y-2 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+            <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
+              <AlertTriangle className="h-4 w-4" />O'zlashtirilmagan mavzular
+            </div>
+            <div className="flex flex-wrap gap-2 pl-6">
+              {analysis.unmastered_topics.map((t, i) => (
+                <Badge key={i} variant="destructive" className="font-normal">{t}</Badge>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground pl-6">
+              {AI_NAME} bu mavzularni qaytadan o'rganishni tavsiya qiladi.
+            </p>
+          </div>
+        )}
+
         {analysis.recommendations && analysis.recommendations.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm font-medium text-primary">
