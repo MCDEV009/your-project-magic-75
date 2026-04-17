@@ -86,6 +86,45 @@ export type Database = {
         }
         Relationships: []
       }
+      question_analyses: {
+        Row: {
+          ai_feedback: Json | null
+          attempt_id: string
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          max_points: number | null
+          points_earned: number | null
+          question_id: string
+          question_type: string
+          user_answer: Json | null
+        }
+        Insert: {
+          ai_feedback?: Json | null
+          attempt_id: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          max_points?: number | null
+          points_earned?: number | null
+          question_id: string
+          question_type: string
+          user_answer?: Json | null
+        }
+        Update: {
+          ai_feedback?: Json | null
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          max_points?: number | null
+          points_earned?: number | null
+          question_id?: string
+          question_type?: string
+          user_answer?: Json | null
+        }
+        Relationships: []
+      }
       question_analytics: {
         Row: {
           avg_time_seconds: number | null
