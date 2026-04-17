@@ -98,8 +98,8 @@ export function AIAnalysis({ attemptId }: AIAnalysisProps) {
       <div className="h-1 gradient-primary" />
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Sparkles className="h-5 w-5 text-primary" />
-          AI Tahlil natijasi
+          <GraduationCap className="h-5 w-5 text-primary" />
+          {AI_NAME} — tahlil natijasi
           {analysis.grade && (
             <Badge className={`ml-auto text-lg px-3 ${gradeColor[analysis.grade] || 'bg-muted'}`}>
               {analysis.grade}
