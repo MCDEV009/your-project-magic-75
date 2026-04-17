@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WrittenQuestionForm } from '@/components/admin/WrittenQuestionForm';
 import { AIQuestionGenerator } from '@/components/admin/AIQuestionGenerator';
+import { QuestionImageInput } from '@/components/admin/QuestionImageInput';
 import LatexRenderer from '@/components/ui/LatexRenderer';
 import {
   Dialog,
@@ -438,17 +439,10 @@ function TestEditorContent() {
                         />
                       </div>
                       
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2">
-                          <ImageIcon className="h-4 w-4" />
-                          Rasm URL (ixtiyoriy)
-                        </Label>
-                        <Input
-                          value={mcqForm.image_url}
-                          onChange={(e) => setMcqForm({ ...mcqForm, image_url: e.target.value })}
-                          placeholder="https://..."
-                        />
-                      </div>
+                      <QuestionImageInput
+                        value={mcqForm.image_url}
+                        onChange={(url) => setMcqForm({ ...mcqForm, image_url: url })}
+                      />
                       
                       <div className="space-y-3">
                         <Label>Javob variantlari *</Label>

@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, Brain, Target, AlertTriangle, BookOpen, Award } from 'lucide-react';
+import { Sparkles, Loader2, Brain, Target, AlertTriangle, BookOpen, Award, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Analysis {
   overall_assessment?: string;
   strengths?: string[];
   weaknesses?: string[];
+  unmastered_topics?: string[];
   recommendations?: string[];
   study_plan?: string;
   grade?: string;
@@ -19,9 +20,12 @@ interface AIAnalysisProps {
   attemptId: string;
 }
 
+const AI_NAME = "Al Xorazmiy";
+
 export function AIAnalysis({ attemptId }: AIAnalysisProps) {
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [autoTried, setAutoTried] = useState(false);
 
   const handleAnalyze = async () => {
     setLoading(true);
@@ -51,19 +55,29 @@ export function AIAnalysis({ attemptId }: AIAnalysisProps) {
     }
   };
 
+  // Auto-trigger once on mount
+  useEffect(() => {
+    if (!autoTried && !analysis && !loading) {
+      setAutoTried(true);
+      handleAnalyze();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (!analysis) {
     return (
       <Card className="shadow-card border-primary/20">
         <CardContent className="py-6 text-center">
-          <Brain className="h-10 w-10 mx-auto mb-3 text-primary/60" />
+          <GraduationCap className="h-10 w-10 mx-auto mb-3 text-primary/60" />
+          <p className="text-sm font-semibold mb-1">{AI_NAME}</p>
           <p className="text-sm text-muted-foreground mb-4">
-            AI yordamida test natijalaringizni tahlil qiling
+            {loading ? "Natijalaringiz tahlil qilinmoqda..." : "Sun'iy intellekt yordamida natijalarni tahlil qiling"}
           </p>
           <Button onClick={handleAnalyze} disabled={loading} className="gap-2 gradient-primary border-0">
             {loading ? (
               <><Loader2 className="h-4 w-4 animate-spin" />Tahlil qilinmoqda...</>
             ) : (
-              <><Sparkles className="h-4 w-4" />AI Tahlil</>
+              <><Sparkles className="h-4 w-4" />Qayta tahlil qilish</>
             )}
           </Button>
         </CardContent>
@@ -84,8 +98,8 @@ export function AIAnalysis({ attemptId }: AIAnalysisProps) {
       <div className="h-1 gradient-primary" />
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Sparkles className="h-5 w-5 text-primary" />
-          AI Tahlil natijasi
+          <GraduationCap className="h-5 w-5 text-primary" />
+          {AI_NAME} — tahlil natijasi
           {analysis.grade && (
             <Badge className={`ml-auto text-lg px-3 ${gradeColor[analysis.grade] || 'bg-muted'}`}>
               {analysis.grade}
@@ -121,6 +135,22 @@ export function AIAnalysis({ attemptId }: AIAnalysisProps) {
                 <li key={i} className="text-sm text-muted-foreground list-disc">{w}</li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {analysis.unmastered_topics && analysis.unmastered_topics.length > 0 && (
+          <div className="space-y-2 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+            <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
+              <AlertTriangle className="h-4 w-4" />O'zlashtirilmagan mavzular
+            </div>
+            <div className="flex flex-wrap gap-2 pl-6">
+              {analysis.unmastered_topics.map((t, i) => (
+                <Badge key={i} variant="destructive" className="font-normal">{t}</Badge>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground pl-6">
+              {AI_NAME} bu mavzularni qaytadan o'rganishni tavsiya qiladi.
+            </p>
           </div>
         )}
 
