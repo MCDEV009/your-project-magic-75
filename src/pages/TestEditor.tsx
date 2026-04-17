@@ -438,17 +438,10 @@ function TestEditorContent() {
                         />
                       </div>
                       
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2">
-                          <ImageIcon className="h-4 w-4" />
-                          Rasm URL (ixtiyoriy)
-                        </Label>
-                        <Input
-                          value={mcqForm.image_url}
-                          onChange={(e) => setMcqForm({ ...mcqForm, image_url: e.target.value })}
-                          placeholder="https://..."
-                        />
-                      </div>
+                      <QuestionImageInput
+                        value={mcqForm.image_url}
+                        onChange={(url) => setMcqForm({ ...mcqForm, image_url: url })}
+                      />
                       
                       <div className="space-y-3">
                         <Label>Javob variantlari *</Label>

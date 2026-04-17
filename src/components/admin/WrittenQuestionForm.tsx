@@ -2,6 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { QuestionImageInput } from '@/components/admin/QuestionImageInput';
 
 interface WrittenQuestionFormData {
   question_text_uz: string;
@@ -111,15 +112,11 @@ export function WrittenQuestionForm({ form, onChange }: WrittenQuestionFormProps
         </div>
       </div>
 
-      {/* Image URL */}
-      <div className="space-y-2">
-        <Label>Rasm URL (ixtiyoriy)</Label>
-        <Input
-          value={form.image_url}
-          onChange={(e) => onChange({ image_url: e.target.value })}
-          placeholder="https://..."
-        />
-      </div>
+      {/* Image upload or URL */}
+      <QuestionImageInput
+        value={form.image_url}
+        onChange={(url) => onChange({ image_url: url })}
+      />
 
       {/* Model Answer */}
       <div className="space-y-2">
