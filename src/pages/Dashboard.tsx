@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
 import { 
   User, FileText, CheckCircle, Clock, Trophy, ArrowRight, 
   BarChart3, Calendar 
@@ -214,46 +215,61 @@ function DashboardContent() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {attempts.map((attempt) => (
-                    <div
-                      key={attempt.id}
-                      className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
-                      onClick={() => {
-                        if (attempt.status === 'finished') {
-                          navigate(`/results/${attempt.id}`);
-                        }
-                      }}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={`p-2 rounded-lg ${
-                          attempt.status === 'finished' ? 'bg-green-500/10' : 'bg-yellow-500/10'
-                        }`}>
-                          {attempt.status === 'finished' ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <Clock className="h-4 w-4 text-yellow-500" />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">
-                            {attempt.tests ? getTestTitle(attempt.tests) : 'Test'}
-                          </p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            {format(new Date(attempt.started_at), 'dd.MM.yyyy HH:mm')}
+                  {attempts.map((attempt) => {
+                    const pct = Math.max(0, Math.min(100, Math.round(attempt.score || 0)));
+                    return (
+                      <div
+                        key={attempt.id}
+                        className="p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer space-y-2"
+                        onClick={() => {
+                          if (attempt.status === 'finished') {
+                            navigate(`/results/${attempt.id}`);
+                          }
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`p-2 rounded-lg ${
+                              attempt.status === 'finished' ? 'bg-green-500/10' : 'bg-yellow-500/10'
+                            }`}>
+                              {attempt.status === 'finished' ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <Clock className="h-4 w-4 text-yellow-500" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">
+                                {attempt.tests ? getTestTitle(attempt.tests) : 'Test'}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                {format(new Date(attempt.started_at), 'dd.MM.yyyy HH:mm')}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge variant={attempt.status === 'finished' ? 'default' : 'secondary'}>
+                              {attempt.status === 'finished' ? `${pct}%` : 'Jarayonda'}
+                            </Badge>
+                            {attempt.status === 'finished' && (
+                              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            )}
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Badge variant={attempt.status === 'finished' ? 'default' : 'secondary'}>
-                          {attempt.status === 'finished' ? `${attempt.score || 0}%` : 'Jarayonda'}
-                        </Badge>
                         {attempt.status === 'finished' && (
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          <div className="space-y-1">
+                            <Progress value={pct} className="h-2" />
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>MCQ: {Math.round(attempt.mcq_score || 0)}</span>
+                              <span>Yozma: {Math.round(attempt.written_score || 0)}</span>
+                              <span>Jami: {pct}%</span>
+                            </div>
+                          </div>
                         )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
