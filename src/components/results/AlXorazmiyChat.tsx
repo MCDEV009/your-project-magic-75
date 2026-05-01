@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { GraduationCap, Send, Loader2, User } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import { LatexRenderer } from '@/components/ui/LatexRenderer';
+import LatexRenderer from '@/components/ui/LatexRenderer';
 import { toast } from 'sonner';
 
 interface Message {
