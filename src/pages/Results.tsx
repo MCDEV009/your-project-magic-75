@@ -251,7 +251,7 @@ function ResultsContent() {
                 <QuestionStatsList attemptId={attemptId!} />
               </div>
               <div className="mb-8">
-                <AlXorazmiyChat attemptId={attemptId!} />
+                <AlXorazmiyChat attemptId={attemptId!} participantId={attempt.participant_id} />
               </div>
             </>
           )}
