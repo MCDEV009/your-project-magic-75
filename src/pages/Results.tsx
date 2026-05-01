@@ -11,6 +11,8 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { WrittenQuestionReview } from '@/components/results/WrittenQuestionReview';
 import { AIAnalysis } from '@/components/results/AIAnalysis';
+import { AlXorazmiyChat } from '@/components/results/AlXorazmiyChat';
+import { QuestionStatsList } from '@/components/results/QuestionStatsList';
 import { Trophy, CheckCircle, XCircle, Home, RotateCcw, ChevronDown, ChevronUp, Loader2, PenLine, CheckSquare } from 'lucide-react';
 
 function ResultsContent() {
@@ -241,9 +243,17 @@ function ResultsContent() {
 
           {/* AI Analysis */}
           {attempt.evaluation_status === 'completed' && (
-            <div className="mb-8">
-              <AIAnalysis attemptId={attemptId!} />
-            </div>
+            <>
+              <div className="mb-8">
+                <AIAnalysis attemptId={attemptId!} />
+              </div>
+              <div className="mb-8">
+                <QuestionStatsList attemptId={attemptId!} />
+              </div>
+              <div className="mb-8">
+                <AlXorazmiyChat attemptId={attemptId!} />
+              </div>
+            </>
           )}
 
           {/* MCQ Question review */}
