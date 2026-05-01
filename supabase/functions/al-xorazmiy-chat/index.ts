@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { attempt_id, messages } = await req.json();
+    const { attempt_id, messages, mode, participant_id } = await req.json();
 
     if (!attempt_id || !Array.isArray(messages)) {
       return new Response(
@@ -45,6 +45,8 @@ Deno.serve(async (req) => {
       .select("*")
       .eq("id", attempt_id)
       .maybeSingle();
+
+    const effectiveParticipantId = participant_id || attempt?.participant_id;
 
     const { data: analyses } = await supabase
       .from("question_analyses")
@@ -75,12 +77,33 @@ Deno.serve(async (req) => {
       })),
     };
 
-    const systemPrompt = `Sen "Al Xorazmiy" — talabalarga yordam beruvchi AI ustozsan. O'zbek tilida javob ber. Markdown va LaTeX ($...$ yoki $$...$$) ishlatishing mumkin. Talaba test natijalari haqida savol berganda quyidagi ma'lumotlardan foydalan:
+    const baseSystem = `Sen "Al Xorazmiy" — talabalarga yordam beruvchi AI ustozsan. O'zbek tilida javob ber. Markdown va LaTeX ($...$ yoki $$...$$) ishlatishing mumkin. Talaba test natijalari haqida savol berganda quyidagi ma'lumotlardan foydalan:
 
 TALABA NATIJALARI:
 ${JSON.stringify(summary, null, 2)}
 
 Qisqa, aniq va do'stona javob ber. Mavzularni tushuntir, mashq tavsiya qil.`;
+
+    const practicePrompt = `${baseSystem}
+
+VAZIFA: Talaba o'zlashtirmagan mavzular bo'yicha mashq savollarini yarat.
+- Avval previous_analysis ichidagi "unmastered_topics" yoki kuchsiz mavzularni aniqlab ol.
+- Har bir mavzu uchun 3-5 ta yangi mashq savol yarat (test va yozma aralash).
+- Har bir savol uchun: 1) Mavzu nomi, 2) Savol matni, 3) To'g'ri javob, 4) Qisqa tushuntirish.
+- Markdown sarlavhalar va LaTeX bilan chiroyli formatla.`;
+
+    const systemPrompt = mode === "practice" ? practicePrompt : baseSystem;
+
+    // Persist last user message before streaming
+    const lastUserMsg = [...messages].reverse().find((m: ChatMessage) => m.role === "user");
+    if (lastUserMsg && effectiveParticipantId) {
+      await supabase.from("al_xorazmiy_chat_messages").insert({
+        participant_id: effectiveParticipantId,
+        attempt_id,
+        role: "user",
+        content: lastUserMsg.content,
+      });
+    }
 
     const aiResponse = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -124,7 +147,48 @@ Qisqa, aniq va do'stona javob ber. Mavzularni tushuntir, mashq tavsiya qil.`;
       });
     }
 
-    return new Response(aiResponse.body, {
+    // Tee the stream so we can persist the assistant reply
+    const [streamForClient, streamForStorage] = aiResponse.body!.tee();
+
+    // Background task: read storage stream, accumulate, persist
+    (async () => {
+      try {
+        const reader = streamForStorage.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let assistantText = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            const t = line.trim();
+            if (!t.startsWith("data:")) continue;
+            const payload = t.slice(5).trim();
+            if (payload === "[DONE]") continue;
+            try {
+              const json = JSON.parse(payload);
+              const delta = json.choices?.[0]?.delta?.content;
+              if (delta) assistantText += delta;
+            } catch {}
+          }
+        }
+        if (assistantText && effectiveParticipantId) {
+          await supabase.from("al_xorazmiy_chat_messages").insert({
+            participant_id: effectiveParticipantId,
+            attempt_id,
+            role: "assistant",
+            content: assistantText,
+          });
+        }
+      } catch (e) {
+        console.error("persist assistant error", e);
+      }
+    })();
+
+    return new Response(streamForClient, {
       headers: {
         ...corsHeaders,
         "Content-Type": "text/event-stream",
