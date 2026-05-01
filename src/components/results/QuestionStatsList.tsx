@@ -17,24 +17,45 @@ interface QStat {
   max_points: number;
 }
 
+interface QuestionRow {
+  id: string;
+  question_text_uz: string;
+  order_index: number;
+}
+
 function certificateLevel(percent: number) {
-  if (percent >= 90) return { label: 'A+ — Oliy daraja', color: 'bg-success/20 text-success border-success/40', desc: 'Mukammal natija — Milliy sertifikat A+ darajasiga mos' };
-  if (percent >= 75) return { label: 'A — Yuqori daraja', color: 'bg-success/20 text-success border-success/40', desc: 'Yaxshi natija — Milliy sertifikat A darajasi' };
-  if (percent >= 60) return { label: 'B — O\'rta daraja', color: 'bg-accent/20 text-accent border-accent/40', desc: 'Qoniqarli — Milliy sertifikat B darajasi' };
-  if (percent >= 45) return { label: 'C — Boshlang\'ich daraja', color: 'bg-warning/20 text-warning border-warning/40', desc: 'O\'rtacha — Milliy sertifikat C darajasi' };
-  return { label: 'F — Sertifikatsiz', color: 'bg-destructive/20 text-destructive border-destructive/40', desc: 'Sertifikat olish uchun yetarli emas — qayta urinib ko\'ring' };
+  if (percent >= 70) return { label: 'A+ — Oliy daraja', color: 'bg-success/20 text-success border-success/40', desc: 'Mukammal natija — Milliy sertifikat A+ darajasi' };
+  if (percent >= 65) return { label: 'A — Yuqori daraja', color: 'bg-success/20 text-success border-success/40', desc: 'Yuqori natija — Milliy sertifikat A darajasi' };
+  if (percent >= 60) return { label: "B+ — O'rta-yuqori daraja", color: 'bg-accent/20 text-accent border-accent/40', desc: "Yaxshi natija — Milliy sertifikat B+ darajasi" };
+  if (percent >= 55) return { label: "B — O'rta daraja", color: 'bg-accent/20 text-accent border-accent/40', desc: "Qoniqarli natija — Milliy sertifikat B darajasi" };
+  if (percent >= 50) return { label: "C+ — Boshlang'ich-yuqori daraja", color: 'bg-warning/20 text-warning border-warning/40', desc: "O'rtacha natija — Milliy sertifikat C+ darajasi" };
+  if (percent >= 46) return { label: "C — Boshlang'ich daraja", color: 'bg-warning/20 text-warning border-warning/40', desc: "Minimal sertifikat darajasi — Milliy sertifikat C" };
+  return { label: 'NC — Sertifikatsiz', color: 'bg-destructive/20 text-destructive border-destructive/40', desc: "Sertifikat olish uchun yetarli emas (45% va undan past) — qayta urinib ko'ring" };
 }
 
 export function QuestionStatsList({ attemptId }: Props) {
   const [stats, setStats] = useState<QStat[] | null>(null);
+  const [questions, setQuestions] = useState<Record<string, QuestionRow>>({});
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
+      const { data: statsData } = await supabase
         .from('question_analyses')
         .select('question_id, question_type, is_correct, points_earned, max_points')
         .eq('attempt_id', attemptId);
-      setStats((data as QStat[]) || []);
+      const list = (statsData as QStat[]) || [];
+      setStats(list);
+
+      if (list.length > 0) {
+        const ids = list.map(s => s.question_id);
+        const { data: qs } = await supabase
+          .from('questions')
+          .select('id, question_text_uz, order_index')
+          .in('id', ids);
+        const map: Record<string, QuestionRow> = {};
+        (qs || []).forEach((q: any) => { map[q.id] = q; });
+        setQuestions(map);
+      }
     })();
   }, [attemptId]);
 
@@ -116,6 +137,34 @@ export function QuestionStatsList({ attemptId }: Props) {
               );
             })}
           </div>
+        </div>
+
+        {/* Detailed per-question list */}
+        <div className="space-y-1 max-h-80 overflow-y-auto pr-2">
+          <div className="text-sm font-medium mb-2">Har bir savolning batafsil natijasi:</div>
+          {[...stats]
+            .sort((a, b) => (questions[a.question_id]?.order_index ?? 0) - (questions[b.question_id]?.order_index ?? 0))
+            .map((q, i) => {
+              const earned = Number(q.points_earned || 0);
+              const max = Number(q.max_points || 1);
+              const pct = max > 0 ? (earned / max) * 100 : 0;
+              const text = questions[q.question_id]?.question_text_uz || `Savol ${i + 1}`;
+              const bg = pct === 100 ? 'border-success/40 bg-success/5'
+                : pct === 0 ? 'border-destructive/40 bg-destructive/5'
+                : 'border-warning/40 bg-warning/5';
+              return (
+                <div key={q.question_id} className={`flex items-start gap-2 p-2 rounded border ${bg}`}>
+                  <Badge variant="outline" className="shrink-0 text-xs">#{i + 1}</Badge>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs truncate">{text}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Progress value={pct} className="h-1 flex-1" />
+                      <span className="text-[10px] text-muted-foreground shrink-0">{earned.toFixed(1)}/{max} ({pct.toFixed(0)}%)</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
         </div>
 
         <div className="flex flex-wrap gap-2 text-xs">
