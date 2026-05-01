@@ -151,9 +151,10 @@ export function AlXorazmiyChat({ attemptId }: AlXorazmiyChatProps) {
                 >
                   {m.role === 'assistant' ? (
                     m.content ? (
-                      <div className="prose prose-sm dark:prose-invert max-w-none [&>*]:my-1">
-                        <LatexRenderer content={m.content} />
-                      </div>
+                      <LatexRenderer
+                        text={m.content}
+                        className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap"
+                      />
                     ) : (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     )
