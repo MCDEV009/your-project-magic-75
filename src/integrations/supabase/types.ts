@@ -62,6 +62,33 @@ export type Database = {
           },
         ]
       }
+      al_xorazmiy_chat_messages: {
+        Row: {
+          attempt_id: string | null
+          content: string
+          created_at: string
+          id: string
+          participant_id: string
+          role: string
+        }
+        Insert: {
+          attempt_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          participant_id: string
+          role: string
+        }
+        Update: {
+          attempt_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          participant_id?: string
+          role?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
