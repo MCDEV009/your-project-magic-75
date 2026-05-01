@@ -18,11 +18,13 @@ interface QStat {
 }
 
 function certificateLevel(percent: number) {
-  if (percent >= 90) return { label: 'A+ — Oliy daraja', color: 'bg-success/20 text-success border-success/40', desc: 'Mukammal natija — Milliy sertifikat A+ darajasiga mos' };
-  if (percent >= 75) return { label: 'A — Yuqori daraja', color: 'bg-success/20 text-success border-success/40', desc: 'Yaxshi natija — Milliy sertifikat A darajasi' };
-  if (percent >= 60) return { label: 'B — O\'rta daraja', color: 'bg-accent/20 text-accent border-accent/40', desc: 'Qoniqarli — Milliy sertifikat B darajasi' };
-  if (percent >= 45) return { label: 'C — Boshlang\'ich daraja', color: 'bg-warning/20 text-warning border-warning/40', desc: 'O\'rtacha — Milliy sertifikat C darajasi' };
-  return { label: 'F — Sertifikatsiz', color: 'bg-destructive/20 text-destructive border-destructive/40', desc: 'Sertifikat olish uchun yetarli emas — qayta urinib ko\'ring' };
+  if (percent >= 70) return { label: 'A+ — Oliy daraja', color: 'bg-success/20 text-success border-success/40', desc: 'Mukammal natija — Milliy sertifikat A+ darajasi' };
+  if (percent >= 65) return { label: 'A — Yuqori daraja', color: 'bg-success/20 text-success border-success/40', desc: 'Yuqori natija — Milliy sertifikat A darajasi' };
+  if (percent >= 60) return { label: "B+ — O'rta-yuqori daraja", color: 'bg-accent/20 text-accent border-accent/40', desc: "Yaxshi natija — Milliy sertifikat B+ darajasi" };
+  if (percent >= 55) return { label: "B — O'rta daraja", color: 'bg-accent/20 text-accent border-accent/40', desc: "Qoniqarli natija — Milliy sertifikat B darajasi" };
+  if (percent >= 50) return { label: "C+ — Boshlang'ich-yuqori daraja", color: 'bg-warning/20 text-warning border-warning/40', desc: "O'rtacha natija — Milliy sertifikat C+ darajasi" };
+  if (percent >= 46) return { label: "C — Boshlang'ich daraja", color: 'bg-warning/20 text-warning border-warning/40', desc: "Minimal sertifikat darajasi — Milliy sertifikat C" };
+  return { label: 'NC — Sertifikatsiz', color: 'bg-destructive/20 text-destructive border-destructive/40', desc: "Sertifikat olish uchun yetarli emas (45% va undan past) — qayta urinib ko'ring" };
 }
 
 export function QuestionStatsList({ attemptId }: Props) {
