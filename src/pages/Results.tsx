@@ -13,6 +13,7 @@ import { WrittenQuestionReview } from '@/components/results/WrittenQuestionRevie
 import { AIAnalysis } from '@/components/results/AIAnalysis';
 import { AlXorazmiyChat } from '@/components/results/AlXorazmiyChat';
 import { QuestionStatsList } from '@/components/results/QuestionStatsList';
+import { PracticeQuestionsCard } from '@/components/results/PracticeQuestionsCard';
 import { Trophy, CheckCircle, XCircle, Home, RotateCcw, ChevronDown, ChevronUp, Loader2, PenLine, CheckSquare } from 'lucide-react';
 
 function ResultsContent() {
@@ -249,6 +250,9 @@ function ResultsContent() {
               </div>
               <div className="mb-8">
                 <QuestionStatsList attemptId={attemptId!} />
+              </div>
+              <div className="mb-8">
+                <PracticeQuestionsCard attemptId={attemptId!} participantId={attempt.participant_id} />
               </div>
               <div className="mb-8">
                 <AlXorazmiyChat attemptId={attemptId!} participantId={attempt.participant_id} />
