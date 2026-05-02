@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { LanguageProvider, useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,8 +13,10 @@ import { WrittenQuestionReview } from '@/components/results/WrittenQuestionRevie
 import { AIAnalysis } from '@/components/results/AIAnalysis';
 import { AlXorazmiyChat } from '@/components/results/AlXorazmiyChat';
 import { QuestionStatsList } from '@/components/results/QuestionStatsList';
-import { PracticeQuestionsCard } from '@/components/results/PracticeQuestionsCard';
-import { Trophy, CheckCircle, XCircle, Home, RotateCcw, ChevronDown, ChevronUp, Loader2, PenLine, CheckSquare } from 'lucide-react';
+import { PracticeQuestionsCard, type PracticeCardHandle } from '@/components/results/PracticeQuestionsCard';
+import { Trophy, CheckCircle, XCircle, Home, RotateCcw, ChevronDown, ChevronUp, Loader2, PenLine, CheckSquare, Download } from 'lucide-react';
+import { exportResultsPdf } from '@/lib/pdfExport';
+import { toast } from 'sonner';
 
 function ResultsContent() {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -26,6 +28,8 @@ function ResultsContent() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
+  const [exporting, setExporting] = useState(false);
+  const practiceRef = useRef<PracticeCardHandle>(null);
 
   // Poll for evaluation status
   useEffect(() => {
@@ -131,6 +135,76 @@ function ResultsContent() {
     ? Math.round((totalScore / totalPoints) * 100) 
     : 0;
 
+  function getCertificate(pct: number) {
+    if (pct >= 70) return { label: 'A+ — Oliy daraja', desc: 'Mukammal natija — Milliy sertifikat A+ darajasi' };
+    if (pct >= 65) return { label: 'A — Yuqori daraja', desc: 'Yuqori natija — Milliy sertifikat A darajasi' };
+    if (pct >= 60) return { label: "B+ — O'rta-yuqori daraja", desc: "Yaxshi natija — Milliy sertifikat B+ darajasi" };
+    if (pct >= 55) return { label: "B — O'rta daraja", desc: "Qoniqarli natija — Milliy sertifikat B darajasi" };
+    if (pct >= 50) return { label: "C+ — Boshlang'ich-yuqori daraja", desc: "O'rtacha natija — Milliy sertifikat C+ darajasi" };
+    if (pct >= 46) return { label: "C — Boshlang'ich daraja", desc: "Minimal sertifikat darajasi — Milliy sertifikat C" };
+    return { label: 'NC — Sertifikatsiz', desc: "Sertifikat olish uchun yetarli emas (45% va undan past)" };
+  }
+
+  const handleExport = async () => {
+    if (!attempt || !test) return;
+    setExporting(true);
+    try {
+      // Participant name
+      const { data: pData } = await supabase
+        .from('test_participants')
+        .select('full_name')
+        .eq('participant_id', attempt.participant_id)
+        .maybeSingle();
+
+      // Question analyses
+      const { data: qaData } = await supabase
+        .from('question_analyses')
+        .select('question_id, question_type, is_correct, points_earned, max_points')
+        .eq('attempt_id', attempt.id);
+
+      const qIds = (qaData || []).map((q: any) => q.question_id);
+      const qTextMap: Record<string, { text: string; order: number }> = {};
+      if (qIds.length > 0) {
+        const { data: qs } = await supabase
+          .from('questions')
+          .select('id, question_text_uz, order_index')
+          .in('id', qIds);
+        (qs || []).forEach((q: any) => {
+          qTextMap[q.id] = { text: q.question_text_uz || '', order: q.order_index };
+        });
+      }
+
+      const stats = (qaData || [])
+        .map((q: any) => ({
+          ...q,
+          question_text: qTextMap[q.question_id]?.text,
+          order_index: qTextMap[q.question_id]?.order ?? 0,
+        }))
+        .sort((a: any, b: any) => a.order_index - b.order_index);
+
+      const cert = getCertificate(percentage);
+      exportResultsPdf({
+        participantId: attempt.participant_id,
+        participantName: pData?.full_name || 'Noma\'lum',
+        testTitle: title,
+        totalScore,
+        totalPoints,
+        percentage,
+        certificateLabel: cert.label,
+        certificateDesc: cert.desc,
+        questionStats: stats,
+        practiceContent: practiceRef.current?.getContent(),
+        generatedAt: new Date(),
+      });
+      toast.success('PDF yuklab olindi');
+    } catch (e: any) {
+      console.error(e);
+      toast.error('PDF yaratishda xatolik');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const title = language === 'ru' && test.title_ru ? test.title_ru :
                 language === 'en' && test.title_en ? test.title_en : test.title_uz;
 
@@ -229,6 +303,17 @@ function ResultsContent() {
                   <Home className="h-4 w-4" />
                   {t('backToHome')}
                 </Button>
+                {attempt.evaluation_status === 'completed' && (
+                  <Button
+                    onClick={handleExport}
+                    disabled={exporting}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                    PDF yuklab olish
+                  </Button>
+                )}
                 {test.allow_retry && (
                   <Button 
                     onClick={() => navigate(`/enter/${test.id}`)}
@@ -252,7 +337,7 @@ function ResultsContent() {
                 <QuestionStatsList attemptId={attemptId!} />
               </div>
               <div className="mb-8">
-                <PracticeQuestionsCard attemptId={attemptId!} participantId={attempt.participant_id} />
+                <PracticeQuestionsCard ref={practiceRef} attemptId={attemptId!} participantId={attempt.participant_id} />
               </div>
               <div className="mb-8">
                 <AlXorazmiyChat attemptId={attemptId!} participantId={attempt.participant_id} />
