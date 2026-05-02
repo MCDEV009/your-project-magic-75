@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, RefreshCw } from 'lucide-react';
@@ -13,13 +13,23 @@ interface Props {
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-export function PracticeQuestionsCard({ attemptId, participantId }: Props) {
+type PracticeKind = 'mixed' | 'mcq' | 'written';
+
+export interface PracticeCardHandle {
+  getContent: () => string;
+}
+
+export const PracticeQuestionsCard = forwardRef<PracticeCardHandle, Props>(({ attemptId, participantId }, ref) => {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [kind, setKind] = useState<PracticeKind>('mixed');
+
+  useImperativeHandle(ref, () => ({ getContent: () => content }), [content]);
 
   const generate = async () => {
     setLoading(true);
     setContent('');
+    const kindLabel = kind === 'mcq' ? 'faqat test (MCQ) savollari' : kind === 'written' ? 'faqat yozma savollar' : 'test va yozma aralash';
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/al-xorazmiy-chat`, {
         method: 'POST',
@@ -32,9 +42,10 @@ export function PracticeQuestionsCard({ attemptId, participantId }: Props) {
           attempt_id: attemptId,
           participant_id: participantId,
           mode: 'practice',
+          practice_kind: kind,
           messages: [{
             role: 'user',
-            content: "O'zlashtirmagan mavzularim bo'yicha mashq savollari tuzib ber. Har biriga javob va tushuntirish ham qo'sh.",
+            content: `O'zlashtirmagan mavzularim bo'yicha ${kindLabel} tuzib ber. Har biriga javob va tushuntirish ham qo'sh.`,
           }],
         }),
       });
@@ -75,7 +86,7 @@ export function PracticeQuestionsCard({ attemptId, participantId }: Props) {
   };
 
   return (
-    <Card className="shadow-card border-accent/20 overflow-hidden">
+    <Card className="shadow-card border-accent/20 overflow-hidden" id="practice-card">
       <div className="h-1 gradient-accent" />
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
@@ -84,6 +95,12 @@ export function PracticeQuestionsCard({ attemptId, participantId }: Props) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        <div className="flex flex-wrap gap-1">
+          <span className="text-xs text-muted-foreground self-center mr-1">Rejim:</span>
+          <Button size="sm" variant={kind === 'mixed' ? 'default' : 'outline'} onClick={() => setKind('mixed')} disabled={loading}>Aralash</Button>
+          <Button size="sm" variant={kind === 'mcq' ? 'default' : 'outline'} onClick={() => setKind('mcq')} disabled={loading}>Faqat test</Button>
+          <Button size="sm" variant={kind === 'written' ? 'default' : 'outline'} onClick={() => setKind('written')} disabled={loading}>Faqat yozma</Button>
+        </div>
         {!content && !loading && (
           <div className="text-center py-6 space-y-3">
             <p className="text-sm text-muted-foreground">
@@ -118,4 +135,5 @@ export function PracticeQuestionsCard({ attemptId, participantId }: Props) {
       </CardContent>
     </Card>
   );
-}
+});
+PracticeQuestionsCard.displayName = 'PracticeQuestionsCard';
