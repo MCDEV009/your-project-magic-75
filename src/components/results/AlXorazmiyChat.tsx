@@ -3,12 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { GraduationCap, Send, Loader2, User, Sparkles } from 'lucide-react';
+import { GraduationCap, Send, Loader2, User, Sparkles, Trash2 } from 'lucide-react';
 import LatexRenderer from '@/components/ui/LatexRenderer';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
+  id?: string;
   role: 'user' | 'assistant';
   content: string;
 }
@@ -40,11 +41,11 @@ export function AlXorazmiyChat({ attemptId, participantId }: AlXorazmiyChatProps
     (async () => {
       const { data } = await supabase
         .from('al_xorazmiy_chat_messages')
-        .select('role, content, created_at')
+        .select('id, role, content, created_at')
         .eq('participant_id', participantId)
         .order('created_at', { ascending: true });
       if (data && data.length > 0) {
-        setMessages([WELCOME, ...data.map((m: any) => ({ role: m.role as 'user' | 'assistant', content: m.content }))]);
+        setMessages([WELCOME, ...data.map((m: any) => ({ id: m.id, role: m.role as 'user' | 'assistant', content: m.content }))]);
       }
       setHistoryLoaded(true);
     })();
@@ -137,6 +138,25 @@ export function AlXorazmiyChat({ attemptId, participantId }: AlXorazmiyChatProps
     send("O'zlashtirmagan mavzularim bo'yicha mashq savollari tuzib ber. Har biriga javob va tushuntirish ham qo'sh.", 'practice');
   };
 
+  const deleteMessage = async (idx: number) => {
+    const msg = messages[idx];
+    if (!msg?.id) {
+      // Welcome / unsaved message — just remove locally
+      setMessages((m) => m.filter((_, i) => i !== idx));
+      return;
+    }
+    const { error } = await supabase
+      .from('al_xorazmiy_chat_messages')
+      .delete()
+      .eq('id', msg.id);
+    if (error) {
+      toast.error("Xabarni o'chirib bo'lmadi");
+      return;
+    }
+    setMessages((m) => m.filter((_, i) => i !== idx));
+    toast.success("Xabar o'chirildi");
+  };
+
   return (
     <Card className="shadow-card border-primary/20 overflow-hidden">
       <div className="h-1 gradient-primary" />
@@ -157,7 +177,7 @@ export function AlXorazmiyChat({ attemptId, participantId }: AlXorazmiyChatProps
             {messages.map((m, i) => (
               <div
                 key={i}
-                className={`flex gap-2 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}
+                className={`group flex gap-2 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
                 <div
                   className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
@@ -192,6 +212,17 @@ export function AlXorazmiyChat({ attemptId, participantId }: AlXorazmiyChatProps
                     <span className="whitespace-pre-wrap">{m.content}</span>
                   )}
                 </div>
+                {i > 0 && m.content && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteMessage(i)}
+                    className="h-7 w-7 self-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Xabarni o'chirish"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                  </Button>
+                )}
               </div>
             ))}
           </div>

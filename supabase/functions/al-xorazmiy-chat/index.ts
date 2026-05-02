@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { attempt_id, messages, mode, participant_id } = await req.json();
+    const { attempt_id, messages, mode, participant_id, practice_kind } = await req.json();
 
     if (!attempt_id || !Array.isArray(messages)) {
       return new Response(
@@ -84,11 +84,19 @@ ${JSON.stringify(summary, null, 2)}
 
 Qisqa, aniq va do'stona javob ber. Mavzularni tushuntir, mashq tavsiya qil.`;
 
+    const kindInstruction =
+      practice_kind === "mcq"
+        ? "Faqat 4 variantli test (MCQ) savollarini yarat — yozma savol ishlatma."
+        : practice_kind === "written"
+        ? "Faqat yozma (ochiq javobli) savollarni yarat — test (MCQ) ishlatma."
+        : "Test (MCQ) va yozma savollarni aralash yarat.";
+
     const practicePrompt = `${baseSystem}
 
 VAZIFA: Talaba o'zlashtirmagan mavzular bo'yicha mashq savollarini yarat.
 - Avval previous_analysis ichidagi "unmastered_topics" yoki kuchsiz mavzularni aniqlab ol.
-- Har bir mavzu uchun 3-5 ta yangi mashq savol yarat (test va yozma aralash).
+- Har bir mavzu uchun 3-5 ta yangi mashq savol yarat.
+- ${kindInstruction}
 - Har bir savol uchun: 1) Mavzu nomi, 2) Savol matni, 3) To'g'ri javob, 4) Qisqa tushuntirish.
 - Markdown sarlavhalar va LaTeX bilan chiroyli formatla.`;
 

@@ -619,6 +619,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_known_participant: {
+        Args: { _participant_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"

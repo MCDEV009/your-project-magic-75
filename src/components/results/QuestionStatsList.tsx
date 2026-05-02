@@ -3,7 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { BarChart3, Loader2 } from 'lucide-react';
+import { BarChart3, Loader2, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   attemptId: string;
@@ -36,6 +38,8 @@ function certificateLevel(percent: number) {
 export function QuestionStatsList({ attemptId }: Props) {
   const [stats, setStats] = useState<QStat[] | null>(null);
   const [questions, setQuestions] = useState<Record<string, QuestionRow>>({});
+  const [typeFilter, setTypeFilter] = useState<'all' | 'single_choice' | 'written'>('all');
+  const [topicQuery, setTopicQuery] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -76,8 +80,17 @@ export function QuestionStatsList({ attemptId }: Props) {
   const wrongCount = stats.filter(q => q.is_correct === false).length;
   const partialCount = stats.filter(q => q.is_correct === null && Number(q.points_earned) > 0).length;
 
+  const filteredStats = stats.filter(q => {
+    if (typeFilter !== 'all' && q.question_type !== typeFilter) return false;
+    if (topicQuery.trim()) {
+      const text = (questions[q.question_id]?.question_text_uz || '').toLowerCase();
+      if (!text.includes(topicQuery.trim().toLowerCase())) return false;
+    }
+    return true;
+  });
+
   return (
-    <Card className="shadow-card">
+    <Card className="shadow-card" id="question-stats-card">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <BarChart3 className="h-5 w-5 text-primary" />
@@ -112,11 +125,41 @@ export function QuestionStatsList({ attemptId }: Props) {
           </div>
         </div>
 
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant={typeFilter === 'all' ? 'default' : 'outline'}
+              onClick={() => setTypeFilter('all')}
+            >Barchasi</Button>
+            <Button
+              size="sm"
+              variant={typeFilter === 'single_choice' ? 'default' : 'outline'}
+              onClick={() => setTypeFilter('single_choice')}
+            >Test</Button>
+            <Button
+              size="sm"
+              variant={typeFilter === 'written' ? 'default' : 'outline'}
+              onClick={() => setTypeFilter('written')}
+            >Yozma</Button>
+          </div>
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Mavzu/savol matni bo'yicha qidirish..."
+              value={topicQuery}
+              onChange={(e) => setTopicQuery(e.target.value)}
+              className="pl-8 h-9"
+            />
+          </div>
+        </div>
+
         {/* Per-question grid */}
         <div>
-          <div className="text-sm font-medium mb-2">Savollar bo'yicha ball:</div>
+          <div className="text-sm font-medium mb-2">Savollar bo'yicha ball ({filteredStats.length}):</div>
           <div className="grid grid-cols-5 sm:grid-cols-9 gap-2">
-            {stats.map((q, i) => {
+            {filteredStats.map((q, i) => {
               const earned = Number(q.points_earned || 0);
               const max = Number(q.max_points || 1);
               const pct = max > 0 ? earned / max : 0;
@@ -136,13 +179,18 @@ export function QuestionStatsList({ attemptId }: Props) {
                 </div>
               );
             })}
+            {filteredStats.length === 0 && (
+              <div className="col-span-full text-center text-sm text-muted-foreground py-4">
+                Filtrga mos savollar topilmadi
+              </div>
+            )}
           </div>
         </div>
 
         {/* Detailed per-question list */}
         <div className="space-y-1 max-h-80 overflow-y-auto pr-2">
           <div className="text-sm font-medium mb-2">Har bir savolning batafsil natijasi:</div>
-          {[...stats]
+          {[...filteredStats]
             .sort((a, b) => (questions[a.question_id]?.order_index ?? 0) - (questions[b.question_id]?.order_index ?? 0))
             .map((q, i) => {
               const earned = Number(q.points_earned || 0);
@@ -154,7 +202,9 @@ export function QuestionStatsList({ attemptId }: Props) {
                 : 'border-warning/40 bg-warning/5';
               return (
                 <div key={q.question_id} className={`flex items-start gap-2 p-2 rounded border ${bg}`}>
-                  <Badge variant="outline" className="shrink-0 text-xs">#{i + 1}</Badge>
+                  <Badge variant="outline" className="shrink-0 text-xs">
+                    {q.question_type === 'written' ? 'Y' : 'T'}#{i + 1}
+                  </Badge>
                   <div className="flex-1 min-w-0">
                     <div className="text-xs truncate">{text}</div>
                     <div className="flex items-center gap-2 mt-1">
