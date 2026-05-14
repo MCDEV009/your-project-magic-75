@@ -111,7 +111,7 @@ function TestEntryContent() {
       return;
     }
     // Paid test handling — coming soon
-    if (test?.visibility === 'paid' && plan !== 'premium') {
+    if ((test?.visibility as string) === 'paid' && plan !== 'premium') {
       toast.info("Bu pulli test (10 000 so'm). To'lov tizimi tez orada — Premium tarif egalari bepul kira oladi.");
       navigate('/pricing');
       return;
