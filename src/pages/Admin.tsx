@@ -445,7 +445,7 @@ function AdminContent() {
              {theme === 'dark' ? t('lightMode') : t('darkMode')}
            </button>
            
-          <button
+          {canSeeDashboard && <button
             onClick={() => setActiveTab('dashboard')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
               ${activeTab === 'dashboard' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
@@ -453,9 +453,9 @@ function AdminContent() {
           >
             <LayoutDashboard className="h-4 w-4" />
             {t('dashboard')}
-          </button>
+          </button>}
           
-          <button
+          {canSeeTests && <button
             onClick={() => setActiveTab('tests')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
               ${activeTab === 'tests' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
@@ -463,9 +463,9 @@ function AdminContent() {
           >
             <FileQuestion className="h-4 w-4" />
             {t('manageTests')}
-          </button>
+          </button>}
           
-          <button
+          {canSeeAnalytics && <button
             onClick={() => setActiveTab('analytics')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
               ${activeTab === 'analytics' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
@@ -473,7 +473,7 @@ function AdminContent() {
           >
             <BarChart3 className="h-4 w-4" />
             {t('analytics')}
-          </button>
+          </button>}
         </nav>
         
         <div className="p-4 border-t">
