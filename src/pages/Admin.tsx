@@ -816,7 +816,7 @@ function AdminContent() {
                                 <TableCell>{test.attempt_count}</TableCell>
                                 <TableCell>
                                   <Badge variant={test.visibility === 'public' ? 'default' : 'secondary'}>
-                                    {test.visibility === 'public' ? t('public') : t('private')}
+                                    {test.visibility === 'public' ? 'Bepul' : "Pulli"}
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
