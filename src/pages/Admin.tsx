@@ -112,7 +112,7 @@ function AdminContent() {
     title_en: '',
     description_uz: '',
     subject_id: '',
-    visibility: 'public' as 'public' | 'private',
+    visibility: 'public' as 'public' | 'paid',
     duration_minutes: 150,
     allow_retry: false,
     randomize_questions: true,
@@ -678,9 +678,9 @@ function AdminContent() {
                       
                       <div className="space-y-2">
                         <Label>{t('visibility')}</Label>
-                        <Select
+                         <Select
                           value={testForm.visibility}
-                          onValueChange={(value: 'public' | 'private') => setTestForm({ ...testForm, visibility: value })}
+                          onValueChange={(value: 'public' | 'paid') => setTestForm({ ...testForm, visibility: value })}
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -689,13 +689,13 @@ function AdminContent() {
                             <SelectItem value="public">
                               <div className="flex items-center gap-2">
                                 <Globe className="h-4 w-4" />
-                                {t('public')}
+                                Bepul (ommaviy)
                               </div>
                             </SelectItem>
-                            <SelectItem value="private">
+                            <SelectItem value="paid">
                               <div className="flex items-center gap-2">
                                 <Lock className="h-4 w-4" />
-                                {t('private')}
+                                Pulli test (10 000 so'm)
                               </div>
                             </SelectItem>
                           </SelectContent>
