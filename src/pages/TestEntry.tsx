@@ -12,6 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import { ExamRulesModal } from '@/components/test/ExamRulesModal';
 import { ArrowRight, User, Clock, FileQuestion, Copy, CheckCircle, Award, CalendarClock, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { UpgradeModal } from '@/components/UpgradeModal';
 
 function generateParticipantId(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -26,6 +29,9 @@ function TestEntryContent() {
   const { testId } = useParams<{ testId: string }>();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { user } = useAuth();
+  const { plan, remaining, canUse, increment } = useUsageLimits();
+  const [showUpgrade, setShowUpgrade] = useState(false);
   
   const [test, setTest] = useState<Test | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,6 +105,17 @@ function TestEntryContent() {
       toast.error(t('enterFullName'));
       return;
     }
+    // Free plan limit check (only for logged-in users; anonymous bypass for now)
+    if (user && plan === 'free' && !canUse('mocks')) {
+      setShowUpgrade(true);
+      return;
+    }
+    // Paid test handling — coming soon
+    if (test?.visibility === 'paid' && plan !== 'premium') {
+      toast.info("Bu pulli test (10 000 so'm). To'lov tizimi tez orada — Premium tarif egalari bepul kira oladi.");
+      navigate('/pricing');
+      return;
+    }
     if (isRegistrationClosed && isTestNotStarted) {
       toast.error("Ro'yxatdan o'tish vaqti tugagan! Testga 30 daqiqa oldin ro'yxatdan o'tish kerak edi.");
       return;
@@ -141,6 +158,9 @@ function TestEntryContent() {
       
       if (attemptError) throw attemptError;
       
+      // Track usage for free plan
+      if (user) { try { await increment('mocks_taken'); } catch {} }
+
       // Navigate to test
       navigate(`/test/${attempt.id}`, { 
         state: { 
@@ -302,6 +322,11 @@ function TestEntryContent() {
         duration={test.duration_minutes}
         questionCount={questionCount}
         isMilliySertifikat={test.test_format === 'milliy_sertifikat'}
+      />
+      <UpgradeModal
+        open={showUpgrade}
+        onOpenChange={setShowUpgrade}
+        reason={`Free tarifda oyiga 5 ta mock test mumkin. Joriy oy uchun limit tugadi (qoldi: ${Math.max(0, remaining.mocks)}).`}
       />
     </div>
   );
