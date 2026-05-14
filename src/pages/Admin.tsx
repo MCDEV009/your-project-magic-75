@@ -586,7 +586,7 @@ function AdminContent() {
                             <TableCell>
                               <Badge variant={test.visibility === 'public' ? 'default' : 'secondary'}>
                                 {test.visibility === 'public' ? <Globe className="h-3 w-3 mr-1" /> : <Lock className="h-3 w-3 mr-1" />}
-                                {test.visibility === 'public' ? t('public') : t('private')}
+                                {test.visibility === 'public' ? 'Bepul' : "Pulli (10 000 so'm)"}
                               </Badge>
                             </TableCell>
                           </TableRow>
