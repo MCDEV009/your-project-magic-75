@@ -76,12 +76,17 @@ import { AIAnalyticsDashboard } from '@/components/admin/AIAnalyticsDashboard';
 import { QuestionAnalyticsTable } from '@/components/admin/QuestionAnalyticsTable';
 import { StudentRankingsTable } from '@/components/admin/StudentRankingsTable';
 import { AIAnalysisHistory } from '@/components/admin/AIAnalysisHistory';
+import { useUserRoles } from '@/hooks/useUserRoles';
 
 function AdminContent() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { user, signOut, loading: authLoading } = useAuth();
    const { theme, setTheme } = useTheme();
+  const { isAdmin: isFullAdmin, isEditor, isAnalyst, isSuperAdmin } = useUserRoles();
+  const canSeeTests = isEditor || isFullAdmin || isSuperAdmin;
+  const canSeeAnalytics = isAnalyst || isFullAdmin || isSuperAdmin;
+  const canSeeDashboard = canSeeTests || canSeeAnalytics;
   
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings'>('dashboard');
