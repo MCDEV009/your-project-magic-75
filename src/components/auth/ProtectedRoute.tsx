@@ -5,48 +5,64 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+type AppRole = 'admin' | 'super_admin' | 'editor' | 'analyst';
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
+  requiredRoles?: AppRole[];
 }
 
-export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { user, loading, isAdmin } = useAuth();
-  const location = useLocation();
-  const [verifying, setVerifying] = useState(requireAdmin);
-  const [serverAdmin, setServerAdmin] = useState<boolean | null>(null);
+async function logAudit(opts: { userId: string | null; userEmail: string | null; route: string; required: string[]; granted: boolean; }) {
+  try {
+    await (supabase.from('admin_audit_log') as any).insert({
+      user_id: opts.userId,
+      user_email: opts.userEmail,
+      route: opts.route,
+      required_roles: opts.required,
+      granted: opts.granted,
+      user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 500) : null,
+    });
+  } catch { /* swallow */ }
+}
 
-  // Server-side re-verification of admin role on every mount/route change
+export function ProtectedRoute({ children, requireAdmin = false, requiredRoles }: ProtectedRouteProps) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const needsRoleCheck = requireAdmin || (requiredRoles && requiredRoles.length > 0);
+  const [verifying, setVerifying] = useState(!!needsRoleCheck);
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
+
+  const requiredList: AppRole[] = requiredRoles && requiredRoles.length > 0
+    ? requiredRoles
+    : (requireAdmin ? ['admin', 'super_admin'] : []);
+
   useEffect(() => {
     let cancelled = false;
-    if (!requireAdmin) {
-      setVerifying(false);
-      return;
-    }
-    if (!user) {
-      setVerifying(false);
-      return;
-    }
+    if (!needsRoleCheck) { setVerifying(false); return; }
+    if (!user) { setVerifying(false); return; }
     setVerifying(true);
     (async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
+        .in('role', requiredList as any);
       if (cancelled) return;
-      const ok = !!data && !error;
-      setServerAdmin(ok);
+      const ok = (data?.length ?? 0) > 0;
+      setAuthorized(ok);
       setVerifying(false);
-      if (!ok) {
-        toast.error("Sizda admin huquqlari yo'q");
-      }
+      logAudit({
+        userId: user.id,
+        userEmail: user.email ?? null,
+        route: location.pathname,
+        required: requiredList,
+        granted: ok,
+      });
+      if (!ok) toast.error("Ruxsat berilmadi: yetarli huquq yo'q");
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [requireAdmin, user, location.pathname]);
+    return () => { cancelled = true; };
+  }, [needsRoleCheck, user, location.pathname, requiredList.join(',')]);
 
   if (loading || verifying) {
     return (
@@ -57,12 +73,14 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   }
 
   if (!user) {
-    const state = requireAdmin ? { adminRequired: true } : undefined;
-    return <Navigate to="/auth" state={state} replace />;
+    if (needsRoleCheck) {
+      logAudit({ userId: null, userEmail: null, route: location.pathname, required: requiredList, granted: false });
+    }
+    return <Navigate to="/auth" state={{ from: location.pathname, adminRequired: needsRoleCheck }} replace />;
   }
 
-  if (requireAdmin && (!isAdmin || serverAdmin === false)) {
-    return <Navigate to="/" state={{ adminRequired: true, notAuthorized: true }} replace />;
+  if (needsRoleCheck && authorized === false) {
+    return <Navigate to="/403" replace />;
   }
 
   return <>{children}</>;
