@@ -3,7 +3,7 @@
  import { LanguageSelector } from '@/components/ui/LanguageSelector';
  import { ThemeToggle } from '@/components/ui/ThemeToggle';
  import { Button } from '@/components/ui/button';
- import { GraduationCap, LogIn, LogOut, User, LayoutDashboard } from 'lucide-react';
+import { GraduationCap, LogIn, LogOut, User, LayoutDashboard, Sparkles } from 'lucide-react';
  import { useAuth } from '@/hooks/useAuth';
 
 export function Header() {
@@ -37,6 +37,15 @@ export function Header() {
           <div className="flex items-center gap-1 sm:gap-2">
              <ThemeToggle />
             <LanguageSelector />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/pricing')}
+              className="hidden sm:inline-flex gap-1.5"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="text-sm">Tariflar</span>
+            </Button>
             {user && (
               <Button
                 variant="ghost"

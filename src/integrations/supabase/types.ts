@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          created_at: string
+          granted: boolean
+          id: string
+          required_roles: string[] | null
+          route: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          granted: boolean
+          id?: string
+          required_roles?: string[] | null
+          route: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          granted?: boolean
+          id?: string
+          required_roles?: string[] | null
+          route?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ai_analysis_history: {
         Row: {
           analysis_result: Json
@@ -86,6 +119,42 @@ export type Database = {
           id?: string
           participant_id?: string
           role?: string
+        }
+        Relationships: []
+      }
+      plan_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          provider: string
+          status: string
+          test_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          provider?: string
+          status?: string
+          test_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          provider?: string
+          status?: string
+          test_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -460,6 +529,27 @@ export type Database = {
         }
         Relationships: []
       }
+      test_pricing: {
+        Row: {
+          is_free: boolean
+          price_uzs: number
+          test_id: string
+          updated_at: string
+        }
+        Insert: {
+          is_free?: boolean
+          price_uzs?: number
+          test_id: string
+          updated_at?: string
+        }
+        Update: {
+          is_free?: boolean
+          price_uzs?: number
+          test_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tests: {
         Row: {
           allow_retry: boolean
@@ -530,6 +620,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      usage_counters: {
+        Row: {
+          ai_requests: number
+          id: string
+          image_uploads: number
+          mocks_taken: number
+          period_month: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_requests?: number
+          id?: string
+          image_uploads?: number
+          mocks_taken?: number
+          period_month: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_requests?: number
+          id?: string
+          image_uploads?: number
+          mocks_taken?: number
+          period_month?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_plans: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -612,6 +765,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_user_plan: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["subscription_plan"]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -625,10 +782,11 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "super_admin" | "editor" | "analyst"
       attempt_status: "in_progress" | "finished"
       question_type: "single_choice" | "written"
-      test_visibility: "public" | "private"
+      subscription_plan: "free" | "pro" | "premium"
+      test_visibility: "public" | "private" | "paid"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -756,10 +914,11 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "super_admin", "editor", "analyst"],
       attempt_status: ["in_progress", "finished"],
       question_type: ["single_choice", "written"],
-      test_visibility: ["public", "private"],
+      subscription_plan: ["free", "pro", "premium"],
+      test_visibility: ["public", "private", "paid"],
     },
   },
 } as const

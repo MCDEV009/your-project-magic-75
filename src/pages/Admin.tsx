@@ -76,12 +76,17 @@ import { AIAnalyticsDashboard } from '@/components/admin/AIAnalyticsDashboard';
 import { QuestionAnalyticsTable } from '@/components/admin/QuestionAnalyticsTable';
 import { StudentRankingsTable } from '@/components/admin/StudentRankingsTable';
 import { AIAnalysisHistory } from '@/components/admin/AIAnalysisHistory';
+import { useUserRoles } from '@/hooks/useUserRoles';
 
 function AdminContent() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { user, signOut, loading: authLoading } = useAuth();
    const { theme, setTheme } = useTheme();
+  const { isAdmin: isFullAdmin, isEditor, isAnalyst, isSuperAdmin } = useUserRoles();
+  const canSeeTests = isEditor || isFullAdmin || isSuperAdmin;
+  const canSeeAnalytics = isAnalyst || isFullAdmin || isSuperAdmin;
+  const canSeeDashboard = canSeeTests || canSeeAnalytics;
   
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings'>('dashboard');
@@ -107,7 +112,7 @@ function AdminContent() {
     title_en: '',
     description_uz: '',
     subject_id: '',
-    visibility: 'public' as 'public' | 'private',
+    visibility: 'public' as 'public' | 'paid',
     duration_minutes: 150,
     allow_retry: false,
     randomize_questions: true,
@@ -440,7 +445,7 @@ function AdminContent() {
              {theme === 'dark' ? t('lightMode') : t('darkMode')}
            </button>
            
-          <button
+          {canSeeDashboard && <button
             onClick={() => setActiveTab('dashboard')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
               ${activeTab === 'dashboard' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
@@ -448,9 +453,9 @@ function AdminContent() {
           >
             <LayoutDashboard className="h-4 w-4" />
             {t('dashboard')}
-          </button>
+          </button>}
           
-          <button
+          {canSeeTests && <button
             onClick={() => setActiveTab('tests')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
               ${activeTab === 'tests' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
@@ -458,9 +463,9 @@ function AdminContent() {
           >
             <FileQuestion className="h-4 w-4" />
             {t('manageTests')}
-          </button>
+          </button>}
           
-          <button
+          {canSeeAnalytics && <button
             onClick={() => setActiveTab('analytics')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
               ${activeTab === 'analytics' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
@@ -468,7 +473,7 @@ function AdminContent() {
           >
             <BarChart3 className="h-4 w-4" />
             {t('analytics')}
-          </button>
+          </button>}
         </nav>
         
         <div className="p-4 border-t">
@@ -581,7 +586,7 @@ function AdminContent() {
                             <TableCell>
                               <Badge variant={test.visibility === 'public' ? 'default' : 'secondary'}>
                                 {test.visibility === 'public' ? <Globe className="h-3 w-3 mr-1" /> : <Lock className="h-3 w-3 mr-1" />}
-                                {test.visibility === 'public' ? t('public') : t('private')}
+                                {test.visibility === 'public' ? 'Bepul' : "Pulli (10 000 so'm)"}
                               </Badge>
                             </TableCell>
                           </TableRow>
@@ -673,9 +678,9 @@ function AdminContent() {
                       
                       <div className="space-y-2">
                         <Label>{t('visibility')}</Label>
-                        <Select
+                         <Select
                           value={testForm.visibility}
-                          onValueChange={(value: 'public' | 'private') => setTestForm({ ...testForm, visibility: value })}
+                          onValueChange={(value: 'public' | 'paid') => setTestForm({ ...testForm, visibility: value })}
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -684,13 +689,13 @@ function AdminContent() {
                             <SelectItem value="public">
                               <div className="flex items-center gap-2">
                                 <Globe className="h-4 w-4" />
-                                {t('public')}
+                                Bepul (ommaviy)
                               </div>
                             </SelectItem>
-                            <SelectItem value="private">
+                            <SelectItem value="paid">
                               <div className="flex items-center gap-2">
                                 <Lock className="h-4 w-4" />
-                                {t('private')}
+                                Pulli test (10 000 so'm)
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -811,7 +816,7 @@ function AdminContent() {
                                 <TableCell>{test.attempt_count}</TableCell>
                                 <TableCell>
                                   <Badge variant={test.visibility === 'public' ? 'default' : 'secondary'}>
-                                    {test.visibility === 'public' ? t('public') : t('private')}
+                                    {test.visibility === 'public' ? 'Bepul' : "Pulli"}
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
