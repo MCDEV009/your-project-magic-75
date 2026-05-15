@@ -1,0 +1,16 @@
+# Milliy Sertifikat
+
+> O'zbekiston Milliy Sertifikat imtihoniga tayyorlanish uchun online mock test platformasi: 35 ta test savoli, 10 ta yozma savol, Rasch model bo'yicha baholash va sun'iy intellekt yordamida shaxsiy tahlil.
+
+Milliy Sertifikat — ko'p tilli (UZ, RU, EN, QQ) mock test platformasi. Foydalanuvchilar haqiqiy imtihon formatida mashq qiladi, natijalarini batafsil ko'radi va AI yordamida kuchli/zaif tomonlarini aniqlaydi. Yopiq testlar 5 raqamli kod orqali ochiladi.
+
+## Pages
+
+- [Bosh sahifa](/): Platforma haqida umumiy ma'lumot va ochiq mock testlar.
+- [Mock testlar](/tests): Barcha ochiq mock testlar ro'yxati.
+- [Tariflar](/pricing): Free, Pro va Premium rejalar — oylik mock va AI tahlil limitlari.
+- [Kirish / Ro'yxatdan o'tish](/auth): Email orqali tizimga kirish.
+
+## Optional
+
+- [Shaxsiy kabinet](/dashboard): Foydalanuvchining o'tgan testlari va natijalari.
