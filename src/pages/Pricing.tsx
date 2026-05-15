@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -82,6 +83,35 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Tariflar — Milliy Sertifikat</title>
+        <meta name="description" content="Milliy Sertifikat tariflari: Free, Pro va Premium. Oylik mock testlar, AI tahlil va rasm yuklash limitlari bilan o'zingizga mos rejani tanlang." />
+        <link rel="canonical" href="https://msmocktest.lovable.app/pricing" />
+        <meta property="og:title" content="Tariflar — Milliy Sertifikat" />
+        <meta property="og:description" content="Free, Pro va Premium rejalar. Mock testlar va AI tahlil uchun." />
+        <meta property="og:url" content="https://msmocktest.lovable.app/pricing" />
+        <meta property="og:type" content="website" />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          itemListElement: PLANS.map((p, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            item: {
+              '@type': 'Product',
+              name: `Milliy Sertifikat ${p.name}`,
+              description: p.perks.join('. '),
+              offers: {
+                '@type': 'Offer',
+                price: p.price,
+                priceCurrency: 'UZS',
+                availability: 'https://schema.org/PreOrder',
+                url: 'https://msmocktest.lovable.app/pricing',
+              },
+            },
+          })),
+        })}</script>
+      </Helmet>
       <Header />
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="text-center mb-10">
