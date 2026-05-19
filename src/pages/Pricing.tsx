@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { LanguageProvider } from '@/hooks/useLanguage';
 
 const PLANS = [
   {
@@ -54,7 +55,7 @@ const PLANS = [
   },
 ];
 
-export default function Pricing() {
+function PricingContent() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [comingSoon, setComingSoon] = useState<{ plan: string; price: number } | null>(null);
@@ -181,5 +182,13 @@ export default function Pricing() {
         </Dialog>
       </main>
     </div>
+  );
+}
+
+export default function Pricing() {
+  return (
+    <LanguageProvider>
+      <PricingContent />
+    </LanguageProvider>
   );
 }
