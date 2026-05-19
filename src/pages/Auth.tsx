@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { LanguageProvider, useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -124,6 +125,14 @@ function AuthContent() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Kirish va ro'yxatdan o'tish — Milliy Sertifikat</title>
+        <meta name="description" content="Milliy Sertifikat hisobingizga kiring yoki yangi akkaunt yarating va mock testlarni boshlang." />
+        <link rel="canonical" href="https://msmocktest.lovable.app/auth" />
+        <meta property="og:title" content="Kirish — Milliy Sertifikat" />
+        <meta property="og:description" content="Hisobingizga kiring yoki ro'yxatdan o'ting." />
+        <meta property="og:url" content="https://msmocktest.lovable.app/auth" />
+      </Helmet>
       <Header />
       <main className="flex-1 flex items-center justify-center p-4">
         <Card className="max-w-md w-full shadow-elevated">
