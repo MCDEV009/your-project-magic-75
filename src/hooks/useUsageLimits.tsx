@@ -5,9 +5,9 @@ import { useAuth } from './useAuth';
 export type Plan = 'free' | 'pro' | 'premium';
 
 export const PLAN_LIMITS: Record<Plan, { mocks: number; ai: number; images: number }> = {
-  free: { mocks: 5, ai: 10, images: 3 },
-  pro: { mocks: 30, ai: 100, images: 30 },
-  premium: { mocks: Infinity, ai: Infinity, images: Infinity },
+  free: { mocks: 1, ai: 10, images: 3 },
+  pro: { mocks: 5, ai: 100, images: 30 },
+  premium: { mocks: 25, ai: Infinity, images: Infinity },
 };
 
 function periodKey() {
