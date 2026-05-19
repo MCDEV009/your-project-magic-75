@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { LanguageProvider, useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -111,6 +112,14 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <Helmet>
+        <title>Mening panelim — Milliy Sertifikat</title>
+        <meta name="description" content="Mock test natijalaringizni, statistikangizni va o'tilgan imtihonlar tarixini bir joyda ko'ring." />
+        <link rel="canonical" href="https://msmocktest.lovable.app/dashboard" />
+        <meta property="og:title" content="Mening panelim — Milliy Sertifikat" />
+        <meta property="og:description" content="Natijalar, statistika va imtihonlar tarixi." />
+        <meta property="og:url" content="https://msmocktest.lovable.app/dashboard" />
+      </Helmet>
       <Header />
       <main className="flex-1 py-8">
         <div className="test-container space-y-8">
