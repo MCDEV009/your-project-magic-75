@@ -6,9 +6,17 @@ import { Progress } from '@/components/ui/progress';
 import { BarChart3, Loader2, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  raschProbability,
+  estimateDeltaFromPCorrect,
+  formatProbability,
+  probabilityBucket,
+} from '@/lib/rasch';
 
 interface Props {
   attemptId: string;
+  /** Test-taker ability (logits) — from Rasch evaluation. */
+  theta?: number;
 }
 
 interface QStat {
@@ -25,6 +33,12 @@ interface QuestionRow {
   order_index: number;
 }
 
+interface QAnalytics {
+  total_attempts: number;
+  correct_count: number;
+  difficulty_score: number | null;
+}
+
 function certificateLevel(percent: number) {
   if (percent >= 70) return { label: 'A+ — Oliy daraja', color: 'bg-success/20 text-success border-success/40', desc: 'Mukammal natija — Milliy sertifikat A+ darajasi' };
   if (percent >= 65) return { label: 'A — Yuqori daraja', color: 'bg-success/20 text-success border-success/40', desc: 'Yuqori natija — Milliy sertifikat A darajasi' };
@@ -35,9 +49,10 @@ function certificateLevel(percent: number) {
   return { label: 'NC — Sertifikatsiz', color: 'bg-destructive/20 text-destructive border-destructive/40', desc: "Sertifikat olish uchun yetarli emas (45% va undan past) — qayta urinib ko'ring" };
 }
 
-export function QuestionStatsList({ attemptId }: Props) {
+export function QuestionStatsList({ attemptId, theta }: Props) {
   const [stats, setStats] = useState<QStat[] | null>(null);
   const [questions, setQuestions] = useState<Record<string, QuestionRow>>({});
+  const [analytics, setAnalytics] = useState<Record<string, QAnalytics>>({});
   const [typeFilter, setTypeFilter] = useState<'all' | 'single_choice' | 'written'>('all');
   const [topicQuery, setTopicQuery] = useState('');
 
@@ -59,9 +74,39 @@ export function QuestionStatsList({ attemptId }: Props) {
         const map: Record<string, QuestionRow> = {};
         (qs || []).forEach((q: any) => { map[q.id] = q; });
         setQuestions(map);
+
+        const { data: an } = await supabase
+          .from('question_analytics')
+          .select('question_id, total_attempts, correct_count, difficulty_score')
+          .in('question_id', ids);
+        const aMap: Record<string, QAnalytics> = {};
+        (an || []).forEach((a: any) => {
+          aMap[a.question_id] = {
+            total_attempts: a.total_attempts ?? 0,
+            correct_count: a.correct_count ?? 0,
+            difficulty_score: a.difficulty_score,
+          };
+        });
+        setAnalytics(aMap);
       }
     })();
   }, [attemptId]);
+
+  /** Compute Rasch delta (item difficulty) for a question, falling back to neutral 0. */
+  const deltaFor = (qid: string): number | null => {
+    const a = analytics[qid];
+    if (!a || !a.total_attempts) return null;
+    const pCorrect = a.correct_count / a.total_attempts;
+    // Avoid degenerate 0% / 100% — clamp inside estimator
+    return estimateDeltaFromPCorrect(pCorrect);
+  };
+
+  const probFor = (qid: string): number | null => {
+    if (theta === undefined || theta === null || Number.isNaN(theta)) return null;
+    const d = deltaFor(qid);
+    if (d === null) return null;
+    return raschProbability(theta, d);
+  };
 
   if (!stats) {
     return (
@@ -184,6 +229,68 @@ export function QuestionStatsList({ attemptId }: Props) {
                 Filtrga mos savollar topilmadi
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Rasch probability table */}
+        <div className="rounded-lg border bg-card">
+          <div className="px-3 py-2 border-b flex items-center justify-between">
+            <div className="text-sm font-medium">Rasch ehtimolligi (P = 1 / (1 + e^-(θ-δ)))</div>
+            <div className="text-xs text-muted-foreground">
+              θ = {theta !== undefined ? theta.toFixed(2) : '—'}
+            </div>
+          </div>
+          <div className="max-h-72 overflow-y-auto">
+            <table className="w-full text-xs">
+              <thead className="bg-muted/50 sticky top-0">
+                <tr className="text-left">
+                  <th className="px-3 py-2 font-medium">#</th>
+                  <th className="px-3 py-2 font-medium">Savol</th>
+                  <th className="px-3 py-2 font-medium text-right">δ</th>
+                  <th className="px-3 py-2 font-medium text-right">P</th>
+                  <th className="px-3 py-2 font-medium text-center">Natija</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...filteredStats]
+                  .sort((a, b) => (questions[a.question_id]?.order_index ?? 0) - (questions[b.question_id]?.order_index ?? 0))
+                  .map((q, i) => {
+                    const delta = deltaFor(q.question_id);
+                    const p = probFor(q.question_id);
+                    const bucket = p !== null ? probabilityBucket(p) : null;
+                    const pClass =
+                      bucket === 'high' ? 'text-success'
+                      : bucket === 'mid' ? 'text-warning'
+                      : bucket === 'low' ? 'text-destructive'
+                      : 'text-muted-foreground';
+                    const text = questions[q.question_id]?.question_text_uz || `Savol ${i + 1}`;
+                    return (
+                      <tr key={q.question_id} className="border-t">
+                        <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                        <td className="px-3 py-2 max-w-[260px] truncate" title={text}>{text}</td>
+                        <td className="px-3 py-2 text-right tabular-nums">
+                          {delta !== null ? delta.toFixed(2) : '—'}
+                        </td>
+                        <td className={`px-3 py-2 text-right tabular-nums font-semibold ${pClass}`}>
+                          {p !== null ? formatProbability(p, 0) : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          {q.is_correct === true ? (
+                            <Badge variant="outline" className="bg-success/10 text-success border-success/40">✓</Badge>
+                          ) : q.is_correct === false ? (
+                            <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/40">✕</Badge>
+                          ) : (
+                            <Badge variant="outline">~</Badge>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-3 py-2 border-t text-[11px] text-muted-foreground">
+            δ — savol qiyinchiligi (logit), P — to'g'ri javob berish ehtimolligi. δ qancha katta bo'lsa, savol shuncha qiyin.
           </div>
         </div>
 
