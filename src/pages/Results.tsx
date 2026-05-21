@@ -334,7 +334,7 @@ function ResultsContent() {
                 <AIAnalysis attemptId={attemptId!} />
               </div>
               <div className="mb-8">
-                <QuestionStatsList attemptId={attemptId!} />
+                <QuestionStatsList attemptId={attemptId!} theta={raschData?.theta} />
               </div>
               <div className="mb-8">
                 <PracticeQuestionsCard ref={practiceRef} attemptId={attemptId!} participantId={attempt.participant_id} />
