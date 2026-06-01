@@ -18,6 +18,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Forbidden from "./pages/Forbidden";
 import Pricing from "./pages/Pricing";
+import Wallet from "./pages/Wallet";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,11 @@ const App = () => (
               <Route path="/results/:attemptId" element={<Results />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/wallet" element={
+                <ProtectedRoute>
+                  <Wallet />
+                </ProtectedRoute>
+              } />
               <Route path="/403" element={<Forbidden />} />
               <Route path="/urecheater" element={
                 <ProtectedRoute requireAdmin>
