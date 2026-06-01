@@ -702,11 +702,146 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          metadata: Json
+          paid_at: string | null
+          provider: Database["public"]["Enums"]["wallet_provider"]
+          provider_txn_id: string | null
+          status: Database["public"]["Enums"]["wallet_txn_status"]
+          type: Database["public"]["Enums"]["wallet_txn_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json
+          paid_at?: string | null
+          provider: Database["public"]["Enums"]["wallet_provider"]
+          provider_txn_id?: string | null
+          status?: Database["public"]["Enums"]["wallet_txn_status"]
+          type?: Database["public"]["Enums"]["wallet_txn_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json
+          paid_at?: string | null
+          provider?: Database["public"]["Enums"]["wallet_provider"]
+          provider_txn_id?: string | null
+          status?: Database["public"]["Enums"]["wallet_txn_status"]
+          type?: Database["public"]["Enums"]["wallet_txn_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      cancel_wallet_transaction: {
+        Args: { _reason?: string; _txn_id: string }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          metadata: Json
+          paid_at: string | null
+          provider: Database["public"]["Enums"]["wallet_provider"]
+          provider_txn_id: string | null
+          status: Database["public"]["Enums"]["wallet_txn_status"]
+          type: Database["public"]["Enums"]["wallet_txn_type"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      credit_wallet_for_transaction: {
+        Args: { _provider_txn_id?: string; _txn_id: string }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          metadata: Json
+          paid_at: string | null
+          provider: Database["public"]["Enums"]["wallet_provider"]
+          provider_txn_id: string | null
+          status: Database["public"]["Enums"]["wallet_txn_status"]
+          type: Database["public"]["Enums"]["wallet_txn_type"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_transactions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      ensure_wallet: {
+        Args: { _user_id: string }
+        Returns: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       generate_participant_id: { Args: never; Returns: string }
       generate_test_code: { Args: never; Returns: string }
       get_attempt_status: {
@@ -787,6 +922,14 @@ export type Database = {
       question_type: "single_choice" | "written"
       subscription_plan: "free" | "pro" | "premium"
       test_visibility: "public" | "private" | "paid"
+      wallet_provider: "payme" | "click" | "manual"
+      wallet_txn_status:
+        | "pending"
+        | "paid"
+        | "failed"
+        | "cancelled"
+        | "refunded"
+      wallet_txn_type: "topup" | "spend" | "refund" | "adjustment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -919,6 +1062,9 @@ export const Constants = {
       question_type: ["single_choice", "written"],
       subscription_plan: ["free", "pro", "premium"],
       test_visibility: ["public", "private", "paid"],
+      wallet_provider: ["payme", "click", "manual"],
+      wallet_txn_status: ["pending", "paid", "failed", "cancelled", "refunded"],
+      wallet_txn_type: ["topup", "spend", "refund", "adjustment"],
     },
   },
 } as const
