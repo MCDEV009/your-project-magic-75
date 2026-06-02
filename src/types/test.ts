@@ -5,7 +5,7 @@ export interface Test {
   title_en?: string;
   description_uz?: string;
   subject_id?: string;
-  visibility: 'public' | 'private';
+  visibility: 'public' | 'private' | 'paid';
   test_code?: string;
   duration_minutes: number;
   allow_retry: boolean;
