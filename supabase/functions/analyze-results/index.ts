@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { attempt_id, analysis_type } = await req.json();
+    const { attempt_id, analysis_type, participant_id } = await req.json();
     
     if (!attempt_id && analysis_type !== 'dashboard') {
       return new Response(JSON.stringify({ error: "attempt_id is required" }), {
@@ -166,6 +166,36 @@ serve(async (req) => {
     if (!attempt) {
       return new Response(JSON.stringify({ error: "Attempt not found" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Ownership check: caller must prove they own this attempt, OR be an admin
+    // via a verified JWT. Otherwise reject.
+    let authorized = false;
+    if (participant_id && attempt.participant_id === participant_id) {
+      authorized = true;
+    } else {
+      const authHeader = req.headers.get("Authorization");
+      if (authHeader?.startsWith("Bearer ")) {
+        try {
+          const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+            global: { headers: { Authorization: authHeader } },
+          });
+          const { data } = await userClient.auth.getUser();
+          if (data?.user?.id) {
+            const { data: roleRow } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", data.user.id)
+              .in("role", ["admin", "super_admin"]);
+            if ((roleRow?.length ?? 0) > 0) authorized = true;
+          }
+        } catch { /* fall through */ }
+      }
+    }
+    if (!authorized) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

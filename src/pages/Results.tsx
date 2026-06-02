@@ -331,7 +331,7 @@ function ResultsContent() {
           {attempt.evaluation_status === 'completed' && (
             <>
               <div className="mb-8">
-                <AIAnalysis attemptId={attemptId!} />
+                <AIAnalysis attemptId={attemptId!} participantId={attempt.participant_id} />
               </div>
               <div className="mb-8">
                 <QuestionStatsList attemptId={attemptId!} theta={raschData?.theta} />

@@ -270,6 +270,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "question_analytics_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "questions_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "question_analytics_test_id_fkey"
             columns: ["test_id"]
             isOneToOne: false
@@ -776,7 +783,77 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      questions_public: {
+        Row: {
+          condition_a_ru: string | null
+          condition_a_uz: string | null
+          condition_b_ru: string | null
+          condition_b_uz: string | null
+          created_at: string | null
+          id: string | null
+          image_url: string | null
+          max_points: number | null
+          options: Json | null
+          order_index: number | null
+          points: number | null
+          points_a: number | null
+          points_b: number | null
+          question_text_en: string | null
+          question_text_ru: string | null
+          question_text_uz: string | null
+          question_type: Database["public"]["Enums"]["question_type"] | null
+          test_id: string | null
+        }
+        Insert: {
+          condition_a_ru?: string | null
+          condition_a_uz?: string | null
+          condition_b_ru?: string | null
+          condition_b_uz?: string | null
+          created_at?: string | null
+          id?: string | null
+          image_url?: string | null
+          max_points?: number | null
+          options?: Json | null
+          order_index?: number | null
+          points?: number | null
+          points_a?: number | null
+          points_b?: number | null
+          question_text_en?: string | null
+          question_text_ru?: string | null
+          question_text_uz?: string | null
+          question_type?: Database["public"]["Enums"]["question_type"] | null
+          test_id?: string | null
+        }
+        Update: {
+          condition_a_ru?: string | null
+          condition_a_uz?: string | null
+          condition_b_ru?: string | null
+          condition_b_uz?: string | null
+          created_at?: string | null
+          id?: string | null
+          image_url?: string | null
+          max_points?: number | null
+          options?: Json | null
+          order_index?: number | null
+          points?: number | null
+          points_a?: number | null
+          points_b?: number | null
+          question_text_en?: string | null
+          question_text_ru?: string | null
+          question_text_uz?: string | null
+          question_type?: Database["public"]["Enums"]["question_type"] | null
+          test_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       cancel_wallet_transaction: {
@@ -914,6 +991,38 @@ export type Database = {
       is_known_participant: {
         Args: { _participant_id: string }
         Returns: boolean
+      }
+      update_test_attempt: {
+        Args: {
+          _answers: Json
+          _attempt_id: string
+          _finish?: boolean
+          _participant_id: string
+          _written_answers: Json
+        }
+        Returns: {
+          ai_evaluation: Json | null
+          answers: Json
+          correct_answers: number | null
+          evaluation_status: string | null
+          finished_at: string | null
+          id: string
+          mcq_score: number | null
+          participant_id: string
+          score: number | null
+          started_at: string
+          status: Database["public"]["Enums"]["attempt_status"]
+          test_id: string
+          total_questions: number | null
+          written_answers: Json | null
+          written_score: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "test_attempts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {

@@ -169,14 +169,15 @@ function TestInterfaceContent() {
   // Auto-save every 5 seconds
   useEffect(() => {
     autoSaveRef.current = setInterval(() => {
-      if (attemptId && (Object.keys(mcqAnswers).length > 0 || Object.keys(writtenAnswers).length > 0)) {
-        supabase
-          .from('test_attempts')
-          .update({ 
-            answers: mcqAnswers as any,
-            written_answers: writtenAnswers as any
+      if (attemptId && participantId && (Object.keys(mcqAnswers).length > 0 || Object.keys(writtenAnswers).length > 0)) {
+        (supabase as any)
+          .rpc('update_test_attempt', {
+            _attempt_id: attemptId,
+            _participant_id: participantId,
+            _answers: mcqAnswers,
+            _written_answers: writtenAnswers,
+            _finish: false,
           })
-          .eq('id', attemptId)
           .then(() => {});
       }
     }, 5000);
@@ -241,16 +242,13 @@ function TestInterfaceContent() {
     setSubmitting(true);
     
     try {
-      const { error: updateError } = await supabase
-        .from('test_attempts')
-        .update({
-          status: 'finished',
-          finished_at: new Date().toISOString(),
-          answers: mcqAnswers as any,
-          written_answers: writtenAnswers as any,
-          evaluation_status: 'pending'
-        })
-        .eq('id', attemptId);
+      const { error: updateError } = await (supabase as any).rpc('update_test_attempt', {
+        _attempt_id: attemptId,
+        _participant_id: participantId,
+        _answers: mcqAnswers,
+        _written_answers: writtenAnswers,
+        _finish: true,
+      });
       
       if (updateError) {
         console.error('Failed to finish attempt:', updateError);
@@ -267,7 +265,7 @@ function TestInterfaceContent() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
           },
-          body: JSON.stringify({ attempt_id: attemptId })
+          body: JSON.stringify({ attempt_id: attemptId, participant_id: participantId })
         });
       } catch (err) {
         console.error('Evaluation trigger error:', err);

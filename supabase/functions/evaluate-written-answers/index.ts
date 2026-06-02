@@ -119,9 +119,9 @@ serve(async (req) => {
   }
 
   try {
-    const { attempt_id } = await req.json();
+    const { attempt_id, participant_id } = await req.json();
     
-    if (!attempt_id) {
+    if (!attempt_id || !participant_id) {
       return new Response(
         JSON.stringify({ error: "Bad request" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -158,6 +158,14 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Ownership check
+    if (attempt.participant_id !== participant_id) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
