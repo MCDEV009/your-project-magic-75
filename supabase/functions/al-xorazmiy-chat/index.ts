@@ -19,10 +19,22 @@ Deno.serve(async (req) => {
   try {
     const { attempt_id, messages, mode, participant_id, practice_kind } = await req.json();
 
-    if (!attempt_id || !Array.isArray(messages)) {
+    if (!attempt_id || !Array.isArray(messages) || !participant_id) {
       return new Response(
-        JSON.stringify({ error: "attempt_id va messages talab qilinadi" }),
+        JSON.stringify({ error: "attempt_id, participant_id va messages talab qilinadi" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Cap total message length to mitigate prompt-injection / credit abuse
+    const totalLen = messages.reduce(
+      (n: number, m: any) => n + (typeof m?.content === "string" ? m.content.length : 0),
+      0,
+    );
+    if (totalLen > 8000) {
+      return new Response(
+        JSON.stringify({ error: "Xabarlar juda uzun" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -46,7 +58,14 @@ Deno.serve(async (req) => {
       .eq("id", attempt_id)
       .maybeSingle();
 
-    const effectiveParticipantId = participant_id || attempt?.participant_id;
+    // Ownership check: participant must own this attempt
+    if (!attempt || attempt.participant_id !== participant_id) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const effectiveParticipantId = participant_id;
 
     const { data: analyses } = await supabase
       .from("question_analyses")
