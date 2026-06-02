@@ -169,14 +169,15 @@ function TestInterfaceContent() {
   // Auto-save every 5 seconds
   useEffect(() => {
     autoSaveRef.current = setInterval(() => {
-      if (attemptId && (Object.keys(mcqAnswers).length > 0 || Object.keys(writtenAnswers).length > 0)) {
-        supabase
-          .from('test_attempts')
-          .update({ 
-            answers: mcqAnswers as any,
-            written_answers: writtenAnswers as any
+      if (attemptId && participantId && (Object.keys(mcqAnswers).length > 0 || Object.keys(writtenAnswers).length > 0)) {
+        (supabase as any)
+          .rpc('update_test_attempt', {
+            _attempt_id: attemptId,
+            _participant_id: participantId,
+            _answers: mcqAnswers,
+            _written_answers: writtenAnswers,
+            _finish: false,
           })
-          .eq('id', attemptId)
           .then(() => {});
       }
     }, 5000);
