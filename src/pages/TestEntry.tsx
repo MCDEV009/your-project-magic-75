@@ -15,6 +15,15 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { UpgradeModal } from '@/components/UpgradeModal';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Wallet as WalletIcon, Coins, Loader2 } from 'lucide-react';
 
 function generateParticipantId(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -42,6 +51,12 @@ function TestEntryContent() {
   const [questionCount, setQuestionCount] = useState(0);
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [priceUzs, setPriceUzs] = useState<number | null>(null);
+  const [isFreePricing, setIsFreePricing] = useState(false);
+  const [purchased, setPurchased] = useState(false);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     async function fetchTest() {
@@ -64,12 +79,42 @@ function TestEntryContent() {
           .rpc('get_public_questions', { p_test_id: data.id });
         const count = qData?.length || 0;
         setQuestionCount(count || 0);
+
+        // Pricing
+        const { data: pricing } = await supabase
+          .from('test_pricing')
+          .select('price_uzs, is_free')
+          .eq('test_id', data.id)
+          .maybeSingle();
+        if (pricing) {
+          setPriceUzs(Number(pricing.price_uzs));
+          setIsFreePricing(!!pricing.is_free);
+        }
       }
       setLoading(false);
     }
 
     fetchTest();
   }, [testId]);
+
+  // Load wallet + purchase status when user/test known
+  useEffect(() => {
+    async function loadPaymentState() {
+      if (!user || !test) return;
+      const [{ data: wallet }, { data: purchase }] = await Promise.all([
+        supabase.from('wallets').select('balance').eq('user_id', user.id).maybeSingle(),
+        supabase
+          .from('test_purchases')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('test_id', test.id)
+          .maybeSingle(),
+      ]);
+      setWalletBalance(wallet ? Number(wallet.balance) : 0);
+      setPurchased(!!purchase);
+    }
+    loadPaymentState();
+  }, [user?.id, test?.id]);
 
   // Update clock every second for countdown
   useEffect(() => {
@@ -110,10 +155,14 @@ function TestEntryContent() {
       setShowUpgrade(true);
       return;
     }
-    // Paid test handling — coming soon
-    if ((test?.visibility as string) === 'paid' && plan !== 'premium') {
-      toast.info("Bu pulli test (10 000 so'm). To'lov tizimi tez orada — Premium tarif egalari bepul kira oladi.");
-      navigate('/pricing');
+    // Paid test handling — pay via wallet balance
+    if ((test?.visibility as string) === 'paid' && !isFreePricing && plan !== 'premium' && !purchased) {
+      if (!user) {
+        toast.info('Pullik testga kirish uchun tizimga kiring.');
+        navigate('/auth');
+        return;
+      }
+      setShowPayModal(true);
       return;
     }
     if (isRegistrationClosed && isTestNotStarted) {
@@ -126,6 +175,39 @@ function TestEntryContent() {
       return;
     }
     setShowRulesModal(true);
+  };
+
+  const effectivePrice = priceUzs ?? 10000;
+  const formatPrice = (n: number) => new Intl.NumberFormat('uz-UZ').format(n) + " so'm";
+
+  const handlePayWithWallet = async () => {
+    if (!test) return;
+    setPaying(true);
+    try {
+      const { data, error } = await supabase.rpc('purchase_test_with_wallet', { _test_id: test.id });
+      if (error) {
+        if (error.message?.includes('insufficient_balance')) {
+          toast.error("Balansda mablag' yetarli emas. Iltimos, balansni to'ldiring.");
+          setShowPayModal(false);
+          navigate('/wallet');
+          return;
+        }
+        throw error;
+      }
+      setPurchased(true);
+      // refresh wallet
+      const { data: wallet } = await supabase
+        .from('wallets').select('balance').eq('user_id', user!.id).maybeSingle();
+      setWalletBalance(wallet ? Number(wallet.balance) : 0);
+      toast.success("To'lov muvaffaqiyatli amalga oshirildi!");
+      setShowPayModal(false);
+      setShowRulesModal(true);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || t('error'));
+    } finally {
+      setPaying(false);
+    }
   };
 
   const handleStartTest = async () => {
@@ -328,6 +410,52 @@ function TestEntryContent() {
         onOpenChange={setShowUpgrade}
         reason={`Free tarifda oyiga 5 ta mock test mumkin. Joriy oy uchun limit tugadi (qoldi: ${Math.max(0, remaining.mocks)}).`}
       />
+
+      <Dialog open={showPayModal} onOpenChange={setShowPayModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Coins className="h-5 w-5 text-amber-500" />
+              Pullik testga kirish
+            </DialogTitle>
+            <DialogDescription>
+              Bu test pullik. Balansdan to'lov yechib olinadi va testga kirish ochiladi.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="flex justify-between items-center p-3 rounded-lg bg-muted">
+              <span className="text-sm text-muted-foreground">Test narxi</span>
+              <span className="font-semibold">{formatPrice(effectivePrice)}</span>
+            </div>
+            <div className="flex justify-between items-center p-3 rounded-lg border">
+              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                <WalletIcon className="h-4 w-4" /> Balans
+              </span>
+              <span className={`font-semibold ${walletBalance < effectivePrice ? 'text-destructive' : ''}`}>
+                {formatPrice(walletBalance)}
+              </span>
+            </div>
+            {walletBalance < effectivePrice && (
+              <p className="text-xs text-destructive">
+                Balansda mablag' yetarli emas. Iltimos, avval balansni to'ldiring.
+              </p>
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => { setShowPayModal(false); navigate('/wallet'); }}>
+              Balansni to'ldirish
+            </Button>
+            <Button
+              onClick={handlePayWithWallet}
+              disabled={paying || walletBalance < effectivePrice}
+              className="gradient-primary border-0"
+            >
+              {paying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              To'lash va boshlash
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
