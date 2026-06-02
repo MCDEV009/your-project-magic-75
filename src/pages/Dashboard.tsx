@@ -52,18 +52,19 @@ function DashboardContent() {
     if (!user) return;
 
     async function fetchAttempts() {
-      // First get participant IDs for this user's email
+      // Get participant IDs linked to this user (by user_id, or legacy by full_name)
+      const legacyName = user!.user_metadata?.full_name || user!.email || '';
       const { data: participants } = await supabase
         .from('test_participants')
         .select('participant_id')
-        .eq('full_name', user!.user_metadata?.full_name || user!.email || '');
+        .or(`user_id.eq.${user!.id},full_name.eq.${legacyName}`);
 
       if (!participants?.length) {
         setLoading(false);
         return;
       }
 
-      const participantIds = participants.map(p => p.participant_id);
+      const participantIds = Array.from(new Set(participants.map(p => p.participant_id)));
 
       const { data, error } = await supabase
         .from('test_attempts')

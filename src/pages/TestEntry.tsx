@@ -221,7 +221,8 @@ function TestEntryContent() {
         .from('test_participants')
         .insert({
           participant_id: participantId,
-          full_name: fullName.trim()
+          full_name: fullName.trim(),
+          user_id: user?.id ?? null,
         });
       
       if (participantError) throw participantError;
