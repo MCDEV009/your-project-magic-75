@@ -557,6 +557,33 @@ export type Database = {
         }
         Relationships: []
       }
+      test_purchases: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          test_id: string
+          txn_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          test_id: string
+          txn_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          test_id?: string
+          txn_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       tests: {
         Row: {
           allow_retry: boolean
@@ -992,6 +1019,23 @@ export type Database = {
         Args: { _participant_id: string }
         Returns: boolean
       }
+      purchase_test_with_wallet: {
+        Args: { _test_id: string }
+        Returns: {
+          amount: number
+          created_at: string
+          id: string
+          test_id: string
+          txn_id: string | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "test_purchases"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_test_attempt: {
         Args: {
           _answers: Json
@@ -1023,6 +1067,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      user_has_purchased_test: {
+        Args: { _test_id: string; _user_id: string }
+        Returns: boolean
       }
     }
     Enums: {
