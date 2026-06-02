@@ -18,11 +18,12 @@ interface Analysis {
 
 interface AIAnalysisProps {
   attemptId: string;
+  participantId?: string;
 }
 
 const AI_NAME = "Al Xorazmiy";
 
-export function AIAnalysis({ attemptId }: AIAnalysisProps) {
+export function AIAnalysis({ attemptId, participantId }: AIAnalysisProps) {
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [autoTried, setAutoTried] = useState(false);
@@ -31,7 +32,7 @@ export function AIAnalysis({ attemptId }: AIAnalysisProps) {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('analyze-results', {
-        body: { attempt_id: attemptId, analysis_type: 'individual' },
+        body: { attempt_id: attemptId, analysis_type: 'individual', participant_id: participantId },
       });
 
       if (error) throw error;
