@@ -3,7 +3,7 @@
  import { LanguageSelector } from '@/components/ui/LanguageSelector';
  import { ThemeToggle } from '@/components/ui/ThemeToggle';
  import { Button } from '@/components/ui/button';
-import { GraduationCap, LogIn, LogOut, User, LayoutDashboard, Sparkles } from 'lucide-react';
+import { GraduationCap, LogIn, LogOut, User, LayoutDashboard, Sparkles, Wallet as WalletIcon } from 'lucide-react';
  import { useAuth } from '@/hooks/useAuth';
 
 export function Header() {
@@ -55,6 +55,18 @@ export function Header() {
               >
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="hidden sm:inline text-sm">Kabinet</span>
+              </Button>
+            )}
+            {user && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/wallet')}
+                className="sm:gap-2 sm:w-auto sm:px-3"
+                aria-label="Hamyon"
+              >
+                <WalletIcon className="h-4 w-4" />
+                <span className="hidden sm:inline text-sm">Hamyon</span>
               </Button>
             )}
             {user && (
