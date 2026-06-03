@@ -6,6 +6,21 @@
 
 /* Test Platform Design System - Professional Educational Aesthetic */
 
+/* KaTeX polish: keep inline math aligned with text, allow display math to scroll
+   on small screens, and tint colors to follow the design tokens. */
+@layer components {
+  .katex { font-size: 1.02em; color: hsl(var(--foreground)); }
+  .katex-display {
+    margin: 0.5rem 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    background: hsl(var(--muted) / 0.5);
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .katex-display > .katex { display: inline-block; white-space: nowrap; }
+}
+
 @layer base {
   :root {
     --background: 210 20% 98%;
