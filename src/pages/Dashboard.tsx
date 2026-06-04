@@ -79,6 +79,10 @@ function DashboardContent() {
     if (!user) return;
 
     async function fetchAttempts() {
+      // Backfill: link any legacy participants (anonymous attempts created before signup)
+      // to this auth user so their attempts/tests become visible via RLS.
+      try { await (supabase as any).rpc('link_my_participants'); } catch {}
+
       // Resolve participant IDs via two robust queries (avoid .or() parsing edge cases)
       const legacyName = user!.user_metadata?.full_name || user!.email || '';
       const [byId, byName] = await Promise.all([
