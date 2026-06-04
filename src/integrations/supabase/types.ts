@@ -1022,6 +1022,7 @@ export type Database = {
         Args: { _participant_id: string }
         Returns: boolean
       }
+      link_my_participants: { Args: never; Returns: number }
       log_admin_audit: {
         Args: {
           _granted: boolean
