@@ -68,7 +68,7 @@ export function QuestionStatsList({ attemptId, theta }: Props) {
       if (list.length > 0) {
         const ids = list.map(s => s.question_id);
         const { data: qs } = await supabase
-          .from('questions')
+          .from('questions_public' as any)
           .select('id, question_text_uz, order_index')
           .in('id', ids);
         const map: Record<string, QuestionRow> = {};
