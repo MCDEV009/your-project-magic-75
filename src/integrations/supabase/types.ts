@@ -826,8 +826,6 @@ export type Database = {
           options: Json | null
           order_index: number | null
           points: number | null
-          points_a: number | null
-          points_b: number | null
           question_text_en: string | null
           question_text_ru: string | null
           question_text_uz: string | null
@@ -846,8 +844,6 @@ export type Database = {
           options?: Json | null
           order_index?: number | null
           points?: number | null
-          points_a?: number | null
-          points_b?: number | null
           question_text_en?: string | null
           question_text_ru?: string | null
           question_text_uz?: string | null
@@ -866,8 +862,6 @@ export type Database = {
           options?: Json | null
           order_index?: number | null
           points?: number | null
-          points_a?: number | null
-          points_b?: number | null
           question_text_en?: string | null
           question_text_ru?: string | null
           question_text_uz?: string | null
