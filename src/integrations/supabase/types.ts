@@ -1022,6 +1022,15 @@ export type Database = {
         Args: { _participant_id: string }
         Returns: boolean
       }
+      log_admin_audit: {
+        Args: {
+          _granted: boolean
+          _required_roles: string[]
+          _route: string
+          _user_agent?: string
+        }
+        Returns: undefined
+      }
       purchase_test_with_wallet: {
         Args: { _test_id: string }
         Returns: {
