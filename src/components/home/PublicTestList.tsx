@@ -48,8 +48,8 @@ export function PublicTestList() {
         const testsWithCounts = await Promise.all(
           data.map(async (test) => {
             const { count } = await supabase
-              .from('questions')
-              .select('*', { count: 'exact', head: true })
+              .from('questions_public' as any)
+              .select('id', { count: 'exact', head: true })
               .eq('test_id', test.id);
             const pricing = Array.isArray((test as any).test_pricing)
               ? (test as any).test_pricing[0]

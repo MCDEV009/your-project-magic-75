@@ -166,7 +166,7 @@ function ResultsContent() {
       const qTextMap: Record<string, { text: string; order: number }> = {};
       if (qIds.length > 0) {
         const { data: qs } = await supabase
-          .from('questions')
+          .from('questions_public' as any)
           .select('id, question_text_uz, order_index')
           .in('id', qIds);
         (qs || []).forEach((q: any) => {
