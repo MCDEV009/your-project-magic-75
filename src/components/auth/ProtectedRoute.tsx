@@ -15,13 +15,11 @@ interface ProtectedRouteProps {
 
 async function logAudit(opts: { userId: string | null; userEmail: string | null; route: string; required: string[]; granted: boolean; }) {
   try {
-    await (supabase.from('admin_audit_log') as any).insert({
-      user_id: opts.userId,
-      user_email: opts.userEmail,
-      route: opts.route,
-      required_roles: opts.required,
-      granted: opts.granted,
-      user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 500) : null,
+    await (supabase as any).rpc('log_admin_audit', {
+      _route: opts.route,
+      _required_roles: opts.required,
+      _granted: opts.granted,
+      _user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 500) : null,
     });
   } catch { /* swallow */ }
 }
