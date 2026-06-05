@@ -237,7 +237,7 @@ export function QuestionStatsList({ attemptId, theta }: Props) {
         {/* Rasch probability table */}
         <div className="rounded-lg border bg-card">
           <div className="px-3 py-2 border-b flex items-center justify-between">
-            <div className="text-sm font-medium">Rasch ehtimolligi (P = 1 / (1 + e^-(θ-δ)))</div>
+            <div className="text-sm font-medium">Rasch foizli ballash (kam yechgan → ko'p ball)</div>
             <div className="text-xs text-muted-foreground">
               θ = {theta !== undefined ? theta.toFixed(2) : '—'}
             </div>
@@ -248,8 +248,9 @@ export function QuestionStatsList({ attemptId, theta }: Props) {
                 <tr className="text-left">
                   <th className="px-3 py-2 font-medium">#</th>
                   <th className="px-3 py-2 font-medium">Savol</th>
-                  <th className="px-3 py-2 font-medium text-right">δ</th>
-                  <th className="px-3 py-2 font-medium text-right">P</th>
+                  <th className="px-3 py-2 font-medium text-right" title="To'g'ri javob ulushi (Bayes-yumshatilgan)">p</th>
+                  <th className="px-3 py-2 font-medium text-right" title="Maksimal ball">max</th>
+                  <th className="px-3 py-2 font-medium text-right" title="Olingan Rasch ball = max × (1 − p)">Ball</th>
                   <th className="px-3 py-2 font-medium text-center">Natija</th>
                 </tr>
               </thead>
@@ -257,9 +258,12 @@ export function QuestionStatsList({ attemptId, theta }: Props) {
                 {[...filteredStats]
                   .sort((a, b) => (questions[a.question_id]?.order_index ?? 0) - (questions[b.question_id]?.order_index ?? 0))
                   .map((q, i) => {
-                    const delta = deltaFor(q.question_id);
-                    const p = probFor(q.question_id);
-                    const bucket = p !== null ? probabilityBucket(p) : null;
+                    const pStored = q.p_correct ?? null;
+                    const raschPts = q.rasch_points ?? (q.is_correct ? Number(q.points_earned || 0) : 0);
+                    // bucket: low p (qiyin) → ko'p ball → success rang
+                    const bucket = pStored !== null
+                      ? (pStored < 0.4 ? 'high' : pStored < 0.7 ? 'mid' : 'low')
+                      : null;
                     const pClass =
                       bucket === 'high' ? 'text-success'
                       : bucket === 'mid' ? 'text-warning'
@@ -269,12 +273,15 @@ export function QuestionStatsList({ attemptId, theta }: Props) {
                     return (
                       <tr key={q.question_id} className="border-t">
                         <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
-                        <td className="px-3 py-2 max-w-[260px] truncate" title={text}>{text}</td>
-                        <td className="px-3 py-2 text-right tabular-nums">
-                          {delta !== null ? delta.toFixed(2) : '—'}
+                        <td className="px-3 py-2 max-w-[240px] truncate" title={text}>{text}</td>
+                        <td className={`px-3 py-2 text-right tabular-nums ${pClass}`}>
+                          {pStored !== null ? `${(pStored * 100).toFixed(0)}%` : '—'}
                         </td>
-                        <td className={`px-3 py-2 text-right tabular-nums font-semibold ${pClass}`}>
-                          {p !== null ? formatProbability(p, 0) : '—'}
+                        <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
+                          {Number(q.max_points || 0).toFixed(1)}
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums font-semibold">
+                          {raschPts > 0 ? `+${raschPts.toFixed(2)}` : '0.00'}
                         </td>
                         <td className="px-3 py-2 text-center">
                           {q.is_correct === true ? (
@@ -291,8 +298,9 @@ export function QuestionStatsList({ attemptId, theta }: Props) {
               </tbody>
             </table>
           </div>
-          <div className="px-3 py-2 border-t text-[11px] text-muted-foreground">
-            δ — savol qiyinchiligi (logit), P — to'g'ri javob berish ehtimolligi. δ qancha katta bo'lsa, savol shuncha qiyin.
+          <div className="px-3 py-2 border-t text-[11px] text-muted-foreground space-y-1">
+            <div><b>Formula:</b> Ball = max × (1 − p). Kam odam yechgan savol (p past) → ko'proq ball.</div>
+            <div><b>Yangi savollar:</b> Bayes yumshatish (prior 50%, kuch 4) → p = (to'g'ri+2)/(jami+4), [5%…95%] gacha cheklangan.</div>
           </div>
         </div>
 
