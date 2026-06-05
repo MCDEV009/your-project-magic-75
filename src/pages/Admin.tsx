@@ -119,7 +119,8 @@ function AdminContent() {
     randomize_options: true,
     negative_marking: false,
     test_format: 'standard' as 'standard' | 'milliy_sertifikat',
-    scheduled_start: ''
+    scheduled_start: '',
+    is_sunday_free: false,
   });
   
   // Questions state
@@ -268,7 +269,8 @@ function AdminContent() {
         randomize_options: true,
         negative_marking: false,
         test_format: 'standard',
-        scheduled_start: ''
+        scheduled_start: '',
+        is_sunday_free: false,
       });
       // Refresh tests
       window.location.reload();
@@ -766,6 +768,16 @@ function AdminContent() {
                           <Switch
                             checked={testForm.negative_marking}
                             onCheckedChange={(checked) => setTestForm({ ...testForm, negative_marking: checked })}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label>Yakshanba kuni bepul</Label>
+                            <p className="text-xs text-muted-foreground">Har yakshanba bu test bepul ochiladi</p>
+                          </div>
+                          <Switch
+                            checked={testForm.is_sunday_free}
+                            onCheckedChange={(checked) => setTestForm({ ...testForm, is_sunday_free: checked })}
                           />
                         </div>
                       </div>
