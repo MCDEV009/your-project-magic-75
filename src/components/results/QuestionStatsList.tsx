@@ -25,6 +25,8 @@ interface QStat {
   is_correct: boolean | null;
   points_earned: number;
   max_points: number;
+  rasch_points?: number | null;
+  p_correct?: number | null;
 }
 
 interface QuestionRow {
@@ -60,7 +62,7 @@ export function QuestionStatsList({ attemptId, theta }: Props) {
     (async () => {
       const { data: statsData } = await supabase
         .from('question_analyses')
-        .select('question_id, question_type, is_correct, points_earned, max_points')
+        .select('question_id, question_type, is_correct, points_earned, max_points, rasch_points, p_correct')
         .eq('attempt_id', attemptId);
       const list = (statsData as QStat[]) || [];
       setStats(list);
