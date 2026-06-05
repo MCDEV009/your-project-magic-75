@@ -36,7 +36,9 @@ export function TestCard({ test, questionCount = 0, priceUzs, isFree, purchased 
     language === 'en' && test.subjects.name_en ? test.subjects.name_en : test.subjects.name_uz
   ) : null;
 
-  const isPaid = (test.visibility as string) === 'paid' && !isFree;
+  const isSundayFree = !!(test as any).is_sunday_free
+    && new Date().toLocaleString('en-US', { weekday: 'short', timeZone: 'Asia/Tashkent' }) === 'Sun';
+  const isPaid = (test.visibility as string) === 'paid' && !isFree && !isSundayFree;
   const displayPrice = priceUzs ?? 10000;
   const formatPrice = (n: number) => new Intl.NumberFormat('uz-UZ').format(n) + " so'm";
 
@@ -48,6 +50,11 @@ export function TestCard({ test, questionCount = 0, priceUzs, isFree, purchased 
           {subjectName && (
             <Badge variant="secondary" className="w-fit">
               {subjectName}
+            </Badge>
+          )}
+          {isSundayFree && (
+            <Badge className="w-fit gap-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+              Yakshanba bepul
             </Badge>
           )}
           {isPaid && !purchased && (
