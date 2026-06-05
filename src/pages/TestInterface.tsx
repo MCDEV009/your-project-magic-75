@@ -536,6 +536,34 @@ function TestInterfaceContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Majburiy fullscreen prompt */}
+      <AlertDialog open={showFsPrompt} onOpenChange={() => {}}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>To'liq ekran rejimi talab qilinadi</AlertDialogTitle>
+            <AlertDialogDescription>
+              Test imtihon rejimida ishlaydi. Davom etish uchun to'liq ekranga o'ting.
+              Ekrandan chiqsangiz, qayta ko'rsatiladi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={async () => {
+                try {
+                  await document.documentElement.requestFullscreen();
+                  setIsFullscreen(true);
+                  setShowFsPrompt(false);
+                } catch {
+                  toast.error("Brauzer to'liq ekranga ruxsat bermadi");
+                }
+              }}
+            >
+              <Maximize className="h-4 w-4 mr-2" /> To'liq ekranga o'tish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
