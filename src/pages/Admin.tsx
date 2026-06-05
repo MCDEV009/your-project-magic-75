@@ -598,6 +598,8 @@ function AdminContent() {
                   )}
                 </CardContent>
               </Card>
+
+              <RaschMiniAnalytics />
             </div>
           )}
 
