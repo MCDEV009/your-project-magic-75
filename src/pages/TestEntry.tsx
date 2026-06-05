@@ -155,8 +155,11 @@ function TestEntryContent() {
       setShowUpgrade(true);
       return;
     }
+    // Sunday free bypass (Asia/Tashkent)
+    const isSundayFreeNow = !!(test as any)?.is_sunday_free
+      && new Date().toLocaleString('en-US', { weekday: 'short', timeZone: 'Asia/Tashkent' }) === 'Sun';
     // Paid test handling — pay via wallet balance
-    if ((test?.visibility as string) === 'paid' && !isFreePricing && plan !== 'premium' && !purchased) {
+    if ((test?.visibility as string) === 'paid' && !isFreePricing && plan !== 'premium' && !purchased && !isSundayFreeNow) {
       if (!user) {
         toast.info('Pullik testga kirish uchun tizimga kiring.');
         navigate('/auth');

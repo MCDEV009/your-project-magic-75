@@ -603,6 +603,7 @@ export type Database = {
           description_uz: string | null
           duration_minutes: number
           id: string
+          is_sunday_free: boolean
           negative_marking: boolean
           randomize_options: boolean
           randomize_questions: boolean
@@ -623,6 +624,7 @@ export type Database = {
           description_uz?: string | null
           duration_minutes?: number
           id?: string
+          is_sunday_free?: boolean
           negative_marking?: boolean
           randomize_options?: boolean
           randomize_questions?: boolean
@@ -643,6 +645,7 @@ export type Database = {
           description_uz?: string | null
           duration_minutes?: number
           id?: string
+          is_sunday_free?: boolean
           negative_marking?: boolean
           randomize_options?: boolean
           randomize_questions?: boolean
