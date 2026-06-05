@@ -50,6 +50,7 @@ function TestInterfaceContent() {
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showFsPrompt, setShowFsPrompt] = useState(false);
   
   const autoSaveRef = useRef<NodeJS.Timeout | null>(null);
   const participantId = (location.state as { participantId?: string })?.participantId;
@@ -192,7 +193,7 @@ function TestInterfaceContent() {
   // Fullscreen handling
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
+      document.documentElement.requestFullscreen().catch(() => {});
       setIsFullscreen(true);
     } else {
       document.exitFullscreen();
@@ -202,11 +203,23 @@ function TestInterfaceContent() {
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const fs = !!document.fullscreenElement;
+      setIsFullscreen(fs);
+      // Test davom etayotgan bo'lsa va foydalanuvchi chiqib ketsa — prompt
+      if (!fs && !loading && !submitting) {
+        setShowFsPrompt(true);
+      }
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
+  }, [loading, submitting]);
+
+  // Test yuklanganda majburiy fullscreen so'rash
+  useEffect(() => {
+    if (!loading && !document.fullscreenElement) {
+      setShowFsPrompt(true);
+    }
+  }, [loading]);
 
   // Prevent page refresh
   useEffect(() => {
@@ -519,6 +532,34 @@ function TestInterfaceContent() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {t('finish')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Majburiy fullscreen prompt */}
+      <AlertDialog open={showFsPrompt} onOpenChange={() => {}}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>To'liq ekran rejimi talab qilinadi</AlertDialogTitle>
+            <AlertDialogDescription>
+              Test imtihon rejimida ishlaydi. Davom etish uchun to'liq ekranga o'ting.
+              Ekrandan chiqsangiz, qayta ko'rsatiladi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={async () => {
+                try {
+                  await document.documentElement.requestFullscreen();
+                  setIsFullscreen(true);
+                  setShowFsPrompt(false);
+                } catch {
+                  toast.error("Brauzer to'liq ekranga ruxsat bermadi");
+                }
+              }}
+            >
+              <Maximize className="h-4 w-4 mr-2" /> To'liq ekranga o'tish
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

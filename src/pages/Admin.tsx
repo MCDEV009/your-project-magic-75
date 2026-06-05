@@ -76,6 +76,7 @@ import { AIAnalyticsDashboard } from '@/components/admin/AIAnalyticsDashboard';
 import { QuestionAnalyticsTable } from '@/components/admin/QuestionAnalyticsTable';
 import { StudentRankingsTable } from '@/components/admin/StudentRankingsTable';
 import { AIAnalysisHistory } from '@/components/admin/AIAnalysisHistory';
+import { RaschMiniAnalytics } from '@/components/admin/RaschMiniAnalytics';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
 function AdminContent() {
@@ -598,6 +599,8 @@ function AdminContent() {
                   )}
                 </CardContent>
               </Card>
+
+              <RaschMiniAnalytics />
             </div>
           )}
 

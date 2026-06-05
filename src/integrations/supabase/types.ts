@@ -190,9 +190,11 @@ export type Database = {
           id: string
           is_correct: boolean | null
           max_points: number | null
+          p_correct: number | null
           points_earned: number | null
           question_id: string
           question_type: string
+          rasch_points: number | null
           user_answer: Json | null
         }
         Insert: {
@@ -202,9 +204,11 @@ export type Database = {
           id?: string
           is_correct?: boolean | null
           max_points?: number | null
+          p_correct?: number | null
           points_earned?: number | null
           question_id: string
           question_type: string
+          rasch_points?: number | null
           user_answer?: Json | null
         }
         Update: {
@@ -214,9 +218,11 @@ export type Database = {
           id?: string
           is_correct?: boolean | null
           max_points?: number | null
+          p_correct?: number | null
           points_earned?: number | null
           question_id?: string
           question_type?: string
+          rasch_points?: number | null
           user_answer?: Json | null
         }
         Relationships: []
@@ -445,6 +451,38 @@ export type Database = {
           name_uz?: string
         }
         Relationships: []
+      }
+      sunday_free_redemptions: {
+        Row: {
+          id: string
+          redeemed_at: string
+          test_id: string
+          user_id: string
+          weekday_tashkent: number
+        }
+        Insert: {
+          id?: string
+          redeemed_at?: string
+          test_id: string
+          user_id: string
+          weekday_tashkent: number
+        }
+        Update: {
+          id?: string
+          redeemed_at?: string
+          test_id?: string
+          user_id?: string
+          weekday_tashkent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sunday_free_redemptions_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       test_attempts: {
         Row: {
@@ -891,6 +929,18 @@ export type Database = {
       }
     }
     Functions: {
+      admin_test_stats: {
+        Args: never
+        Returns: {
+          attempts: number
+          avg_score: number
+          is_sunday_free: boolean
+          sunday_redemptions: number
+          test_id: string
+          title: string
+          unique_participants: number
+        }[]
+      }
       cancel_wallet_transaction: {
         Args: { _reason?: string; _txn_id: string }
         Returns: {
