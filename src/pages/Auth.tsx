@@ -201,20 +201,20 @@ function AuthContent() {
               
               <TabsContent value="login" className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email" className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    Email
+                  <Label htmlFor="login-id" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Email yoki Username
                   </Label>
                   <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="email@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={errors.email ? 'border-destructive' : ''}
+                    id="login-id"
+                    type="text"
+                    placeholder="email@example.com yoki username"
+                    value={loginId}
+                    onChange={(e) => setLoginId(e.target.value)}
+                    className={errors.loginId ? 'border-destructive' : ''}
                     onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                   />
-                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                  {errors.loginId && <p className="text-xs text-destructive">{errors.loginId}</p>}
                 </div>
                 
                 <div className="space-y-2">
@@ -258,7 +258,25 @@ function AuthContent() {
                     onChange={(e) => setFullName(e.target.value)}
                   />
                 </div>
-                
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-username" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Username
+                  </Label>
+                  <Input
+                    id="signup-username"
+                    type="text"
+                    placeholder="masalan: ali_99"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className={errors.username ? 'border-destructive' : ''}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                  />
+                  {errors.username && <p className="text-xs text-destructive">{errors.username}</p>}
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="signup-email" className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
