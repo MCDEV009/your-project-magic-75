@@ -79,8 +79,8 @@ function TestInterfaceContent() {
       
       setAttempt(attemptData as TestAttempt);
       // Restore: prefer locally cached answers if newer than DB (e.g. user closed before autosave)
-      let serverAnswers = (attemptData.answers || {}) as Record<string, number>;
-      let serverWritten = (attemptData.written_answers || {}) as Record<string, WrittenAnswer>;
+      let serverAnswers = ((attemptData.answers || {}) as unknown) as Record<string, number>;
+      let serverWritten = ((attemptData.written_answers || {}) as unknown) as Record<string, WrittenAnswer>;
       try {
         const cached = localStorage.getItem(`tia:progress:${attemptId}`);
         if (cached) {
