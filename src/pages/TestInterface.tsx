@@ -54,6 +54,7 @@ function TestInterfaceContent() {
   
   const autoSaveRef = useRef<NodeJS.Timeout | null>(null);
   const participantId = (location.state as { participantId?: string })?.participantId;
+  const progressKey = attemptId ? `tia:progress:${attemptId}` : '';
 
   // Fetch test data
   useEffect(() => {
@@ -77,8 +78,26 @@ function TestInterfaceContent() {
       }
       
       setAttempt(attemptData as TestAttempt);
-      setMcqAnswers((attemptData.answers || {}) as any);
-      setWrittenAnswers((attemptData.written_answers || {}) as any);
+      // Restore: prefer locally cached answers if newer than DB (e.g. user closed before autosave)
+      let serverAnswers = (attemptData.answers || {}) as Record<string, number>;
+      let serverWritten = (attemptData.written_answers || {}) as Record<string, WrittenAnswer>;
+      try {
+        const cached = localStorage.getItem(`tia:progress:${attemptId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed?.mcq && Object.keys(parsed.mcq).length >= Object.keys(serverAnswers).length) {
+            serverAnswers = { ...serverAnswers, ...parsed.mcq };
+          }
+          if (parsed?.written && Object.keys(parsed.written).length >= Object.keys(serverWritten).length) {
+            serverWritten = { ...serverWritten, ...parsed.written };
+          }
+          if (typeof parsed?.currentIndex === 'number') {
+            setCurrentIndex(parsed.currentIndex);
+          }
+        }
+      } catch {}
+      setMcqAnswers(serverAnswers as any);
+      setWrittenAnswers(serverWritten as any);
       
       // Get test
       const { data: testData } = await supabase
@@ -224,12 +243,54 @@ function TestInterfaceContent() {
   // Prevent page refresh
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Flush latest progress to localStorage and DB so user can resume
+      try {
+        if (progressKey) {
+          localStorage.setItem(progressKey, JSON.stringify({
+            mcq: mcqAnswers, written: writtenAnswers, currentIndex, ts: Date.now(),
+          }));
+        }
+      } catch {}
+      if (attemptId && participantId) {
+        try {
+          const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/update_test_attempt`;
+          const blob = new Blob([JSON.stringify({
+            _attempt_id: attemptId, _participant_id: participantId,
+            _answers: mcqAnswers, _written_answers: writtenAnswers, _finish: false,
+          })], { type: 'application/json' });
+          // Best-effort sync save
+          navigator.sendBeacon?.(url, blob);
+        } catch {}
+      }
       e.preventDefault();
       e.returnValue = '';
     };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden' && progressKey) {
+        try {
+          localStorage.setItem(progressKey, JSON.stringify({
+            mcq: mcqAnswers, written: writtenAnswers, currentIndex, ts: Date.now(),
+          }));
+        } catch {}
+      }
+    };
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [attemptId, participantId, mcqAnswers, writtenAnswers, currentIndex, progressKey]);
+
+  // Mirror progress to localStorage on every change
+  useEffect(() => {
+    if (!progressKey) return;
+    try {
+      localStorage.setItem(progressKey, JSON.stringify({
+        mcq: mcqAnswers, written: writtenAnswers, currentIndex, ts: Date.now(),
+      }));
+    } catch {}
+  }, [mcqAnswers, writtenAnswers, currentIndex, progressKey]);
 
   const handleSelectOption = (questionId: string, displayIndex: number) => {
     const optionData = shuffledOptions.get(questionId);
