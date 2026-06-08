@@ -17,6 +17,12 @@ import { Mail, Lock, User, Loader2, AlertTriangle, ShieldAlert } from 'lucide-re
 
 const emailSchema = z.string().email('Noto\'g\'ri email formati');
 const passwordSchema = z.string().min(6, 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak');
+const usernameSchema = z
+  .string()
+  .trim()
+  .min(3, 'Username kamida 3 ta belgi')
+  .max(24, 'Username 24 ta belgidan oshmasin')
+  .regex(/^[a-zA-Z0-9_.]+$/, 'Faqat harflar, raqamlar, _ va . ruxsat etiladi');
 
 function AuthContent() {
   const navigate = useNavigate();
@@ -27,8 +33,10 @@ function AuthContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [loginId, setLoginId] = useState(''); // email yoki username
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; username?: string; loginId?: string }>({});
 
   // Check for admin-required redirect
   const state = location.state as { adminRequired?: boolean; notAuthorized?: boolean } | null;
@@ -64,18 +72,31 @@ function AuthContent() {
   };
 
   const handleLogin = async () => {
-    if (!validateInputs()) return;
-    
+    const id = loginId.trim();
+    if (!id) { setErrors({ loginId: 'Email yoki username kiriting' }); return; }
+    const pw = passwordSchema.safeParse(password);
+    if (!pw.success) { setErrors({ password: pw.error.errors[0].message }); return; }
+    setErrors({});
+
     setLoading(true);
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password
-    });
+
+    // If not an email, resolve username -> email
+    let loginEmail = id;
+    if (!id.includes('@')) {
+      const { data: resolved, error: rpcErr } = await (supabase.rpc as any)('lookup_email_by_username', { _username: id });
+      if (rpcErr || !resolved) {
+        toast.error('Bunday username topilmadi');
+        setLoading(false);
+        return;
+      }
+      loginEmail = resolved as string;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
     
     if (error) {
       if (error.message.includes('Invalid login')) {
-        toast.error('Email yoki parol noto\'g\'ri');
+        toast.error('Login yoki parol noto\'g\'ri');
       } else if (error.message.includes('Email not confirmed')) {
         toast.error('Emailingizni tasdiqlang');
       } else {
@@ -84,7 +105,8 @@ function AuthContent() {
       setLoading(false);
     } else {
       toast.success('Muvaffaqiyatli kirdingiz!');
-      // Redirect will happen via useEffect
+      // ensure profile exists (no-op if already)
+      try { await (supabase.rpc as any)('ensure_profile', { _username: null }); } catch {}
     }
   };
 
@@ -94,6 +116,14 @@ function AuthContent() {
       toast.error('Iltimos, ismingizni kiriting');
       return;
     }
+    const uRes = usernameSchema.safeParse(username);
+    if (!uRes.success) {
+      setErrors((e) => ({ ...e, username: uRes.error.errors[0].message }));
+      return;
+    }
+    // pre-check uniqueness
+    const { data: taken } = await (supabase.rpc as any)('lookup_email_by_username', { _username: username });
+    if (taken) { toast.error('Bu username band'); return; }
     
     setLoading(true);
     
@@ -105,7 +135,8 @@ function AuthContent() {
       options: {
         emailRedirectTo: redirectUrl,
         data: {
-          full_name: fullName.trim()
+          full_name: fullName.trim(),
+          username: username.trim().toLowerCase(),
         }
       }
     });
@@ -118,6 +149,7 @@ function AuthContent() {
       }
     } else {
       toast.success('Ro\'yxatdan o\'tdingiz! Emailingizni tasdiqlang.');
+      try { await (supabase.rpc as any)('ensure_profile', { _username: username.trim() }); } catch {}
     }
     
     setLoading(false);
