@@ -602,6 +602,7 @@ function AdminContent() {
               </Card>
 
               <RaschMiniAnalytics />
+              {(isFullAdmin || isSuperAdmin) && <RaschSettingsCard />}
             </div>
           )}
 
