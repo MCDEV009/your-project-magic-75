@@ -165,6 +165,7 @@ export type Database = {
           id: string
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           created_at?: string
@@ -172,6 +173,7 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           created_at?: string
@@ -179,6 +181,7 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -379,6 +382,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rasch_settings: {
+        Row: {
+          id: boolean
+          p_max: number
+          p_min: number
+          prior_mean: number
+          prior_strength: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: boolean
+          p_max?: number
+          p_min?: number
+          prior_mean?: number
+          prior_strength?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: boolean
+          p_max?: number
+          p_min?: number
+          prior_mean?: number
+          prior_strength?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       student_rankings: {
         Row: {
@@ -987,6 +1020,23 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      ensure_profile: {
+        Args: { _username?: string }
+        Returns: {
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       ensure_wallet: {
         Args: { _user_id: string }
         Returns: {
@@ -1087,6 +1137,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      lookup_email_by_username: { Args: { _username: string }; Returns: string }
       purchase_test_with_wallet: {
         Args: { _test_id: string }
         Returns: {

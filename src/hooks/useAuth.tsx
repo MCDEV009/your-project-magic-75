@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(async () => {
             if (mounted) {
               await checkAdminRole(session.user.id);
+              try { await (supabase as any).rpc('ensure_profile', { _username: null }); } catch {}
             }
           }, 0);
         } else {

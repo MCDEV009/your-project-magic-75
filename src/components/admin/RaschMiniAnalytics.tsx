@@ -5,6 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Calendar, BarChart3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Row {
   test_id: string;
@@ -18,6 +21,42 @@ interface Row {
 
 export function RaschMiniAnalytics() {
   const [rows, setRows] = useState<Row[] | null>(null);
+
+  const downloadCsv = (filename: string, header: string[], data: (string | number)[][]) => {
+    const esc = (v: any) => {
+      const s = String(v ?? '');
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [header.map(esc).join(','), ...data.map(r => r.map(esc).join(','))].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportStats = () => {
+    if (!rows || rows.length === 0) { toast.error("Ma'lumot yo'q"); return; }
+    downloadCsv(
+      `rasch-stats-${new Date().toISOString().slice(0,10)}.csv`,
+      ['test_id','title','attempts','unique_participants','avg_score','sunday_redemptions','is_sunday_free'],
+      rows.map(r => [r.test_id, r.title, r.attempts, r.unique_participants, Number(r.avg_score).toFixed(2), r.sunday_redemptions, r.is_sunday_free ? 1 : 0]),
+    );
+  };
+
+  const exportSundayLog = async () => {
+    const { data, error } = await (supabase as any)
+      .from('sunday_free_redemptions')
+      .select('id, user_id, test_id, redeemed_at, weekday_tashkent')
+      .order('redeemed_at', { ascending: false });
+    if (error) { toast.error(error.message); return; }
+    if (!data?.length) { toast.error("Yozuvlar yo'q"); return; }
+    downloadCsv(
+      `sunday-free-redemptions-${new Date().toISOString().slice(0,10)}.csv`,
+      ['id','user_id','test_id','redeemed_at','weekday_tashkent'],
+      data.map((r: any) => [r.id, r.user_id, r.test_id, r.redeemed_at, r.weekday_tashkent]),
+    );
+  };
 
   useEffect(() => {
     (async () => {
@@ -42,6 +81,14 @@ export function RaschMiniAnalytics() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={exportStats}>
+            <Download className="h-3.5 w-3.5 mr-1" /> Rasch statistikani CSV
+          </Button>
+          <Button size="sm" variant="outline" onClick={exportSundayLog}>
+            <Download className="h-3.5 w-3.5 mr-1" /> Yakshanba loglarni CSV
+          </Button>
+        </div>
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-lg border p-3">
             <div className="text-xs text-muted-foreground">Jami urinishlar</div>
