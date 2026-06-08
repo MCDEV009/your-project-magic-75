@@ -77,6 +77,7 @@ import { QuestionAnalyticsTable } from '@/components/admin/QuestionAnalyticsTabl
 import { StudentRankingsTable } from '@/components/admin/StudentRankingsTable';
 import { AIAnalysisHistory } from '@/components/admin/AIAnalysisHistory';
 import { RaschMiniAnalytics } from '@/components/admin/RaschMiniAnalytics';
+import { RaschSettingsCard } from '@/components/admin/RaschSettingsCard';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
 function AdminContent() {
