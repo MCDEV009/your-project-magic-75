@@ -50,11 +50,9 @@ const PLANS = [
     icon: Crown,
     perks: [
       'Oyiga 25 ta mock test',
-      "Cheksiz AI tahlil",
-      "Cheksiz rasm yuklash",
+      "500 ta AI tahlil so'rovi",
+      "25 ta rasm yuklash",
       "Ustuvor qo'llab-quvvatlash",
-      "Custom test yaratish",
-      'Barcha pulli testlarga kirish',
     ],
   },
 ];
