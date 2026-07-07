@@ -71,6 +71,7 @@ import {
    Sun
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { LiveSessionsAdmin } from '@/components/admin/LiveSessionsAdmin';
  import { useTheme } from 'next-themes';
 import { AIAnalyticsDashboard } from '@/components/admin/AIAnalyticsDashboard';
 import { QuestionAnalyticsTable } from '@/components/admin/QuestionAnalyticsTable';
@@ -91,7 +92,7 @@ function AdminContent() {
   const canSeeDashboard = canSeeTests || canSeeAnalytics;
   
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings' | 'live'>('dashboard');
   
   // Tests state
   const [tests, setTests] = useState<(Test & { question_count: number; attempt_count: number })[]>([]);
@@ -477,6 +478,16 @@ function AdminContent() {
           >
             <BarChart3 className="h-4 w-4" />
             {t('analytics')}
+          </button>}
+
+          {canSeeTests && <button
+            onClick={() => setActiveTab('live')}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+              ${activeTab === 'live' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
+            `}
+          >
+            <BarChart3 className="h-4 w-4" />
+            Live Mock
           </button>}
         </nav>
         
@@ -989,6 +1000,12 @@ function AdminContent() {
 
               {/* AI Analysis History */}
               <AIAnalysisHistory />
+            </div>
+          )}
+
+          {activeTab === 'live' && (
+            <div className="animate-fade-in">
+              <LiveSessionsAdmin />
             </div>
           )}
         </div>

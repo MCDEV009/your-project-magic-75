@@ -19,6 +19,9 @@ import NotFound from "./pages/NotFound";
 import Forbidden from "./pages/Forbidden";
 import Pricing from "./pages/Pricing";
 import Wallet from "./pages/Wallet";
+import LiveJoin from "./pages/live/LiveJoin";
+import LiveLobby from "./pages/live/LiveLobby";
+import LiveResults from "./pages/live/LiveResults";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +51,9 @@ const App = () => (
                   <Wallet />
                 </ProtectedRoute>
               } />
+              <Route path="/live" element={<LiveJoin />} />
+              <Route path="/live/:code/lobby" element={<LiveLobby />} />
+              <Route path="/live/:code/results" element={<LiveResults />} />
               <Route path="/403" element={<Forbidden />} />
               <Route path="/urecheater" element={
                 <ProtectedRoute requireAdmin>

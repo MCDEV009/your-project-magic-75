@@ -17,6 +17,7 @@ import { PracticeQuestionsCard, type PracticeCardHandle } from '@/components/res
 import { Trophy, CheckCircle, XCircle, Home, RotateCcw, ChevronDown, ChevronUp, Loader2, PenLine, CheckSquare, Download } from 'lucide-react';
 import { exportResultsPdf } from '@/lib/pdfExport';
 import { toast } from 'sonner';
+import { LiveGate } from '@/components/results/LiveGate';
 
 function ResultsContent() {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -119,6 +120,11 @@ function ResultsContent() {
 
   if (!attempt || !test) {
     return null;
+  }
+
+  const sessionId = (attempt as any).session_id as string | null | undefined;
+  if (sessionId) {
+    return <LiveGate sessionId={sessionId} />;
   }
 
   const mcqQuestions = questions.filter(q => q.question_type === 'single_choice');
