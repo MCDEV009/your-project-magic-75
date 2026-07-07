@@ -121,6 +121,14 @@ function ResultsContent() {
     return null;
   }
 
+  const sessionId = (attempt as any).session_id as string | null | undefined;
+  if (sessionId) {
+    // In a live session — results only visible after finalize. Redirect to live results page.
+    const code = (attempt as any).__live_code as string | undefined; // fallback
+    // We don't have the code here; navigate via lookup.
+    return <LiveGate sessionId={sessionId} attemptId={attemptId!} />;
+  }
+
   const mcqQuestions = questions.filter(q => q.question_type === 'single_choice');
   const writtenQuestions = questions.filter(q => q.question_type === 'written');
   
