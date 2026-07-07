@@ -122,6 +122,106 @@ export type Database = {
         }
         Relationships: []
       }
+      live_participants: {
+        Row: {
+          attempt_id: string | null
+          created_at: string
+          display_name: string
+          finished_at: string | null
+          id: string
+          joined_at: string
+          participant_id: string
+          session_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          attempt_id?: string | null
+          created_at?: string
+          display_name: string
+          finished_at?: string | null
+          id?: string
+          joined_at?: string
+          participant_id: string
+          session_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          attempt_id?: string | null
+          created_at?: string
+          display_name?: string
+          finished_at?: string | null
+          id?: string
+          joined_at?: string
+          participant_id?: string
+          session_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_sessions: {
+        Row: {
+          code: string
+          created_at: string
+          duration_seconds: number
+          ends_at: string | null
+          host_user_id: string
+          id: string
+          published_at: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["live_session_status"]
+          test_id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          code?: string
+          created_at?: string
+          duration_seconds?: number
+          ends_at?: string | null
+          host_user_id: string
+          id?: string
+          published_at?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["live_session_status"]
+          test_id: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          duration_seconds?: number
+          ends_at?: string | null
+          host_user_id?: string
+          id?: string
+          published_at?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["live_session_status"]
+          test_id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_sessions_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plan_payments: {
         Row: {
           amount: number
@@ -528,6 +628,7 @@ export type Database = {
           mcq_score: number | null
           participant_id: string
           score: number | null
+          session_id: string | null
           started_at: string
           status: Database["public"]["Enums"]["attempt_status"]
           test_id: string
@@ -545,6 +646,7 @@ export type Database = {
           mcq_score?: number | null
           participant_id: string
           score?: number | null
+          session_id?: string | null
           started_at?: string
           status?: Database["public"]["Enums"]["attempt_status"]
           test_id: string
@@ -562,6 +664,7 @@ export type Database = {
           mcq_score?: number | null
           participant_id?: string
           score?: number | null
+          session_id?: string | null
           started_at?: string
           status?: Database["public"]["Enums"]["attempt_status"]
           test_id?: string
@@ -576,6 +679,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "test_participants"
             referencedColumns: ["participant_id"]
+          },
+          {
+            foreignKeyName: "test_attempts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_sessions"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "test_attempts_test_id_fkey"
@@ -1055,6 +1165,7 @@ export type Database = {
         }
       }
       generate_participant_id: { Args: never; Returns: string }
+      generate_session_code: { Args: never; Returns: string }
       generate_test_code: { Args: never; Returns: string }
       get_attempt_status: {
         Args: { p_attempt_id: string }
@@ -1098,6 +1209,7 @@ export type Database = {
           mcq_score: number | null
           participant_id: string
           score: number | null
+          session_id: string | null
           started_at: string
           status: Database["public"]["Enums"]["attempt_status"]
           test_id: string
@@ -1191,6 +1303,7 @@ export type Database = {
           mcq_score: number | null
           participant_id: string
           score: number | null
+          session_id: string | null
           started_at: string
           status: Database["public"]["Enums"]["attempt_status"]
           test_id: string
@@ -1213,6 +1326,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user" | "super_admin" | "editor" | "analyst"
       attempt_status: "in_progress" | "finished"
+      live_session_status: "scheduled" | "lobby" | "running" | "ended"
       question_type: "single_choice" | "written"
       subscription_plan: "free" | "pro" | "premium"
       test_visibility: "public" | "private" | "paid"
@@ -1353,6 +1467,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user", "super_admin", "editor", "analyst"],
       attempt_status: ["in_progress", "finished"],
+      live_session_status: ["scheduled", "lobby", "running", "ended"],
       question_type: ["single_choice", "written"],
       subscription_plan: ["free", "pro", "premium"],
       test_visibility: ["public", "private", "paid"],
