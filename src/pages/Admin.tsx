@@ -478,6 +478,16 @@ function AdminContent() {
             <BarChart3 className="h-4 w-4" />
             {t('analytics')}
           </button>}
+
+          {canSeeTests && <button
+            onClick={() => setActiveTab('live')}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+              ${activeTab === 'live' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
+            `}
+          >
+            <BarChart3 className="h-4 w-4" />
+            Live Mock
+          </button>}
         </nav>
         
         <div className="p-4 border-t">
