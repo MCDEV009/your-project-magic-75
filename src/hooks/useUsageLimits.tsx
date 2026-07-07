@@ -50,15 +50,7 @@ export function useUsageLimits() {
 
   const increment = async (field: 'mocks_taken' | 'ai_requests' | 'image_uploads') => {
     if (!user) return;
-    const month = periodKey();
-    const { data: existing } = await supabase
-      .from('usage_counters').select('*').eq('user_id', user.id).eq('period_month', month).maybeSingle();
-    if (existing) {
-      await (supabase.from('usage_counters') as any).update({ [field]: (existing as any)[field] + 1, updated_at: new Date().toISOString() })
-        .eq('id', existing.id);
-    } else {
-      await (supabase.from('usage_counters') as any).insert({ user_id: user.id, period_month: month, [field]: 1 });
-    }
+    await (supabase.rpc as any)('increment_usage_counter', { _field: field });
     refresh();
   };
 
