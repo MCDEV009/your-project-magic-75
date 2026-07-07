@@ -936,6 +936,13 @@ function AdminContent() {
           {activeTab === 'analytics' && (
             <div className="space-y-6 animate-fade-in">
               <h1 className="text-2xl font-bold">{t('analytics')}</h1>
+
+            </div>
+          )}
+
+          {activeTab === 'live' && (
+            <div className="space-y-6 animate-fade-in">
+              <LiveSessionsAdmin />
               
               {/* AI Analytics Dashboard */}
               <AIAnalyticsDashboard />
