@@ -170,7 +170,7 @@ Return a JSON object with this exact structure:
           { role: "user", content: userPrompt }
         ],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 16000,
       }),
     });
 
@@ -217,13 +217,38 @@ Return a JSON object with this exact structure:
         return JSON.parse(cleaned);
       } catch (_e) {
         // Fix common LLM JSON issues
-        cleaned = cleaned
+        let fixed = cleaned
           .replace(/,\s*}/g, "}") // trailing commas
           .replace(/,\s*]/g, "]")
           .replace(/[\x00-\x1F\x7F]/g, "") // control characters
           .replace(/\\(?!["\\/bfnrtu])/g, '\\\\'); // invalid escapes (LaTeX)
-
-        return JSON.parse(cleaned);
+        try {
+          return JSON.parse(fixed);
+        } catch (_e2) {
+          // Truncated JSON: try to salvage a complete questions array
+          const arrStart = fixed.indexOf('"questions"');
+          if (arrStart !== -1) {
+            const bracket = fixed.indexOf('[', arrStart);
+            if (bracket !== -1) {
+              // Find last complete object in array by scanning balanced braces
+              let depth = 0, inStr = false, esc = false, lastEnd = -1;
+              for (let i = bracket + 1; i < fixed.length; i++) {
+                const c = fixed[i];
+                if (esc) { esc = false; continue; }
+                if (c === '\\') { esc = true; continue; }
+                if (c === '"') { inStr = !inStr; continue; }
+                if (inStr) continue;
+                if (c === '{') depth++;
+                else if (c === '}') { depth--; if (depth === 0) lastEnd = i; }
+              }
+              if (lastEnd !== -1) {
+                const salvaged = fixed.substring(0, lastEnd + 1) + ']}';
+                return JSON.parse(salvaged);
+              }
+            }
+          }
+          throw _e2;
+        }
       }
     }
 
