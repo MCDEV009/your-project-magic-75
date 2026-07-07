@@ -71,6 +71,7 @@ import {
    Sun
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { LiveSessionsAdmin } from '@/components/admin/LiveSessionsAdmin';
  import { useTheme } from 'next-themes';
 import { AIAnalyticsDashboard } from '@/components/admin/AIAnalyticsDashboard';
 import { QuestionAnalyticsTable } from '@/components/admin/QuestionAnalyticsTable';
