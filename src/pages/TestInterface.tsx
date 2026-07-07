@@ -354,7 +354,11 @@ function TestInterfaceContent() {
         document.exitFullscreen();
       }
       
-      navigate(`/results/${attemptId}`);
+      if (sessionCode) {
+        navigate(`/live/${sessionCode}/results`);
+      } else {
+        navigate(`/results/${attemptId}`);
+      }
     } catch (error) {
       toast.error(t('error'));
       setSubmitting(false);
