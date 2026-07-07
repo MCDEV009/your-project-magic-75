@@ -91,7 +91,7 @@ function AdminContent() {
   const canSeeDashboard = canSeeTests || canSeeAnalytics;
   
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings' | 'live'>('dashboard');
   
   // Tests state
   const [tests, setTests] = useState<(Test & { question_count: number; attempt_count: number })[]>([]);
