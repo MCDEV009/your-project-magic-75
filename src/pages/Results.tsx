@@ -17,6 +17,7 @@ import { PracticeQuestionsCard, type PracticeCardHandle } from '@/components/res
 import { Trophy, CheckCircle, XCircle, Home, RotateCcw, ChevronDown, ChevronUp, Loader2, PenLine, CheckSquare, Download } from 'lucide-react';
 import { exportResultsPdf } from '@/lib/pdfExport';
 import { toast } from 'sonner';
+import { LiveGate } from '@/components/results/LiveGate';
 
 function ResultsContent() {
   const { attemptId } = useParams<{ attemptId: string }>();
