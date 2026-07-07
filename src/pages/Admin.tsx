@@ -1002,6 +1002,12 @@ function AdminContent() {
               <AIAnalysisHistory />
             </div>
           )}
+
+          {activeTab === 'live' && (
+            <div className="animate-fade-in">
+              <LiveSessionsAdmin />
+            </div>
+          )}
         </div>
       </main>
 
