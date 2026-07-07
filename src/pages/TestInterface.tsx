@@ -54,6 +54,7 @@ function TestInterfaceContent() {
   
   const autoSaveRef = useRef<NodeJS.Timeout | null>(null);
   const participantId = (location.state as { participantId?: string })?.participantId;
+  const sessionCode = (location.state as { sessionCode?: string })?.sessionCode;
   const progressKey = attemptId ? `tia:progress:${attemptId}` : '';
 
   // Fetch test data
@@ -73,7 +74,11 @@ function TestInterfaceContent() {
       }
       
       if (attemptData.status === 'finished') {
-        navigate(`/results/${attemptId}`);
+        if (sessionCode || (attemptData as any).session_id) {
+          navigate(sessionCode ? `/live/${sessionCode}/results` : `/results/${attemptId}`);
+        } else {
+          navigate(`/results/${attemptId}`);
+        }
         return;
       }
       
