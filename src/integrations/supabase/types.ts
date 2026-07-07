@@ -1123,6 +1123,24 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_usage_counter: {
+        Args: { _field: string }
+        Returns: {
+          ai_requests: number
+          id: string
+          image_uploads: number
+          mocks_taken: number
+          period_month: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "usage_counters"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       is_known_participant: {
         Args: { _participant_id: string }
         Returns: boolean
