@@ -53,8 +53,6 @@ const PLANS = [
       "Oyiga 50 ta rasm yuklash",
       "AI Test tahlili",
       "Mashq testlariga kirish",
-      "Ustuvor qo'llab-quvvatlash",
-      "Batafsil natijalar tahlili",
       "Shaxsiy statistika va progress kuzatuvi",
       "PDF natijalarni eksport qilish",
     ],
