@@ -38,8 +38,7 @@ const PLANS = [
       'Oyiga 5 ta mock test',
       "100 ta AI tahlil so'rovi",
       '30 ta rasm yuklash',
-      "Batafsil AI tahlil va PDF eksport",
-      "Mashq savollari yaratish",
+      "Batafsil AI tahlil",
     ],
   },
   {
