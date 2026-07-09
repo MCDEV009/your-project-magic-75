@@ -7,7 +7,7 @@ export type Plan = 'free' | 'pro' | 'premium';
 export const PLAN_LIMITS: Record<Plan, { mocks: number; ai: number; images: number }> = {
   free: { mocks: 1, ai: 10, images: 3 },
   pro: { mocks: 5, ai: 100, images: 30 },
-  premium: { mocks: 25, ai: 500, images: 25 },
+  premium: { mocks: 25, ai: 250, images: 50 },
 };
 
 function periodKey() {
