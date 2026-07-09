@@ -39,6 +39,7 @@ const PLANS = [
       "100 ta AI tahlil so'rovi",
       '30 ta rasm yuklash',
       "Batafsil AI tahlil",
+      "PDF natijalarni eksport qilish",
     ],
   },
   {
