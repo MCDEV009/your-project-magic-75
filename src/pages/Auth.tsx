@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { LanguageProvider, useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,6 +27,10 @@ const usernameSchema = z
 function AuthContent() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const nextParam = searchParams.get('next');
+  const isSafeNext = (v: string | null): v is string =>
+    !!v && v.startsWith('/') && !v.startsWith('//');
   const { t } = useLanguage();
   const { user, isAdmin, loading: authLoading } = useAuth();
   
@@ -46,13 +50,15 @@ function AuthContent() {
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
-      if (adminRequired && isAdmin) {
+      if (isSafeNext(nextParam)) {
+        window.location.href = nextParam;
+      } else if (adminRequired && isAdmin) {
         navigate('/urecheater');
       } else if (!adminRequired) {
         navigate('/dashboard');
       }
     }
-  }, [user, isAdmin, authLoading, adminRequired, navigate]);
+  }, [user, isAdmin, authLoading, adminRequired, navigate, nextParam]);
 
   const validateInputs = () => {
     const newErrors: { email?: string; password?: string } = {};
