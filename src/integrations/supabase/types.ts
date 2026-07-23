@@ -1199,6 +1199,7 @@ export type Database = {
           session_id: string
         }[]
       }
+      get_live_session_code: { Args: { _session_id: string }; Returns: string }
       get_public_questions: {
         Args: { p_test_id: string }
         Returns: {
