@@ -59,12 +59,12 @@ function AuthContent() {
     
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
-      newErrors.email = emailResult.error.errors[0].message;
+      newErrors.email = emailResult.error.issues[0].message;
     }
     
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
-      newErrors.password = passwordResult.error.errors[0].message;
+      newErrors.password = passwordResult.error.issues[0].message;
     }
     
     setErrors(newErrors);
@@ -75,7 +75,7 @@ function AuthContent() {
     const id = loginId.trim();
     if (!id) { setErrors({ loginId: 'Email yoki username kiriting' }); return; }
     const pw = passwordSchema.safeParse(password);
-    if (!pw.success) { setErrors({ password: pw.error.errors[0].message }); return; }
+    if (!pw.success) { setErrors({ password: pw.error.issues[0].message }); return; }
     setErrors({});
 
     setLoading(true);
@@ -118,7 +118,7 @@ function AuthContent() {
     }
     const uRes = usernameSchema.safeParse(username);
     if (!uRes.success) {
-      setErrors((e) => ({ ...e, username: uRes.error.errors[0].message }));
+      setErrors((e) => ({ ...e, username: uRes.error.issues[0].message }));
       return;
     }
     // pre-check uniqueness
