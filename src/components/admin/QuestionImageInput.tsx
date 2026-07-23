@@ -37,8 +37,12 @@ export function QuestionImageInput({ value, onChange, label = "Rasm (ixtiyoriy)"
 
       if (error) throw error;
 
-      const { data } = supabase.storage.from('question-images').getPublicUrl(fileName);
-      onChange(data.publicUrl);
+      // Bucket is private; issue a long-lived signed URL (~10 years).
+      const { data: signed, error: signErr } = await supabase.storage
+        .from('question-images')
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365 * 10);
+      if (signErr || !signed?.signedUrl) throw signErr ?? new Error('Sign URL failed');
+      onChange(signed.signedUrl);
       toast.success("Rasm yuklandi");
     } catch (err: any) {
       console.error('Upload error:', err);

@@ -56,11 +56,7 @@ export default function LiveLobby() {
       const { data: s } = await supabase.from("live_sessions").select("*").eq("code", code).maybeSingle();
       if (cancelled || !s) return;
       setSession(s as Session);
-      const { data: p } = await supabase
-        .from("live_participants")
-        .select("id, participant_id, display_name, attempt_id, finished_at")
-        .eq("session_id", s.id)
-        .order("joined_at");
+      const { data: p } = await (supabase as any).rpc("get_live_participants", { _session_id: s.id });
       if (!cancelled) setParticipants((p ?? []) as Participant[]);
     }
     load();

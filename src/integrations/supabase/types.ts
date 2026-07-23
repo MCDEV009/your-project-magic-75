@@ -1176,6 +1176,18 @@ export type Database = {
           written_score: number
         }[]
       }
+      get_live_participants: {
+        Args: { _session_id: string }
+        Returns: {
+          attempt_id: string
+          display_name: string
+          finished_at: string
+          id: string
+          joined_at: string
+          participant_id: string
+          session_id: string
+        }[]
+      }
       get_public_questions: {
         Args: { p_test_id: string }
         Returns: {

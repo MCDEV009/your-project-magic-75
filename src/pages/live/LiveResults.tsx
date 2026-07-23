@@ -47,10 +47,7 @@ export default function LiveResults() {
     if (!s) return;
     setSession(s as Session);
 
-    const { data: parts } = await supabase
-      .from("live_participants")
-      .select("participant_id, display_name, attempt_id, finished_at")
-      .eq("session_id", s.id);
+    const { data: parts } = await (supabase as any).rpc("get_live_participants", { _session_id: s.id });
 
     const attemptIds = (parts ?? []).map((p) => p.attempt_id).filter(Boolean) as string[];
     let attempts: any[] = [];
