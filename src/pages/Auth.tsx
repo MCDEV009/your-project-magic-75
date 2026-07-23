@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { LanguageProvider, useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,6 +27,10 @@ const usernameSchema = z
 function AuthContent() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const nextParam = searchParams.get('next');
+  const isSafeNext = (v: string | null): v is string =>
+    !!v && v.startsWith('/') && !v.startsWith('//');
   const { t } = useLanguage();
   const { user, isAdmin, loading: authLoading } = useAuth();
   
@@ -46,25 +50,27 @@ function AuthContent() {
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
-      if (adminRequired && isAdmin) {
+      if (isSafeNext(nextParam)) {
+        window.location.href = nextParam;
+      } else if (adminRequired && isAdmin) {
         navigate('/urecheater');
       } else if (!adminRequired) {
         navigate('/dashboard');
       }
     }
-  }, [user, isAdmin, authLoading, adminRequired, navigate]);
+  }, [user, isAdmin, authLoading, adminRequired, navigate, nextParam]);
 
   const validateInputs = () => {
     const newErrors: { email?: string; password?: string } = {};
     
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
-      newErrors.email = emailResult.error.errors[0].message;
+      newErrors.email = emailResult.error.issues[0].message;
     }
     
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
-      newErrors.password = passwordResult.error.errors[0].message;
+      newErrors.password = passwordResult.error.issues[0].message;
     }
     
     setErrors(newErrors);
@@ -75,7 +81,7 @@ function AuthContent() {
     const id = loginId.trim();
     if (!id) { setErrors({ loginId: 'Email yoki username kiriting' }); return; }
     const pw = passwordSchema.safeParse(password);
-    if (!pw.success) { setErrors({ password: pw.error.errors[0].message }); return; }
+    if (!pw.success) { setErrors({ password: pw.error.issues[0].message }); return; }
     setErrors({});
 
     setLoading(true);
@@ -118,7 +124,7 @@ function AuthContent() {
     }
     const uRes = usernameSchema.safeParse(username);
     if (!uRes.success) {
-      setErrors((e) => ({ ...e, username: uRes.error.errors[0].message }));
+      setErrors((e) => ({ ...e, username: uRes.error.issues[0].message }));
       return;
     }
     // pre-check uniqueness
