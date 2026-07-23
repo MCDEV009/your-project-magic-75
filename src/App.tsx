@@ -22,6 +22,7 @@ import Wallet from "./pages/Wallet";
 import LiveJoin from "./pages/live/LiveJoin";
 import LiveLobby from "./pages/live/LiveLobby";
 import LiveResults from "./pages/live/LiveResults";
+import OAuthConsent from "./pages/OAuthConsent";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="/live/:code/lobby" element={<LiveLobby />} />
               <Route path="/live/:code/results" element={<LiveResults />} />
               <Route path="/403" element={<Forbidden />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/urecheater" element={
                 <ProtectedRoute requireAdmin>
                   <Admin />
