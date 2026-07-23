@@ -29,11 +29,8 @@ export default function LiveJoin() {
     }
     setLoading(true);
     try {
-      const { data: session, error } = await supabase
-        .from("live_sessions")
-        .select("id, code, status, test_id")
-        .eq("code", c)
-        .maybeSingle();
+      const { data: sessions, error } = await (supabase as any).rpc("find_live_session_by_code", { _code: c });
+      const session = Array.isArray(sessions) ? sessions[0] : sessions;
       if (error || !session) {
         toast.error("Sessiya topilmadi");
         setLoading(false);

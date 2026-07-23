@@ -11,14 +11,11 @@ export function LiveGate({ sessionId }: { sessionId: string }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("live_sessions")
-        .select("code")
-        .eq("id", sessionId)
-        .maybeSingle();
+      const { data } = await (supabase as any).rpc("get_live_session_code", { _session_id: sessionId });
       if (cancelled) return;
-      if (data?.code) {
-        navigate(`/live/${data.code}/results`, { replace: true });
+      const code = typeof data === "string" ? data : (Array.isArray(data) ? data[0] : null);
+      if (code) {
+        navigate(`/live/${code}/results`, { replace: true });
       } else {
         setStatus("error");
       }
