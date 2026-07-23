@@ -53,7 +53,8 @@ export default function LiveLobby() {
 
     let cancelled = false;
     async function load() {
-      const { data: s } = await supabase.from("live_sessions").select("*").eq("code", code).maybeSingle();
+      const { data: sList } = await (supabase as any).rpc("find_live_session_by_code", { _code: code });
+      const s = Array.isArray(sList) ? sList[0] : sList;
       if (cancelled || !s) return;
       setSession(s as Session);
       const { data: p } = await (supabase as any).rpc("get_live_participants", { _session_id: s.id });

@@ -50,12 +50,12 @@ function AuthContent() {
   // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
-      if (isSafeNext(nextParam)) {
+      if (isSafeNext(nextParam) && !nextParam.startsWith('/auth')) {
         window.location.href = nextParam;
       } else if (adminRequired && isAdmin) {
-        navigate('/urecheater');
-      } else if (!adminRequired) {
-        navigate('/dashboard');
+        navigate('/urecheater', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
       }
     }
   }, [user, isAdmin, authLoading, adminRequired, navigate, nextParam]);

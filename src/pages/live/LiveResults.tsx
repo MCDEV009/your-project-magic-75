@@ -43,7 +43,8 @@ export default function LiveResults() {
 
   const load = useCallback(async () => {
     if (!code) return;
-    const { data: s } = await supabase.from("live_sessions").select("*").eq("code", code).maybeSingle();
+    const { data: sList } = await (supabase as any).rpc("find_live_session_by_code", { _code: code });
+    const s = Array.isArray(sList) ? sList[0] : sList;
     if (!s) return;
     setSession(s as Session);
 
