@@ -1164,6 +1164,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      find_live_session_by_code: {
+        Args: { _code: string }
+        Returns: {
+          code: string
+          ends_at: string
+          id: string
+          starts_at: string
+          status: string
+          test_id: string
+        }[]
+      }
       generate_participant_id: { Args: never; Returns: string }
       generate_session_code: { Args: never; Returns: string }
       generate_test_code: { Args: never; Returns: string }
