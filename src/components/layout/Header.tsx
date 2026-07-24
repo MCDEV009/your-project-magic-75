@@ -53,7 +53,7 @@ export function Header() {
               className="hidden sm:inline-flex gap-1.5"
             >
               <Info className="h-4 w-4" />
-              <span className="text-sm">Loyiha</span>
+              <span className="text-sm">{t('about')}</span>
             </Button>
             {user && (
               <Button
