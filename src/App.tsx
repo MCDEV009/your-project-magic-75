@@ -18,6 +18,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Forbidden from "./pages/Forbidden";
 import Pricing from "./pages/Pricing";
+import About from "./pages/About";
 import Wallet from "./pages/Wallet";
 import LiveJoin from "./pages/live/LiveJoin";
 import LiveLobby from "./pages/live/LiveLobby";
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/results/:attemptId" element={<Results />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/about" element={<About />} />
               <Route path="/wallet" element={
                 <ProtectedRoute>
                   <Wallet />

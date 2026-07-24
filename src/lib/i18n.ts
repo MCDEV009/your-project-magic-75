@@ -4,6 +4,7 @@ export const translations = {
   uz: {
     home: 'Bosh sahifa',
     tests: 'Testlar',
+    about: 'Loyiha haqida',
     admin: 'Admin panel',
     login: 'Kirish',
     logout: 'Chiqish',
@@ -107,6 +108,7 @@ export const translations = {
   ru: {
     home: 'Главная',
     tests: 'Тесты',
+    about: 'О проекте',
     admin: 'Админ панель',
     login: 'Войти',
     logout: 'Выйти',
@@ -210,6 +212,7 @@ export const translations = {
   en: {
     home: 'Home',
     tests: 'Tests',
+    about: 'About',
     admin: 'Admin Panel',
     login: 'Login',
     logout: 'Logout',
@@ -313,6 +316,7 @@ export const translations = {
   qq: {
     home: 'Bas bet',
     tests: 'Testler',
+    about: 'Loyiha haqqında',
     admin: 'Admin panel',
     login: 'Kiriw',
     logout: 'Shig\'iw',
