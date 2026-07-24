@@ -24,8 +24,15 @@ global.ResizeObserver = class ResizeObserver {
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
-  constructor(callback: any) {}
+  root: Element | Document | null = null;
+  rootMargin: string = '0px';
+  scrollMargin: string = '0px';
+  thresholds: ReadonlyArray<number> = [0];
+
+  constructor(callback: any, options?: IntersectionObserverInit) {}
+
   observe() {}
   unobserve() {}
   disconnect() {}
+  takeRecords(): IntersectionObserverEntry[] { return []; }
 };
