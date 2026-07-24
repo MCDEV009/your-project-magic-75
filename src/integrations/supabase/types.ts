@@ -1084,6 +1084,7 @@ export type Database = {
           unique_participants: number
         }[]
       }
+      can_start_attempt: { Args: { _test_id: string }; Returns: boolean }
       cancel_wallet_transaction: {
         Args: { _reason?: string; _txn_id: string }
         Returns: {
