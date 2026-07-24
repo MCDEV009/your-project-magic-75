@@ -3,7 +3,7 @@
  import { LanguageSelector } from '@/components/ui/LanguageSelector';
  import { ThemeToggle } from '@/components/ui/ThemeToggle';
  import { Button } from '@/components/ui/button';
-import { GraduationCap, LogIn, LogOut, User, LayoutDashboard, Sparkles, Wallet as WalletIcon } from 'lucide-react';
+import { GraduationCap, LogIn, LogOut, User, LayoutDashboard, Sparkles, Wallet as WalletIcon, Info } from 'lucide-react';
  import { useAuth } from '@/hooks/useAuth';
 
 export function Header() {
@@ -45,6 +45,15 @@ export function Header() {
             >
               <Sparkles className="h-4 w-4" />
               <span className="text-sm">Tariflar</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/about')}
+              className="hidden sm:inline-flex gap-1.5"
+            >
+              <Info className="h-4 w-4" />
+              <span className="text-sm">Loyiha</span>
             </Button>
             {user && (
               <Button
