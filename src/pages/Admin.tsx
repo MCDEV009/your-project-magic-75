@@ -72,6 +72,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { LiveSessionsAdmin } from '@/components/admin/LiveSessionsAdmin';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Menu } from 'lucide-react';
  import { useTheme } from 'next-themes';
 import { AIAnalyticsDashboard } from '@/components/admin/AIAnalyticsDashboard';
 import { QuestionAnalyticsTable } from '@/components/admin/QuestionAnalyticsTable';
@@ -93,6 +95,7 @@ function AdminContent() {
   
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings' | 'live'>('dashboard');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   
   // Tests state
   const [tests, setTests] = useState<(Test & { question_count: number; attempt_count: number })[]>([]);
@@ -427,89 +430,116 @@ function AdminContent() {
     );
   }
 
+  const navItems = [
+    ...(canSeeDashboard ? [{ key: 'dashboard' as const, icon: LayoutDashboard, label: t('dashboard') }] : []),
+    ...(canSeeTests ? [{ key: 'tests' as const, icon: FileQuestion, label: t('manageTests') }] : []),
+    ...(canSeeAnalytics ? [{ key: 'analytics' as const, icon: BarChart3, label: t('analytics') }] : []),
+    ...(canSeeTests ? [{ key: 'live' as const, icon: TrendingUp, label: 'Live Mock' }] : []),
+  ];
+
+  const SidebarInner = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <>
+      <div className="p-4 border-b">
+        <div className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
+            <BookOpen className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <span className="font-bold text-sidebar-foreground">TestHub Admin</span>
+        </div>
+      </div>
+
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-sidebar-foreground hover:bg-sidebar-accent/50 mb-2"
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === 'dark' ? t('lightMode') : t('darkMode')}
+        </button>
+
+        {navItems.map(({ key, icon: Icon, label }) => (
+          <button
+            key={key}
+            onClick={() => { setActiveTab(key); onNavigate?.(); }}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+              ${activeTab === key ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
+            `}
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+            <Users className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{user?.email}</p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={handleLogout} className="w-full gap-2">
+          <LogOut className="h-4 w-4" />
+          {t('logout')}
+        </Button>
+      </div>
+    </>
+  );
+
+  const activeLabel = navItems.find((n) => n.key === activeTab)?.label ?? t('dashboard');
+
   return (
     <div className="min-h-screen flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-sidebar border-r flex flex-col">
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
-              <BookOpen className="h-5 w-5 text-primary-foreground" />
-            </div>
-             <span className="font-bold text-sidebar-foreground">TestHub Admin</span>
-          </div>
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1">
-           {/* Theme Toggle */}
-           <button
-             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-sidebar-foreground hover:bg-sidebar-accent/50 mb-2"
-           >
-             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-             {theme === 'dark' ? t('lightMode') : t('darkMode')}
-           </button>
-           
-          {canSeeDashboard && <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-              ${activeTab === 'dashboard' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
-            `}
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            {t('dashboard')}
-          </button>}
-          
-          {canSeeTests && <button
-            onClick={() => setActiveTab('tests')}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-              ${activeTab === 'tests' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
-            `}
-          >
-            <FileQuestion className="h-4 w-4" />
-            {t('manageTests')}
-          </button>}
-          
-          {canSeeAnalytics && <button
-            onClick={() => setActiveTab('analytics')}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-              ${activeTab === 'analytics' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
-            `}
-          >
-            <BarChart3 className="h-4 w-4" />
-            {t('analytics')}
-          </button>}
-
-          {canSeeTests && <button
-            onClick={() => setActiveTab('live')}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-              ${activeTab === 'live' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
-            `}
-          >
-            <BarChart3 className="h-4 w-4" />
-            Live Mock
-          </button>}
-        </nav>
-        
-        <div className="p-4 border-t">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-              <Users className="h-4 w-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.email}</p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleLogout} className="w-full gap-2">
-            <LogOut className="h-4 w-4" />
-            {t('logout')}
-          </Button>
-        </div>
+      {/* Sidebar (desktop) */}
+      <aside className="hidden md:flex w-64 bg-sidebar border-r flex-col">
+        <SidebarInner />
       </aside>
 
+      {/* Mobile top bar */}
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 bg-background/95 backdrop-blur border-b flex items-center gap-2 px-3">
+        <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Menyu">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[85vw] max-w-xs p-0 bg-sidebar flex flex-col">
+            <SidebarInner onNavigate={() => setMobileNavOpen(false)} />
+          </SheetContent>
+        </Sheet>
+        <span className="font-semibold truncate">{activeLabel}</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="ml-auto"
+          aria-label="Mavzu"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </Button>
+      </div>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur border-t flex">
+        {navItems.map(({ key, icon: Icon, label }) => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors
+              ${activeTab === key ? 'text-primary' : 'text-muted-foreground'}`}
+          >
+            <Icon className="h-5 w-5" />
+            <span className="truncate max-w-full px-1">{label}</span>
+          </button>
+        ))}
+      </nav>
+
+
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
+      <main className="flex-1 overflow-auto w-full min-w-0">
+        <div className="p-4 pt-[4.5rem] pb-24 md:p-8 md:pt-8 md:pb-8">
           {/* Dashboard */}
           {activeTab === 'dashboard' && (
             <div className="space-y-6 animate-fade-in">
@@ -583,6 +613,7 @@ function AdminContent() {
                       {[1, 2, 3].map(i => <Skeleton key={i} className="h-12" />)}
                     </div>
                   ) : (
+                    <div className="overflow-x-auto -mx-2 px-2">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -608,6 +639,7 @@ function AdminContent() {
                         ))}
                       </TableBody>
                     </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -620,22 +652,22 @@ function AdminContent() {
           {/* Tests management */}
           {activeTab === 'tests' && (
             <div className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{t('manageTests')}</h1>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h1 className="text-xl md:text-2xl font-bold">{t('manageTests')}</h1>
                 <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="gap-2 gradient-primary border-0">
+                    <Button className="gap-2 gradient-primary border-0 w-full sm:w-auto">
                       <Plus className="h-4 w-4" />
                       {t('createTest')}
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>{t('createTest')}</DialogTitle>
                       <DialogDescription>Yangi test yaratish</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>{t('testTitle')} (O'zbekcha) *</Label>
                           <Input
@@ -663,7 +695,7 @@ function AdminContent() {
                         />
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>{t('subject')}</Label>
                           <Select
@@ -818,6 +850,49 @@ function AdminContent() {
                     </div>
                   ) : (
                     <>
+                      {/* Mobile card list */}
+                      <div className="space-y-3 md:hidden">
+                        {paginatedTests.map(test => (
+                          <div key={test.id} className="rounded-lg border p-3 space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="font-medium text-sm leading-snug">{test.title_uz}</p>
+                              <Badge variant={test.visibility === 'public' ? 'default' : 'secondary'} className="shrink-0">
+                                {test.visibility === 'public' ? 'Bepul' : 'Pulli'}
+                              </Badge>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                              <span>{test.subjects ? test.subjects.name_uz : '-'}</span>
+                              <span>{test.question_count} savol</span>
+                              <span>{test.attempt_count} ishtirokchi</span>
+                              {test.test_code && (
+                                <code className="px-1.5 py-0.5 bg-muted rounded font-mono">{test.test_code}</code>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-4 gap-2 pt-1">
+                              <Button variant="outline" size="sm" onClick={() => navigate(`/urecheater/test/${test.id}`)} aria-label="Tahrirlash">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => handleDuplicateTest(test)} aria-label="Nusxalash">
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => handleExportResults(test.id)} aria-label="Yuklab olish">
+                                <Download className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive"
+                                aria-label="O'chirish"
+                                onClick={() => { setTestToDelete(test); setDeleteDialogOpen(true); }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="hidden md:block overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -899,6 +974,7 @@ function AdminContent() {
                           })}
                         </TableBody>
                       </Table>
+                      </div>
                       
                       {totalPages > 1 && (
                         <div className="flex items-center justify-between pt-4 border-t mt-4">
