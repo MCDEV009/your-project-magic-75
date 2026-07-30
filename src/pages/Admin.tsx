@@ -95,6 +95,7 @@ function AdminContent() {
   
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings' | 'live'>('dashboard');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   
   // Tests state
   const [tests, setTests] = useState<(Test & { question_count: number; attempt_count: number })[]>([]);
