@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { LanguageProvider, useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Question, TestAttempt, Test, WrittenAnswer, EvaluationResult } from '@/types/test';
@@ -22,7 +22,11 @@ import { LiveGate } from '@/components/results/LiveGate';
 function ResultsContent() {
   const { attemptId } = useParams<{ attemptId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, language } = useLanguage();
+  const participantId =
+    (location.state as { participantId?: string } | null)?.participantId ??
+    (attemptId ? localStorage.getItem(`tia:pid:${attemptId}`) : null);
   
   const [attempt, setAttempt] = useState<TestAttempt | null>(null);
   const [test, setTest] = useState<Test | null>(null);
@@ -38,7 +42,7 @@ function ResultsContent() {
     
     const interval = setInterval(async () => {
       const { data } = await supabase
-        .rpc('get_attempt_status', { p_attempt_id: attemptId })
+        .rpc('get_attempt_status', { p_attempt_id: attemptId, _participant_id: participantId ?? null })
         .single();
       
       if (data) {
@@ -57,7 +61,7 @@ function ResultsContent() {
       if (!attemptId) return;
       
       const { data: attemptData, error } = await supabase
-        .rpc('get_test_attempt_by_id', { p_attempt_id: attemptId })
+        .rpc('get_test_attempt_by_id', { p_attempt_id: attemptId, _participant_id: participantId ?? null })
         .single();
       
       if (error || !attemptData) {
