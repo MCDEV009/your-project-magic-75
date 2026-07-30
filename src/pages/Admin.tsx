@@ -652,16 +652,16 @@ function AdminContent() {
           {/* Tests management */}
           {activeTab === 'tests' && (
             <div className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{t('manageTests')}</h1>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h1 className="text-xl md:text-2xl font-bold">{t('manageTests')}</h1>
                 <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="gap-2 gradient-primary border-0">
+                    <Button className="gap-2 gradient-primary border-0 w-full sm:w-auto">
                       <Plus className="h-4 w-4" />
                       {t('createTest')}
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>{t('createTest')}</DialogTitle>
                       <DialogDescription>Yangi test yaratish</DialogDescription>
