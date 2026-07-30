@@ -14,6 +14,7 @@ import { AIAnalysis } from '@/components/results/AIAnalysis';
 import { AlXorazmiyChat } from '@/components/results/AlXorazmiyChat';
 import { QuestionStatsList } from '@/components/results/QuestionStatsList';
 import { RaschDiagnostics } from '@/components/results/RaschDiagnostics';
+import { bmbaGrade } from '@/lib/rasch';
 import { PracticeQuestionsCard, type PracticeCardHandle } from '@/components/results/PracticeQuestionsCard';
 import { Trophy, CheckCircle, XCircle, Home, RotateCcw, ChevronDown, ChevronUp, Loader2, PenLine, CheckSquare, Download } from 'lucide-react';
 import { exportResultsPdf } from '@/lib/pdfExport';
