@@ -32,7 +32,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 230 75% 50%;
+    --primary: 32 95% 44%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 20% 96%;
@@ -41,8 +41,8 @@
     --muted: 210 15% 93%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 173 80% 40%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 240 8% 4%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -55,29 +55,29 @@
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 230 75% 50%;
+    --ring: 32 95% 44%;
 
     --radius: 0.75rem;
 
     /* Custom tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(230 75% 50%) 0%, hsl(250 70% 55%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(173 80% 40%) 0%, hsl(190 85% 45%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(230 75% 50%) 0%, hsl(173 80% 40%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(32 95% 44%) 0%, hsl(45 93% 58%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(48 96% 62%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(28 95% 42%) 0%, hsl(45 93% 58%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
     
-    --shadow-soft: 0 4px 20px -2px hsl(230 75% 50% / 0.08);
+    --shadow-soft: 0 4px 20px -2px hsl(32 95% 44% / 0.12);
     --shadow-card: 0 8px 32px -4px hsl(222 47% 11% / 0.08);
     --shadow-elevated: 0 20px 40px -8px hsl(222 47% 11% / 0.15);
-    --shadow-glow: 0 0 40px -10px hsl(230 75% 50% / 0.4);
+    --shadow-glow: 0 0 40px -10px hsl(38 92% 50% / 0.45);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 230 75% 50%;
+    --sidebar-primary: 32 95% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 230 75% 50%;
+    --sidebar-ring: 32 95% 44%;
 
     --font-sans: 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
