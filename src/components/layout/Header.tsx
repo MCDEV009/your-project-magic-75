@@ -29,8 +29,8 @@ export function Header() {
               <GraduationCap className="h-5 w-5 text-primary-foreground" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg tracking-tight leading-tight">Milliy Sertifikat</span>
-              <span className="text-[10px] text-muted-foreground leading-tight">Mock Platform</span>
+              <span className="font-bold text-lg tracking-tight leading-tight gradient-text">ALKHARAZMIY XYZ</span>
+              <span className="text-[10px] text-muted-foreground leading-tight tracking-[0.18em]">MATEMATIKA • IT • AI</span>
             </div>
           </Link>
 
