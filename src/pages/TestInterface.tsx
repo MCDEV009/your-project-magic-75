@@ -64,13 +64,17 @@ function TestInterfaceContent() {
       
       // Get attempt
       const { data: attemptData, error: attemptError } = await supabase
-        .rpc('get_test_attempt_by_id', { p_attempt_id: attemptId })
+        .rpc('get_test_attempt_by_id', { p_attempt_id: attemptId, _participant_id: participantId ?? null })
         .single();
       
       if (attemptError || !attemptData) {
         toast.error(t('error'));
         navigate('/');
         return;
+      }
+
+      if (participantId) {
+        try { localStorage.setItem(`tia:pid:${attemptId}`, participantId); } catch {}
       }
       
       if (attemptData.status === 'finished') {
