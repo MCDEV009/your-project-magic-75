@@ -613,6 +613,7 @@ function AdminContent() {
                       {[1, 2, 3].map(i => <Skeleton key={i} className="h-12" />)}
                     </div>
                   ) : (
+                    <div className="overflow-x-auto -mx-2 px-2">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -638,6 +639,7 @@ function AdminContent() {
                         ))}
                       </TableBody>
                     </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
