@@ -430,10 +430,114 @@ function AdminContent() {
     );
   }
 
+  const navItems = [
+    ...(canSeeDashboard ? [{ key: 'dashboard' as const, icon: LayoutDashboard, label: t('dashboard') }] : []),
+    ...(canSeeTests ? [{ key: 'tests' as const, icon: FileQuestion, label: t('manageTests') }] : []),
+    ...(canSeeAnalytics ? [{ key: 'analytics' as const, icon: BarChart3, label: t('analytics') }] : []),
+    ...(canSeeTests ? [{ key: 'live' as const, icon: TrendingUp, label: 'Live Mock' }] : []),
+  ];
+
+  const SidebarInner = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <>
+      <div className="p-4 border-b">
+        <div className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
+            <BookOpen className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <span className="font-bold text-sidebar-foreground">TestHub Admin</span>
+        </div>
+      </div>
+
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-sidebar-foreground hover:bg-sidebar-accent/50 mb-2"
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === 'dark' ? t('lightMode') : t('darkMode')}
+        </button>
+
+        {navItems.map(({ key, icon: Icon, label }) => (
+          <button
+            key={key}
+            onClick={() => { setActiveTab(key); onNavigate?.(); }}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+              ${activeTab === key ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'}
+            `}
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+            <Users className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{user?.email}</p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={handleLogout} className="w-full gap-2">
+          <LogOut className="h-4 w-4" />
+          {t('logout')}
+        </Button>
+      </div>
+    </>
+  );
+
+  const activeLabel = navItems.find((n) => n.key === activeTab)?.label ?? t('dashboard');
+
   return (
     <div className="min-h-screen flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-sidebar border-r flex flex-col">
+      {/* Sidebar (desktop) */}
+      <aside className="hidden md:flex w-64 bg-sidebar border-r flex-col">
+        <SidebarInner />
+      </aside>
+
+      {/* Mobile top bar */}
+      <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 bg-background/95 backdrop-blur border-b flex items-center gap-2 px-3">
+        <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Menyu">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[85vw] max-w-xs p-0 bg-sidebar flex flex-col">
+            <SidebarInner onNavigate={() => setMobileNavOpen(false)} />
+          </SheetContent>
+        </Sheet>
+        <span className="font-semibold truncate">{activeLabel}</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="ml-auto"
+          aria-label="Mavzu"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </Button>
+      </div>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur border-t flex">
+        {navItems.map(({ key, icon: Icon, label }) => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors
+              ${activeTab === key ? 'text-primary' : 'text-muted-foreground'}`}
+          >
+            <Icon className="h-5 w-5" />
+            <span className="truncate max-w-full px-1">{label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/* legacy sidebar markup removed */}
+      <div className="hidden">
         <div className="p-4 border-b">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
@@ -508,11 +612,11 @@ function AdminContent() {
             {t('logout')}
           </Button>
         </div>
-      </aside>
+      </div>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
+      <main className="flex-1 overflow-auto w-full min-w-0">
+        <div className="p-4 pt-[4.5rem] pb-24 md:p-8 md:pt-8 md:pb-8">
           {/* Dashboard */}
           {activeTab === 'dashboard' && (
             <div className="space-y-6 animate-fade-in">
