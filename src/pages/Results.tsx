@@ -13,6 +13,8 @@ import { WrittenQuestionReview } from '@/components/results/WrittenQuestionRevie
 import { AIAnalysis } from '@/components/results/AIAnalysis';
 import { AlXorazmiyChat } from '@/components/results/AlXorazmiyChat';
 import { QuestionStatsList } from '@/components/results/QuestionStatsList';
+import { RaschDiagnostics } from '@/components/results/RaschDiagnostics';
+import { bmbaGrade } from '@/lib/rasch';
 import { PracticeQuestionsCard, type PracticeCardHandle } from '@/components/results/PracticeQuestionsCard';
 import { Trophy, CheckCircle, XCircle, Home, RotateCcw, ChevronDown, ChevronUp, Loader2, PenLine, CheckSquare, Download } from 'lucide-react';
 import { exportResultsPdf } from '@/lib/pdfExport';
@@ -146,13 +148,8 @@ function ResultsContent() {
     : 0;
 
   function getCertificate(pct: number) {
-    if (pct >= 70) return { label: 'A+ — Oliy daraja', desc: 'Mukammal natija — Milliy sertifikat A+ darajasi' };
-    if (pct >= 65) return { label: 'A — Yuqori daraja', desc: 'Yuqori natija — Milliy sertifikat A darajasi' };
-    if (pct >= 60) return { label: "B+ — O'rta-yuqori daraja", desc: "Yaxshi natija — Milliy sertifikat B+ darajasi" };
-    if (pct >= 55) return { label: "B — O'rta daraja", desc: "Qoniqarli natija — Milliy sertifikat B darajasi" };
-    if (pct >= 50) return { label: "C+ — Boshlang'ich-yuqori daraja", desc: "O'rtacha natija — Milliy sertifikat C+ darajasi" };
-    if (pct >= 46) return { label: "C — Boshlang'ich daraja", desc: "Minimal sertifikat darajasi — Milliy sertifikat C" };
-    return { label: 'NC — Sertifikatsiz', desc: "Sertifikat olish uchun yetarli emas (45% va undan past)" };
+    const g = bmbaGrade(pct);
+    return { label: g.label, desc: g.desc };
   }
 
   const handleExport = async () => {
@@ -340,6 +337,9 @@ function ResultsContent() {
           {/* AI Analysis */}
           {attempt.evaluation_status === 'completed' && (
             <>
+              <div className="mb-8">
+                <RaschDiagnostics attemptId={attemptId!} percentage={percentage} />
+              </div>
               <div className="mb-8">
                 <AIAnalysis attemptId={attemptId!} participantId={attempt.participant_id} />
               </div>

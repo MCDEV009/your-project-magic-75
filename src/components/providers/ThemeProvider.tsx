@@ -7,7 +7,7 @@
    storageKey?: string;
  }
  
- export function ThemeProvider({ children, defaultTheme = "system", storageKey = "milliy-theme" }: ThemeProviderProps) {
+export function ThemeProvider({ children, defaultTheme = "dark", storageKey = "alkharazmiy-theme" }: ThemeProviderProps) {
    return (
      <NextThemesProvider
        attribute="class"
