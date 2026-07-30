@@ -53,6 +53,24 @@ serve(async (req) => {
         });
       }
 
+      // Admin-only: aggregate analytics must not be exposed to regular users
+      const callerId = (claims.claims as Record<string, unknown>).sub as string | undefined;
+      if (!callerId) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: adminRoles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", callerId)
+        .in("role", ["admin", "super_admin"]);
+      if ((adminRoles?.length ?? 0) === 0) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       // Fetch all attempts with test info
       const { data: attempts } = await supabase
         .from("test_attempts")

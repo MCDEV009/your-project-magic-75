@@ -1180,7 +1180,7 @@ export type Database = {
       generate_session_code: { Args: never; Returns: string }
       generate_test_code: { Args: never; Returns: string }
       get_attempt_status: {
-        Args: { p_attempt_id: string }
+        Args: { _participant_id?: string; p_attempt_id: string }
         Returns: {
           ai_evaluation: Json
           evaluation_status: string
@@ -1223,7 +1223,7 @@ export type Database = {
         }[]
       }
       get_test_attempt_by_id: {
-        Args: { p_attempt_id: string }
+        Args: { _participant_id?: string; p_attempt_id: string }
         Returns: {
           ai_evaluation: Json | null
           answers: Json
