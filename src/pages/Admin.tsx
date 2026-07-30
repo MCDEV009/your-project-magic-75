@@ -850,6 +850,49 @@ function AdminContent() {
                     </div>
                   ) : (
                     <>
+                      {/* Mobile card list */}
+                      <div className="space-y-3 md:hidden">
+                        {paginatedTests.map(test => (
+                          <div key={test.id} className="rounded-lg border p-3 space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="font-medium text-sm leading-snug">{test.title_uz}</p>
+                              <Badge variant={test.visibility === 'public' ? 'default' : 'secondary'} className="shrink-0">
+                                {test.visibility === 'public' ? 'Bepul' : 'Pulli'}
+                              </Badge>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                              <span>{test.subjects ? test.subjects.name_uz : '-'}</span>
+                              <span>{test.question_count} savol</span>
+                              <span>{test.attempt_count} ishtirokchi</span>
+                              {test.test_code && (
+                                <code className="px-1.5 py-0.5 bg-muted rounded font-mono">{test.test_code}</code>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-4 gap-2 pt-1">
+                              <Button variant="outline" size="sm" onClick={() => navigate(`/urecheater/test/${test.id}`)} aria-label="Tahrirlash">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => handleDuplicateTest(test)} aria-label="Nusxalash">
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => handleExportResults(test.id)} aria-label="Yuklab olish">
+                                <Download className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive"
+                                aria-label="O'chirish"
+                                onClick={() => { setTestToDelete(test); setDeleteDialogOpen(true); }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="hidden md:block overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -931,6 +974,7 @@ function AdminContent() {
                           })}
                         </TableBody>
                       </Table>
+                      </div>
                       
                       {totalPages > 1 && (
                         <div className="flex items-center justify-between pt-4 border-t mt-4">
