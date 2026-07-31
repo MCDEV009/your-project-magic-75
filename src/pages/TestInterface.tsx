@@ -51,8 +51,10 @@ function TestInterfaceContent() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showFsPrompt, setShowFsPrompt] = useState(false);
+  const [violations, setViolations] = useState(0);
   
   const autoSaveRef = useRef<NodeJS.Timeout | null>(null);
+  const finishRef = useRef<(auto?: boolean) => void>(() => {});
   const participantId = (location.state as { participantId?: string })?.participantId;
   const sessionCode = (location.state as { sessionCode?: string })?.sessionCode;
   const progressKey = attemptId ? `tia:progress:${attemptId}` : '';
@@ -294,12 +296,58 @@ function TestInterfaceContent() {
   // Mirror progress to localStorage on every change
   useEffect(() => {
     if (!progressKey) return;
+  
     try {
       localStorage.setItem(progressKey, JSON.stringify({
         mcq: mcqAnswers, written: writtenAnswers, currentIndex, ts: Date.now(),
       }));
     } catch {}
   }, [mcqAnswers, writtenAnswers, currentIndex, progressKey]);
+
+  // ── Anti-cheat guard: tab switch (max 3 warnings) + copy/paste blocking ──
+  useEffect(() => {
+    if (loading || submitting) return;
+
+    const registerViolation = () => {
+      setViolations((prev) => {
+        const next = prev + 1;
+        if (next >= 3) {
+          toast.error("3-chi ogohlantirish — imtihon avtomatik yakunlandi.");
+          finishRef.current(true);
+        } else {
+          toast.warning(
+            `Ogohlantirish ${next}/3: imtihon oynasidan chiqmang! 3-marta chiqsangiz, ish avtomatik yakunlanadi.`,
+          );
+        }
+        return next;
+      });
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') registerViolation();
+    };
+    const onBlur = () => registerViolation();
+    const block = (e: Event) => {
+      e.preventDefault();
+      toast.error("Nusxa olish / joylashtirish imtihon davomida taqiqlangan.");
+    };
+    const blockContext = (e: Event) => e.preventDefault();
+
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('copy', block);
+    document.addEventListener('cut', block);
+    document.addEventListener('paste', block);
+    document.addEventListener('contextmenu', blockContext);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('copy', block);
+      document.removeEventListener('cut', block);
+      document.removeEventListener('paste', block);
+      document.removeEventListener('contextmenu', blockContext);
+    };
+  }, [loading, submitting]);
 
   const handleSelectOption = (questionId: string, displayIndex: number) => {
     const optionData = shuffledOptions.get(questionId);
@@ -368,6 +416,8 @@ function TestInterfaceContent() {
       setSubmitting(false);
     }
   };
+
+  finishRef.current = handleFinish;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
