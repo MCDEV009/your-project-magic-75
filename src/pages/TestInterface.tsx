@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ChevronLeft, ChevronRight, Clock, Flag, Maximize, Minimize, PenLine, CheckSquare } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Flag, Maximize, Minimize, PenLine, CheckSquare, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -473,6 +473,12 @@ function TestInterfaceContent() {
               {test?.test_format === 'milliy_sertifikat' && (
                 <Badge variant="outline" className="hidden sm:flex">
                   Milliy Sertifikat
+                </Badge>
+              )}
+              {violations > 0 && (
+                <Badge variant="destructive" className="gap-1">
+                  <ShieldAlert className="h-3.5 w-3.5" />
+                  {violations}/3
                 </Badge>
               )}
             </div>
