@@ -13,6 +13,10 @@ interface GenerateRequest {
   count: number;
   topic?: string;
   language?: string;
+  /** Blok uslubi: oddiy yopiq test yoki moslashtirish topshirig'i */
+  style?: "mcq" | "matching";
+  /** Qo'shimcha blueprint ko'rsatmasi */
+  instruction?: string;
 }
 
 serve(async (req) => {
@@ -67,7 +71,7 @@ serve(async (req) => {
     }
 
     const body: GenerateRequest = await req.json();
-    const { subject, questionType, difficulty, count, topic, language = "uz" } = body;
+    const { subject, questionType, difficulty, count, topic, language = "uz", style, instruction } = body;
 
     console.log("Generating questions:", { subject, questionType, difficulty, count, topic, language });
 
@@ -118,6 +122,20 @@ Return a JSON object with this exact structure:
 }
 
 IMPORTANT: correct_option is a zero-based index (0 for A, 1 for B, 2 for C, 3 for D).`;
+
+      if (style === "matching") {
+        userPrompt += `
+
+MATCHING BLOCK FORMAT (BMBA Block 2):
+- Each question_text must present TWO lists: a numbered list (1,2,3,4) and a lettered list (A,B,C,D) that must be matched.
+- Put each list item on its own line inside question_text.
+- The four options must be full matching combinations, e.g. "1-A, 2-C, 3-D, 4-B".
+- Exactly one option is the fully correct combination.`;
+      }
+
+      if (instruction) {
+        userPrompt += `\n\nADDITIONAL BLUEPRINT INSTRUCTION: ${instruction}`;
+      }
     } else {
       systemPrompt = `You are an expert exam question generator for the Uzbekistan Milliy Sertifikat (National Certificate) exam system.
 Your task is to generate high-quality written/open-ended questions that match the official exam format for questions 36-45.
@@ -155,6 +173,9 @@ Return a JSON object with this exact structure:
     }
   ]
 }`;
+      if (instruction) {
+        userPrompt += `\n\nADDITIONAL BLUEPRINT INSTRUCTION: ${instruction}`;
+      }
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
