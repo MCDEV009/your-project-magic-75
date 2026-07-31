@@ -81,6 +81,7 @@ import { StudentRankingsTable } from '@/components/admin/StudentRankingsTable';
 import { AIAnalysisHistory } from '@/components/admin/AIAnalysisHistory';
 import { RaschMiniAnalytics } from '@/components/admin/RaschMiniAnalytics';
 import { RaschSettingsCard } from '@/components/admin/RaschSettingsCard';
+import { FullMockGenerator } from '@/components/admin/FullMockGenerator';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
 function AdminContent() {
@@ -654,6 +655,8 @@ function AdminContent() {
             <div className="space-y-6 animate-fade-in">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h1 className="text-xl md:text-2xl font-bold">{t('manageTests')}</h1>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <FullMockGenerator subjects={subjects} />
                 <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="gap-2 gradient-primary border-0 w-full sm:w-auto">
