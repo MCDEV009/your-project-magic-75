@@ -843,6 +843,7 @@ function AdminContent() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+                </div>
               </div>
               
               <Card className="shadow-card">
