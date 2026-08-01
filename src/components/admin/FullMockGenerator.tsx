@@ -150,7 +150,7 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
             To'liq Mock Imtihon Generatori
           </DialogTitle>
           <DialogDescription>
-            Fan tanlang — AI BMBA blueprinti asosida 45 savolli (3 blok) mock imtihon yaratadi.
+            Fan tanlang — AI shu fanning rasmiy BMBA tuzilishi bo'yicha to'liq mock imtihon yaratadi.
           </DialogDescription>
         </DialogHeader>
 
