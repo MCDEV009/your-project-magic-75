@@ -72,6 +72,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { LiveSessionsAdmin } from '@/components/admin/LiveSessionsAdmin';
+import { LiveMonitorPanel } from '@/components/admin/LiveMonitorPanel';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
  import { useTheme } from 'next-themes';
@@ -1084,8 +1085,9 @@ function AdminContent() {
           )}
 
           {activeTab === 'live' && (
-            <div className="animate-fade-in">
+            <div className="animate-fade-in space-y-8">
               <LiveSessionsAdmin />
+              <LiveMonitorPanel />
             </div>
           )}
         </div>

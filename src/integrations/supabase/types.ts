@@ -122,6 +122,39 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_violations: {
+        Row: {
+          attempt_id: string | null
+          created_at: string
+          details: string | null
+          id: string
+          participant_id: string | null
+          session_id: string | null
+          user_id: string | null
+          violation_type: string
+        }
+        Insert: {
+          attempt_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          participant_id?: string | null
+          session_id?: string | null
+          user_id?: string | null
+          violation_type: string
+        }
+        Update: {
+          attempt_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          participant_id?: string | null
+          session_id?: string | null
+          user_id?: string | null
+          violation_type?: string
+        }
+        Relationships: []
+      }
       live_participants: {
         Row: {
           attempt_id: string | null
@@ -1291,6 +1324,16 @@ export type Database = {
           _user_agent?: string
         }
         Returns: undefined
+      }
+      log_exam_violation: {
+        Args: {
+          _attempt_id: string
+          _details?: string
+          _participant_id?: string
+          _session_id?: string
+          _violation_type?: string
+        }
+        Returns: string
       }
       lookup_email_by_username: { Args: { _username: string }; Returns: string }
       purchase_test_with_wallet: {

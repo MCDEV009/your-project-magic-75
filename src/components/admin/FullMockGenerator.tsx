@@ -4,13 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Subject } from '@/types/test';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
-import { Sparkles, Loader2, Check } from 'lucide-react';
+import { Sparkles, Loader2, Check, Mic, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-import { EXAM_CATEGORIES, type SubjectBlueprint } from '@/lib/examBlueprints';
+import { EXAM_CATEGORIES, type SubjectBlueprint, type BlueprintBlock } from '@/lib/examBlueprints';
+import { ExamGenerationOverlay } from './ExamGenerationOverlay';
 
 interface Props {
   subjects: Subject[];
@@ -39,24 +39,24 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
 
   const generateBlock = async (
     bp: SubjectBlueprint,
-    style: 'mcq' | 'matching' | 'written',
-    count: number,
-    instruction: string,
+    block: BlueprintBlock,
   ): Promise<GenQuestion[]> => {
+    const count = block.to - block.from + 1;
+    const isWritten = block.style === 'written' || block.style === 'essay';
     const out: GenQuestion[] = [];
-    const chunk = style === 'written' ? 5 : 8;
+    const chunk = isWritten ? 2 : 8;
     for (let i = 0; i < count; i += chunk) {
       const n = Math.min(chunk, count - i);
       const { data, error } = await supabase.functions.invoke('generate-questions', {
         body: {
           subject: bp.name,
-          questionType: style === 'written' ? 'written' : 'single_choice',
-          style: style === 'matching' ? 'matching' : 'mcq',
+          questionType: isWritten ? 'written' : 'single_choice',
+          style: block.style === 'matching' ? 'matching' : 'mcq',
           difficulty: 'medium',
           count: n,
           topic: bp.topics,
-          instruction,
-          language: 'uz',
+          instruction: `${block.label}. ${block.instruction}`,
+          language: bp.isLanguage ? 'en' : 'uz',
         },
       });
       if (error) throw error;
@@ -77,14 +77,13 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         (s) => s.name_uz.toLowerCase().trim() === bp.name.toLowerCase().trim(),
       );
 
-      setStep("Blok 1: Yopiq testlar yaratilmoqda...");
-      const b1 = await generateBlock(bp, 'mcq', bp.blocks[0].to - bp.blocks[0].from + 1, bp.blocks[0].instruction);
-
-      setStep('Blok 2: Moslashtirish savollari yaratilmoqda...');
-      const b2 = await generateBlock(bp, 'matching', bp.blocks[1].to - bp.blocks[1].from + 1, bp.blocks[1].instruction);
-
-      setStep('Blok 3: Ochiq / yozma savollar yaratilmoqda...');
-      const b3 = await generateBlock(bp, 'written', bp.blocks[2].to - bp.blocks[2].from + 1, bp.blocks[2].instruction);
+      const active = bp.blocks.filter((b) => !b.comingSoon);
+      const all: GenQuestion[] = [];
+      for (const block of active) {
+        setStep(`${block.label} tayyorlanmoqda...`);
+        const part = await generateBlock(bp, block);
+        all.push(...part);
+      }
 
       setStep('Test saqlanmoqda...');
       const { data: { user } } = await supabase.auth.getUser();
@@ -103,7 +102,6 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         .single();
       if (testErr) throw testErr;
 
-      const all = [...b1, ...b2, ...b3];
       const rows = all.map((q, i) => ({
         test_id: (test as any).id,
         question_type: q.type === 'written' ? 'written' : 'single_choice',
@@ -152,7 +150,7 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
             To'liq Mock Imtihon Generatori
           </DialogTitle>
           <DialogDescription>
-            Fan tanlang — AI BMBA blueprinti asosida 45 savolli (3 blok) mock imtihon yaratadi.
+            Fan tanlang — AI shu fanning rasmiy BMBA tuzilishi bo'yicha to'liq mock imtihon yaratadi.
           </DialogDescription>
         </DialogHeader>
 
@@ -197,23 +195,55 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
             <div className="rounded-xl border bg-muted/40 p-3 space-y-1.5">
               <div className="text-xs uppercase tracking-widest text-muted-foreground">Blueprint</div>
               {selected.blocks.map((b) => (
-                <div key={b.label} className="flex items-center justify-between text-sm">
-                  <span>{b.label}</span>
-                  <span className="tabular-nums text-muted-foreground">{b.from}–{b.to}</span>
+                <div key={b.label} className="flex items-center justify-between gap-2 text-sm">
+                  <span className={b.comingSoon ? 'text-muted-foreground' : ''}>{b.label}</span>
+                  {b.comingSoon ? (
+                    <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+                      Tez orada
+                    </Badge>
+                  ) : (
+                    <span className="tabular-nums text-muted-foreground">{b.from}–{b.to}</span>
+                  )}
                 </div>
               ))}
             </div>
           )}
 
-          {busy && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" /> {step}
+          {selected?.blocks.some((b) => b.style === 'speaking') && (
+            <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-primary/5 p-4">
+              <div className="flex items-center gap-2 font-medium">
+                <Mic className="h-4 w-4 text-primary" />
+                Speaking
+                <Badge className="ml-auto bg-primary/20 text-primary border-0">Tez orada</Badge>
               </div>
-              <Progress value={Math.min(100, (done / total) * 100)} />
-              <div className="text-xs text-muted-foreground">{done}/{total} savol tayyor</div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Speaking test bo'limi tez orada ishga tushiriladi.
+              </p>
             </div>
           )}
+
+          {selected?.resources && selected.resources.length > 0 && (
+            <div className="rounded-xl border p-3 space-y-2">
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">
+                Til o'rganish resurslari (CEFR)
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {selected.resources.map((r) => (
+                  <a
+                    key={r.url}
+                    href={r.url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs hover:border-primary/50 hover:bg-primary/5"
+                  >
+                    {r.label} <ExternalLink className="h-3 w-3" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {busy && <ExamGenerationOverlay step={step} done={done} total={total} />}
 
           <Button
             className="w-full gap-2 gradient-primary border-0"
