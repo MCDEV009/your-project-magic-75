@@ -308,7 +308,20 @@ function TestInterfaceContent() {
   useEffect(() => {
     if (loading || submitting) return;
 
+    const logViolation = (type: string, details?: string) => {
+      try {
+        (supabase as any).rpc('log_exam_violation', {
+          _attempt_id: attemptId ?? null,
+          _participant_id: participantId ?? null,
+          _session_id: null,
+          _violation_type: type,
+          _details: details ?? null,
+        });
+      } catch {}
+    };
+
     const registerViolation = () => {
+      logViolation('tab_switch', 'Imtihon oynasidan chiqish aniqlandi');
       setViolations((prev) => {
         const next = prev + 1;
         if (next >= 3) {
@@ -329,6 +342,7 @@ function TestInterfaceContent() {
     const onBlur = () => registerViolation();
     const block = (e: Event) => {
       e.preventDefault();
+      logViolation(e.type === 'paste' ? 'paste' : e.type === 'cut' ? 'cut' : 'copy', 'Nusxa olish urinishi');
       toast.error("Nusxa olish / joylashtirish imtihon davomida taqiqlangan.");
     };
     const blockContext = (e: Event) => e.preventDefault();
