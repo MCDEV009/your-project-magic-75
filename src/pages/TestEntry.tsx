@@ -219,30 +219,15 @@ function TestEntryContent() {
     setSubmitting(true);
     
     try {
-      // Create participant
-      const { error: participantError } = await supabase
-        .from('test_participants')
-        .insert({
-          participant_id: participantId,
-          full_name: fullName.trim(),
-          user_id: user?.id ?? null,
-        });
-      
-      if (participantError) throw participantError;
-      
-      // Create test attempt
-      const { data: attempt, error: attemptError } = await supabase
-        .from('test_attempts')
-        .insert({
-          test_id: test.id,
-          participant_id: participantId,
-          total_questions: questionCount,
-          status: 'in_progress'
-        })
-        .select()
-        .single();
-      
-      if (attemptError) throw attemptError;
+      // Create participant + attempt atomically (works for guests too)
+      const { data: attempt, error: attemptError } = await (supabase as any).rpc('start_test_attempt', {
+        _test_id: test.id,
+        _participant_id: participantId,
+        _full_name: fullName.trim(),
+        _total_questions: questionCount,
+      });
+
+      if (attemptError || !attempt?.id) throw attemptError ?? new Error('attempt_not_created');
       
       // Track usage for free plan
       if (user) { try { await increment('mocks_taken'); } catch {} }
