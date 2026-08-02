@@ -1353,6 +1353,39 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      start_test_attempt: {
+        Args: {
+          _full_name: string
+          _participant_id: string
+          _session_id?: string
+          _test_id: string
+          _total_questions?: number
+        }
+        Returns: {
+          ai_evaluation: Json | null
+          answers: Json
+          correct_answers: number | null
+          evaluation_status: string | null
+          finished_at: string | null
+          id: string
+          mcq_score: number | null
+          participant_id: string
+          score: number | null
+          session_id: string | null
+          started_at: string
+          status: Database["public"]["Enums"]["attempt_status"]
+          test_id: string
+          total_questions: number | null
+          written_answers: Json | null
+          written_score: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "test_attempts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_test_attempt: {
         Args: {
           _answers: Json
