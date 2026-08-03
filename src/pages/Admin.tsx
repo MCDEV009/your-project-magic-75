@@ -82,6 +82,7 @@ import { StudentRankingsTable } from '@/components/admin/StudentRankingsTable';
 import { AIAnalysisHistory } from '@/components/admin/AIAnalysisHistory';
 import { RaschMiniAnalytics } from '@/components/admin/RaschMiniAnalytics';
 import { RaschSettingsCard } from '@/components/admin/RaschSettingsCard';
+import { PaymentsAdminCard } from '@/components/admin/PaymentsAdminCard';
 import { FullMockGenerator } from '@/components/admin/FullMockGenerator';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
@@ -648,6 +649,7 @@ function AdminContent() {
 
               <RaschMiniAnalytics />
               {(isFullAdmin || isSuperAdmin) && <RaschSettingsCard />}
+              {(isFullAdmin || isSuperAdmin) && <PaymentsAdminCard />}
             </div>
           )}
 
