@@ -393,8 +393,8 @@ function WalletContent() {
               </div>
               <div className="space-y-2">
                 <Label>To'lov usuli</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(['payme', 'click'] as Provider[]).map((p) => (
+                <div className="grid grid-cols-3 gap-2">
+                  {(['manual', 'payme', 'click'] as Provider[]).map((p) => (
                     <button
                       key={p}
                       type="button"
@@ -403,14 +403,53 @@ function WalletContent() {
                         provider === p ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
                       }`}
                     >
-                      <div className="font-medium capitalize">{p}</div>
+                      <div className="font-medium capitalize">{p === 'manual' ? 'Karta' : p}</div>
                       <div className="text-xs text-muted-foreground">
-                        {p === 'payme' ? 'Payme orqali to\u2018lov' : 'Click orqali to\u2018lov'}
+                        {p === 'manual'
+                          ? 'Karta raqamiga o\u2018tkazma'
+                          : p === 'payme' ? 'Payme orqali to\u2018lov' : 'Click orqali to\u2018lov'}
                       </div>
                     </button>
                   ))}
                 </div>
               </div>
+
+              {provider === 'manual' && (
+                <div className="space-y-3 rounded-lg border p-4 bg-muted/30">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <CreditCard className="h-4 w-4 text-primary" /> Karta raqamiga o'tkazing
+                  </div>
+                  <div className="flex items-center justify-between gap-2 rounded-md bg-background border px-3 py-2">
+                    <span className="font-mono text-base tracking-wider">
+                      {cardInfo?.card_number || '—'}
+                    </span>
+                    <Button type="button" size="sm" variant="ghost" onClick={copyCard} className="gap-1">
+                      {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                      Nusxalash
+                    </Button>
+                  </div>
+                  <div className="text-sm text-muted-foreground space-y-0.5">
+                    {cardInfo?.card_holder && <div>Karta egasi: <span className="text-foreground font-medium">{cardInfo.card_holder}</span></div>}
+                    {cardInfo?.bank_name && <div>Bank: {cardInfo.bank_name}</div>}
+                  </div>
+                  {cardInfo?.instructions && (
+                    <p className="text-xs text-muted-foreground whitespace-pre-line">{cardInfo.instructions}</p>
+                  )}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="payer-note">To'lovchi ma'lumoti (ixtiyoriy)</Label>
+                    <Input
+                      id="payer-note"
+                      placeholder="Ism yoki kartangizning oxirgi 4 raqami"
+                      value={payerNote}
+                      maxLength={200}
+                      onChange={(e) => setPayerNote(e.target.value)}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    O'tkazmadan so'ng "To'lov yaratish" tugmasini bosing — admin tasdiqlagach balans avtomatik to'ldiriladi.
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-3 py-2">
@@ -434,7 +473,9 @@ function WalletContent() {
               {pendingTxn.status === 'pending' && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                   <ClockIcon className="h-3 w-3" />
-                  Webhook orqali tasdiqlangach balans avtomatik yangilanadi.
+                  {pendingTxn.provider === 'manual'
+                    ? `Pulni ${cardInfo?.card_number ?? 'karta raqamiga'} kartasiga o'tkazing. Admin tasdiqlagach balans avtomatik yangilanadi.`
+                    : 'Webhook orqali tasdiqlangach balans avtomatik yangilanadi.'}
                 </p>
               )}
             </div>
