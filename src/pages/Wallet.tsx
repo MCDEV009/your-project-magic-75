@@ -24,6 +24,7 @@ import {
   Wallet as WalletIcon, Plus, ArrowDownLeft, ArrowUpRight, RefreshCw,
   Search, X, Loader2, CheckCircle2, XCircle, Clock as ClockIcon,
 } from 'lucide-react';
+import { CreditCard, Copy, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,6 +33,13 @@ type TxnStatus = 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded';
 type StatusFilter = 'all' | TxnStatus;
 
 interface WalletRow { balance: number; currency: string }
+
+interface PaymentSettings {
+  card_number: string;
+  card_holder: string;
+  bank_name: string;
+  instructions: string;
+}
 
 interface TxnRow {
   id: string;
@@ -76,7 +84,10 @@ function WalletContent() {
   // Top-up modal
   const [modalOpen, setModalOpen] = useState(false);
   const [amount, setAmount] = useState<string>('50000');
-  const [provider, setProvider] = useState<Provider>('payme');
+  const [provider, setProvider] = useState<Provider>('manual');
+  const [cardInfo, setCardInfo] = useState<PaymentSettings | null>(null);
+  const [payerNote, setPayerNote] = useState('');
+  const [copied, setCopied] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [pendingTxnId, setPendingTxnId] = useState<string | null>(null);
   const [pendingTxn, setPendingTxn] = useState<TxnRow | null>(null);
@@ -106,6 +117,26 @@ function WalletContent() {
   };
 
   useEffect(() => { if (user) load(); /* eslint-disable-next-line */ }, [user]);
+
+  // Card transfer details (admin-managed)
+  useEffect(() => {
+    supabase.from('payment_settings')
+      .select('card_number, card_holder, bank_name, instructions')
+      .maybeSingle()
+      .then(({ data }) => { if (data) setCardInfo(data as PaymentSettings); });
+  }, []);
+
+  const copyCard = async () => {
+    if (!cardInfo?.card_number) return;
+    try {
+      await navigator.clipboard.writeText(cardInfo.card_number.replace(/\s+/g, ''));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast({ title: 'Nusxalandi', description: 'Karta raqami buferga ko\u2018chirildi' });
+    } catch {
+      toast({ title: 'Nusxalab bo\u2018lmadi', variant: 'destructive' });
+    }
+  };
 
   // Real-time subscription to this user's transactions and wallet
   useEffect(() => {
@@ -159,7 +190,14 @@ function WalletContent() {
       provider,
       status: 'pending',
       type: 'topup',
-      metadata: { source: 'wallet_page' },
+      metadata: provider === 'manual'
+        ? {
+            source: 'wallet_page',
+            method: 'card_transfer',
+            card_number: cardInfo?.card_number ?? null,
+            payer_note: payerNote.trim().slice(0, 200),
+          }
+        : { source: 'wallet_page' },
     }).select('id, amount, currency, provider, status, type, created_at, paid_at').single();
     setSubmitting(false);
     if (error || !data) {
@@ -176,6 +214,7 @@ function WalletContent() {
     setModalOpen(false);
     setPendingTxnId(null);
     setPendingTxn(null);
+    setPayerNote('');
     if (pollRef.current) clearInterval(pollRef.current);
   };
 
