@@ -122,6 +122,21 @@ export type Database = {
         }
         Relationships: []
       }
+      attempt_analytics_applied: {
+        Row: {
+          applied_at: string
+          attempt_id: string
+        }
+        Insert: {
+          applied_at?: string
+          attempt_id: string
+        }
+        Update: {
+          applied_at?: string
+          attempt_id?: string
+        }
+        Relationships: []
+      }
       exam_violations: {
         Row: {
           attempt_id: string | null
@@ -254,6 +269,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_settings: {
+        Row: {
+          bank_name: string
+          card_holder: string
+          card_number: string
+          id: boolean
+          instructions: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          bank_name?: string
+          card_holder?: string
+          card_number?: string
+          id?: boolean
+          instructions?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          bank_name?: string
+          card_holder?: string
+          card_number?: string
+          id?: boolean
+          instructions?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       plan_payments: {
         Row: {
@@ -883,6 +928,39 @@ export type Database = {
           },
         ]
       }
+      trigger_error_log: {
+        Row: {
+          attempt_id: string | null
+          created_at: string
+          detail: string | null
+          id: string
+          message: string | null
+          source: string
+          sqlstate: string | null
+          test_id: string | null
+        }
+        Insert: {
+          attempt_id?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          message?: string | null
+          source: string
+          sqlstate?: string | null
+          test_id?: string | null
+        }
+        Update: {
+          attempt_id?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          message?: string | null
+          source?: string
+          sqlstate?: string | null
+          test_id?: string | null
+        }
+        Relationships: []
+      }
       usage_counters: {
         Row: {
           ai_requests: number
@@ -1334,6 +1412,17 @@ export type Database = {
           _violation_type?: string
         }
         Returns: string
+      }
+      log_trigger_error: {
+        Args: {
+          _attempt_id: string
+          _detail: string
+          _message: string
+          _source: string
+          _sqlstate: string
+          _test_id: string
+        }
+        Returns: undefined
       }
       lookup_email_by_username: { Args: { _username: string }; Returns: string }
       purchase_test_with_wallet: {
