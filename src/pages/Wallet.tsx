@@ -27,6 +27,7 @@ import {
 import { CreditCard, Copy, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { PaymentStatusBanner } from '@/components/wallet/PaymentStatusBanner';
 
 type Provider = 'payme' | 'click' | 'manual';
 type TxnStatus = 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded';
@@ -262,6 +263,8 @@ function WalletContent() {
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
+
+        <PaymentStatusBanner />
 
         <Card className="overflow-hidden border-0 shadow-soft gradient-primary text-primary-foreground">
           <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
