@@ -236,12 +236,39 @@ Return a JSON object with this exact structure:
       try {
         return JSON.parse(cleaned);
       } catch (_e) {
-        // Fix common LLM JSON issues
-        let fixed = cleaned
+        // Fix common LLM JSON issues.
+        // Pairwise scan: keep valid escapes intact, double-up invalid ones (LaTeX \sqrt, \frac ...)
+        const escapeLatex = (src: string): string => {
+          let out = "";
+          let inStr = false;
+          for (let i = 0; i < src.length; i++) {
+            const c = src[i];
+            if (!inStr) {
+              if (c === '"') inStr = true;
+              out += c;
+              continue;
+            }
+            if (c === '"') { inStr = false; out += c; continue; }
+            if (c === '\\') {
+              const n = src[i + 1];
+              if (n === undefined) { out += '\\\\'; continue; }
+              if ('"\\/bfnrt'.includes(n)) { out += c + n; i++; continue; }
+              if (n === 'u' && /^[0-9a-fA-F]{4}$/.test(src.slice(i + 2, i + 6))) {
+                out += src.slice(i, i + 6); i += 5; continue;
+              }
+              out += '\\\\'; // lone backslash -> escaped backslash
+              continue;
+            }
+            out += c;
+          }
+          return out;
+        };
+        let fixed = escapeLatex(
+          cleaned
+            .replace(/[\x00-\x1F\x7F]/g, "") // control characters
+        )
           .replace(/,\s*}/g, "}") // trailing commas
-          .replace(/,\s*]/g, "]")
-          .replace(/[\x00-\x1F\x7F]/g, "") // control characters
-          .replace(/\\(?!["\\/bfnrtu])/g, '\\\\'); // invalid escapes (LaTeX)
+          .replace(/,\s*]/g, "]");
         try {
           return JSON.parse(fixed);
         } catch (_e2) {
