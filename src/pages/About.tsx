@@ -116,7 +116,7 @@ function AboutContent() {
               </Badge>
 
               <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl mb-6 text-balance">
-                Platforma <span className="gradient-text">haqida</span>
+                Platforma haqida
               </h1>
 
               <p className="text-xl text-muted-foreground mb-10 text-balance max-w-2xl mx-auto">

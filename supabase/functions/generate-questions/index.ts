@@ -1,3 +1,4 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
@@ -18,7 +19,7 @@ interface GenerateRequest {
   instruction?: string;
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -64,9 +65,9 @@ Deno.serve(async (req) => {
     }
     // --- End authentication ---
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
+    if (!GROQ_API_KEY) {
+      throw new Error("GROQ_API_KEY is not configured");
     }
 
     const body: GenerateRequest = await req.json();
@@ -177,14 +178,14 @@ Return a JSON object with this exact structure:
       }
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${GROQ_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3.6-flash",
+        model: "openai/gpt-oss-120b",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
@@ -236,39 +237,12 @@ Return a JSON object with this exact structure:
       try {
         return JSON.parse(cleaned);
       } catch (_e) {
-        // Fix common LLM JSON issues.
-        // Pairwise scan: keep valid escapes intact, double-up invalid ones (LaTeX \sqrt, \frac ...)
-        const escapeLatex = (src: string): string => {
-          let out = "";
-          let inStr = false;
-          for (let i = 0; i < src.length; i++) {
-            const c = src[i];
-            if (!inStr) {
-              if (c === '"') inStr = true;
-              out += c;
-              continue;
-            }
-            if (c === '"') { inStr = false; out += c; continue; }
-            if (c === '\\') {
-              const n = src[i + 1];
-              if (n === undefined) { out += '\\\\'; continue; }
-              if ('"\\/bfnrt'.includes(n)) { out += c + n; i++; continue; }
-              if (n === 'u' && /^[0-9a-fA-F]{4}$/.test(src.slice(i + 2, i + 6))) {
-                out += src.slice(i, i + 6); i += 5; continue;
-              }
-              out += '\\\\'; // lone backslash -> escaped backslash
-              continue;
-            }
-            out += c;
-          }
-          return out;
-        };
-        let fixed = escapeLatex(
-          cleaned
-            .replace(/[\x00-\x1F\x7F]/g, "") // control characters
-        )
+        // Fix common LLM JSON issues
+        let fixed = cleaned
           .replace(/,\s*}/g, "}") // trailing commas
-          .replace(/,\s*]/g, "]");
+          .replace(/,\s*]/g, "]")
+          .replace(/[\x00-\x1F\x7F]/g, "") // control characters
+          .replace(/\\(?!["\\/bfnrtu])/g, '\\\\'); // invalid escapes (LaTeX)
         try {
           return JSON.parse(fixed);
         } catch (_e2) {
