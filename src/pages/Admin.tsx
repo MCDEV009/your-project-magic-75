@@ -72,7 +72,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { LiveSessionsAdmin } from '@/components/admin/LiveSessionsAdmin';
-import { LiveMonitorPanel } from '@/components/admin/LiveMonitorPanel';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
  import { useTheme } from 'next-themes';
@@ -82,7 +81,6 @@ import { StudentRankingsTable } from '@/components/admin/StudentRankingsTable';
 import { AIAnalysisHistory } from '@/components/admin/AIAnalysisHistory';
 import { RaschMiniAnalytics } from '@/components/admin/RaschMiniAnalytics';
 import { RaschSettingsCard } from '@/components/admin/RaschSettingsCard';
-import { PaymentsAdminCard } from '@/components/admin/PaymentsAdminCard';
 import { FullMockGenerator } from '@/components/admin/FullMockGenerator';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
@@ -447,7 +445,7 @@ function AdminContent() {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
             <BookOpen className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-bold text-sidebar-foreground">TestHub Admin</span>
+          <span className="font-bold text-sidebar-foreground">ALKHARAZMIY XYZ</span>
         </div>
       </div>
 
@@ -649,7 +647,6 @@ function AdminContent() {
 
               <RaschMiniAnalytics />
               {(isFullAdmin || isSuperAdmin) && <RaschSettingsCard />}
-              {(isFullAdmin || isSuperAdmin) && <PaymentsAdminCard />}
             </div>
           )}
 
@@ -1087,9 +1084,8 @@ function AdminContent() {
           )}
 
           {activeTab === 'live' && (
-            <div className="animate-fade-in space-y-8">
+            <div className="animate-fade-in">
               <LiveSessionsAdmin />
-              <LiveMonitorPanel />
             </div>
           )}
         </div>

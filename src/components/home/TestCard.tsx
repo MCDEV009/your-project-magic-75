@@ -53,18 +53,18 @@ export function TestCard({ test, questionCount = 0, priceUzs, isFree, purchased 
             </Badge>
           )}
           {isSundayFree && (
-            <Badge className="w-fit gap-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+            <Badge className="w-fit gap-1 border-success/30 bg-success/10 text-success">
               Yakshanba bepul
             </Badge>
           )}
           {isPaid && !purchased && (
-            <Badge className="w-fit gap-1 bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20">
+            <Badge className="w-fit gap-1 border-warning/30 bg-warning/10 text-warning">
               <Coins className="h-3 w-3" />
               {formatPrice(displayPrice)}
             </Badge>
           )}
           {isPaid && purchased && (
-            <Badge className="w-fit gap-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+            <Badge className="w-fit gap-1 border-success/30 bg-success/10 text-success">
               <CheckCircle2 className="h-3 w-3" />
               Sotib olingan
             </Badge>
@@ -94,7 +94,7 @@ export function TestCard({ test, questionCount = 0, priceUzs, isFree, purchased 
           {isPaid && !purchased ? (
             <>
               <Lock className="mr-2 h-4 w-4" />
-              {`Sotib olish · ${formatPrice(displayPrice)}`}
+              {`Sotib olish (${formatPrice(displayPrice)})`}
             </>
           ) : (
             t('startTest')
