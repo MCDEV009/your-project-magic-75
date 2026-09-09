@@ -22,7 +22,6 @@ import {
 import { format } from 'date-fns';
 import { exportAttemptSummaryPdf } from '@/lib/attemptPdfExport';
 import { toast } from 'sonner';
-import { PaymentStatusBanner } from '@/components/wallet/PaymentStatusBanner';
 
 interface AttemptWithTest {
   id: string;
@@ -256,8 +255,6 @@ function DashboardContent() {
               </Button>
             </div>
           </div>
-
-          <PaymentStatusBanner />
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="shadow-card">

@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Lock, GraduationCap, FileQuestion, PenLine, CheckCircle } from 'lucide-react';
+import { ArrowRight, Lock } from 'lucide-react';
 
 export function HeroSection() {
   const { t } = useLanguage();
@@ -19,59 +17,55 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative overflow-hidden py-20 lg:py-32">
-      {/* Background decoration */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
-      </div>
+    <section className="relative overflow-hidden border-b py-16 lg:py-24">
+      {/* Quiet graph-paper texture — the one deliberate motif, used once */}
+      <div className="grid-paper absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black,transparent)]" />
 
       <div className="test-container">
-        <div className="mx-auto max-w-4xl text-center animate-fade-in">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            <GraduationCap className="h-4 w-4" />
-            Milliy Sertifikat Mock Test Platformasi
+        <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div>
+            <p className="mb-3 text-sm font-medium text-muted-foreground">
+              Milliy Sertifikat imtihoniga tayyorgarlik
+            </p>
+
+            <h1 className="max-w-xl text-4xl leading-tight sm:text-5xl">
+              Imtihon kunidan oldin, imtihon kabi mashq qiling
+            </h1>
+
+            <p className="mt-6 max-w-lg text-lg text-muted-foreground">
+              Har bir mock test — 35 ta yopiq savol va 10 ta yozma savol — Milliy Sertifikat
+              imtihonining aniq nusxasi. Barcha umumta'lim fanlari bo'yicha: matematika,
+              fizika, kimyo, biologiya, tarix, geografiya, ona tili va adabiyot, huquqshunoslik,
+              boshlang'ich ta'lim, musiqa madaniyati va chet tili. Yozma javoblaringizni AI baholaydi.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button size="lg" onClick={() => navigate('/tests')} className="h-12 px-6">
+                {t('publicTests')}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Structured like an exam cover sheet, not an icon badge row */}
+            <dl className="mt-10 grid max-w-lg grid-cols-3 divide-x divide-border border-y">
+              <div className="py-4 pr-4">
+                <dt className="text-xs text-muted-foreground">Savollar</dt>
+                <dd className="mt-1 font-serif text-2xl text-foreground">35 + 10</dd>
+              </div>
+              <div className="py-4 px-4">
+                <dt className="text-xs text-muted-foreground">Fanlar</dt>
+                <dd className="mt-1 font-serif text-2xl text-foreground">12</dd>
+              </div>
+              <div className="py-4 pl-4">
+                <dt className="text-xs text-muted-foreground">Baholash</dt>
+                <dd className="mt-1 font-serif text-2xl text-foreground">AI</dd>
+              </div>
+            </dl>
           </div>
 
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl mb-6 text-balance">
-            O'zbekiston Milliy Sertifikat <br />
-            <span className="gradient-text">Mock Imtihon</span>
-          </h1>
-
-          <p className="text-xl text-muted-foreground mb-8 text-balance max-w-2xl mx-auto">
-            Haqiqiy imtihon formatida tayyorlaning. 35 ta test savoli va 10 ta yozma savol bilan to'liq formatda mashq qiling.
-          </p>
-
-          {/* Features */}
-          <div className="flex flex-wrap justify-center gap-3 mb-10">
-            <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-sm">
-              <FileQuestion className="h-4 w-4" />
-              35 test savoli
-            </Badge>
-            <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-sm">
-              <PenLine className="h-4 w-4" />
-              10 yozma savol
-            </Badge>
-            <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-sm">
-              <CheckCircle className="h-4 w-4" />
-              AI baholash
-            </Badge>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button
-              size="lg"
-              onClick={() => navigate('/tests')}
-              className="gradient-primary border-0 shadow-soft hover:shadow-glow transition-all text-lg px-8 h-14"
-            >
-              {t('publicTests')}
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Private test code entry */}
-          <Card className="mx-auto max-w-md p-6 shadow-card border-2 border-dashed border-muted-foreground/20">
-            <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+          {/* Private test code entry — framed as an access panel, not a floating card */}
+          <div className="border bg-card p-6 shadow-card">
+            <div className="mb-4 flex items-center gap-2 text-muted-foreground">
               <Lock className="h-4 w-4" />
               <span className="text-sm font-medium">{t('privateTest')}</span>
             </div>
@@ -84,15 +78,11 @@ export function HeroSection() {
                 className="text-center text-lg font-mono tracking-widest"
                 maxLength={5}
               />
-              <Button
-                onClick={handlePrivateTest}
-                disabled={testCode.length !== 5}
-                className="gradient-accent border-0 text-accent-foreground"
-              >
+              <Button onClick={handlePrivateTest} disabled={testCode.length !== 5}>
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </section>
