@@ -122,6 +122,54 @@ export type Database = {
         }
         Relationships: []
       }
+      attempt_analytics_applied: {
+        Row: {
+          applied_at: string
+          attempt_id: string
+        }
+        Insert: {
+          applied_at?: string
+          attempt_id: string
+        }
+        Update: {
+          applied_at?: string
+          attempt_id?: string
+        }
+        Relationships: []
+      }
+      exam_violations: {
+        Row: {
+          attempt_id: string | null
+          created_at: string
+          details: string | null
+          id: string
+          participant_id: string | null
+          session_id: string | null
+          user_id: string | null
+          violation_type: string
+        }
+        Insert: {
+          attempt_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          participant_id?: string | null
+          session_id?: string | null
+          user_id?: string | null
+          violation_type: string
+        }
+        Update: {
+          attempt_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          participant_id?: string | null
+          session_id?: string | null
+          user_id?: string | null
+          violation_type?: string
+        }
+        Relationships: []
+      }
       live_participants: {
         Row: {
           attempt_id: string | null
@@ -221,6 +269,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_settings: {
+        Row: {
+          bank_name: string
+          card_holder: string
+          card_number: string
+          id: boolean
+          instructions: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          bank_name?: string
+          card_holder?: string
+          card_number?: string
+          id?: boolean
+          instructions?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          bank_name?: string
+          card_holder?: string
+          card_number?: string
+          id?: boolean
+          instructions?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       plan_payments: {
         Row: {
@@ -850,6 +928,39 @@ export type Database = {
           },
         ]
       }
+      trigger_error_log: {
+        Row: {
+          attempt_id: string | null
+          created_at: string
+          detail: string | null
+          id: string
+          message: string | null
+          source: string
+          sqlstate: string | null
+          test_id: string | null
+        }
+        Insert: {
+          attempt_id?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          message?: string | null
+          source: string
+          sqlstate?: string | null
+          test_id?: string | null
+        }
+        Update: {
+          attempt_id?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          message?: string | null
+          source?: string
+          sqlstate?: string | null
+          test_id?: string | null
+        }
+        Relationships: []
+      }
       usage_counters: {
         Row: {
           ai_requests: number
@@ -1292,6 +1403,27 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_exam_violation: {
+        Args: {
+          _attempt_id: string
+          _details?: string
+          _participant_id?: string
+          _session_id?: string
+          _violation_type?: string
+        }
+        Returns: string
+      }
+      log_trigger_error: {
+        Args: {
+          _attempt_id: string
+          _detail: string
+          _message: string
+          _source: string
+          _sqlstate: string
+          _test_id: string
+        }
+        Returns: undefined
+      }
       lookup_email_by_username: { Args: { _username: string }; Returns: string }
       purchase_test_with_wallet: {
         Args: { _test_id: string }
@@ -1306,6 +1438,39 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "test_purchases"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      start_test_attempt: {
+        Args: {
+          _full_name: string
+          _participant_id: string
+          _session_id?: string
+          _test_id: string
+          _total_questions?: number
+        }
+        Returns: {
+          ai_evaluation: Json | null
+          answers: Json
+          correct_answers: number | null
+          evaluation_status: string | null
+          finished_at: string | null
+          id: string
+          mcq_score: number | null
+          participant_id: string
+          score: number | null
+          session_id: string | null
+          started_at: string
+          status: Database["public"]["Enums"]["attempt_status"]
+          test_id: string
+          total_questions: number | null
+          written_answers: Json | null
+          written_score: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "test_attempts"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1378,12 +1543,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1407,11 +1572,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1432,11 +1597,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1457,11 +1622,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1474,11 +1639,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
