@@ -137,11 +137,11 @@ serve(async (req) => {
       );
     }
 
-    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    if (!GROQ_API_KEY) {
+    if (!LOVABLE_API_KEY) {
       throw new Error("Server configuration error");
     }
     
@@ -222,7 +222,19 @@ serve(async (req) => {
     const mcqQuestions = allQuestions.filter((q: any) => q.question_type === 'single_choice');
     const writtenQuestions = allQuestions.filter((q: any) => q.question_type === 'written');
     const answers = attempt.answers || {};
-    const writtenAnswers = attempt.written_answers || {};
+    const rawWrittenAnswers = attempt.written_answers || {};
+    // Turli mijoz versiyalari {answer_a,answer_b} yoki {a,b} ko'rinishida yuborishi mumkin
+    const writtenAnswers: Record<string, WrittenAnswer> = {};
+    for (const [qid, val] of Object.entries(rawWrittenAnswers as Record<string, any>)) {
+      if (typeof val === 'string') {
+        writtenAnswers[qid] = { answer_a: val, answer_b: '' };
+      } else if (val && typeof val === 'object') {
+        writtenAnswers[qid] = {
+          answer_a: String(val.answer_a ?? val.a ?? ''),
+          answer_b: String(val.answer_b ?? val.b ?? ''),
+        };
+      }
+    }
     const isMilliySertifikat = attempt.tests?.test_format === 'milliy_sertifikat';
 
     // --- Compute MCQ scores server-side (difficulty-based points) ---
@@ -417,14 +429,14 @@ Evaluate each condition separately. The total score should reflect performance o
 Respond with JSON only.`;
 
       try {
-        const aiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${GROQ_API_KEY}`,
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "openai/gpt-oss-120b",
+            model: "google/gemini-3.8-flash",
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt }

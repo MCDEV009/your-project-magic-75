@@ -37,6 +37,16 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
   const [step, setStep] = useState('');
   const [done, setDone] = useState(0);
 
+  const isValid = (q: GenQuestion, style: 'mcq' | 'matching' | 'written') => {
+    if (!q?.question_text || typeof q.question_text !== 'string') return false;
+    if (style === 'written') return q.type === 'written';
+    return Array.isArray(q.options)
+      && q.options.length === 4
+      && q.options.every((o) => typeof o === 'string' && o.trim().length > 0)
+      && typeof q.correct_option === 'number'
+      && q.correct_option >= 0 && q.correct_option <= 3;
+  };
+
   const generateBlock = async (
     bp: SubjectBlueprint,
     style: 'mcq' | 'matching' | 'written',
@@ -45,8 +55,12 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
   ): Promise<GenQuestion[]> => {
     const out: GenQuestion[] = [];
     const chunk = style === 'written' ? 5 : 8;
-    for (let i = 0; i < count; i += chunk) {
-      const n = Math.min(chunk, count - i);
+    let guard = 0;
+
+    // Blok to'lguncha davom etamiz (AI kam yoki yaroqsiz savol qaytarsa qayta so'raladi)
+    while (out.length < count && guard < 12) {
+      guard++;
+      const n = Math.min(chunk, count - out.length);
       const { data, error } = await supabase.functions.invoke('generate-questions', {
         body: {
           subject: bp.name,
@@ -60,11 +74,26 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         },
       });
       if (error) throw error;
-      const qs: GenQuestion[] = data?.questions || [];
-      out.push(...qs.slice(0, n));
-      setDone((d) => d + qs.slice(0, n).length);
+      const raw: GenQuestion[] = Array.isArray(data?.questions) ? data.questions : [];
+      const seen = new Set(out.map((q) => q.question_text.trim().toLowerCase()));
+      const good = raw
+        .map((q) => ({ ...q, type: style === 'written' ? 'written' as const : 'single_choice' as const }))
+        .filter((q) => isValid(q, style))
+        .filter((q) => {
+          const k = q.question_text.trim().toLowerCase();
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        })
+        .slice(0, count - out.length);
+      out.push(...good);
+      setDone((d) => d + good.length);
     }
-    return out;
+
+    if (out.length < count) {
+      throw new Error(`${style} bloki to'liq yaratilmadi (${out.length}/${count}). Qayta urinib ko'ring.`);
+    }
+    return out.slice(0, count);
   };
 
   const handleGenerate = async () => {
@@ -77,14 +106,19 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         (s) => s.name_uz.toLowerCase().trim() === bp.name.toLowerCase().trim(),
       );
 
-      setStep("Blok 1: Yopiq testlar yaratilmoqda...");
-      const b1 = await generateBlock(bp, 'mcq', bp.blocks[0].to - bp.blocks[0].from + 1, bp.blocks[0].instruction);
+      const all: GenQuestion[] = [];
+      for (let bi = 0; bi < bp.blocks.length; bi++) {
+        const blk = bp.blocks[bi];
+        const need = blk.to - blk.from + 1;
+        setStep(`${blk.label} yaratilmoqda (${need} ta savol)...`);
+        const qs = await generateBlock(bp, blk.style, need, blk.instruction);
+        all.push(...qs);
+      }
 
-      setStep('Blok 2: Moslashtirish savollari yaratilmoqda...');
-      const b2 = await generateBlock(bp, 'matching', bp.blocks[1].to - bp.blocks[1].from + 1, bp.blocks[1].instruction);
+      if (all.length !== bp.totalQuestions) {
+        throw new Error(`Savollar soni mos kelmadi: ${all.length}/${bp.totalQuestions}`);
+      }
 
-      setStep('Blok 3: Ochiq / yozma savollar yaratilmoqda...');
-      const b3 = await generateBlock(bp, 'written', bp.blocks[2].to - bp.blocks[2].from + 1, bp.blocks[2].instruction);
 
       setStep('Test saqlanmoqda...');
       const { data: { user } } = await supabase.auth.getUser();
@@ -103,7 +137,6 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         .single();
       if (testErr) throw testErr;
 
-      const all = [...b1, ...b2, ...b3];
       const rows = all.map((q, i) => ({
         test_id: (test as any).id,
         question_type: q.type === 'written' ? 'written' : 'single_choice',
@@ -117,11 +150,25 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         rubric_uz: q.rubric ?? null,
         condition_a_uz: q.condition_a ?? null,
         condition_b_uz: q.condition_b ?? null,
+        points_a: q.type === 'written' ? 1.5 : null,
+        points_b: q.type === 'written' ? 1.7 : null,
       }));
       const { error: qErr } = await supabase.from('questions').insert(rows as any);
-      if (qErr) throw qErr;
+      if (qErr) {
+        // Bo'sh testni qoldirmaymiz
+        await supabase.from('tests').delete().eq('id', (test as any).id);
+        throw qErr;
+      }
 
-      toast.success(`${rows.length} ta savolli mock yaratildi`);
+      const { count: savedCount } = await supabase
+        .from('questions')
+        .select('id', { count: 'exact', head: true })
+        .eq('test_id', (test as any).id);
+      if ((savedCount ?? 0) !== rows.length) {
+        throw new Error(`Bazaga ${savedCount}/${rows.length} savol saqlandi`);
+      }
+
+      toast.success(`${rows.length} ta savol bazaga saqlandi — mock tayyor`);
       setOpen(false);
       setSelected(null);
       onCreated?.();

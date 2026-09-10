@@ -308,9 +308,19 @@ function TestInterfaceContent() {
   useEffect(() => {
     if (loading || submitting) return;
 
+    const logViolation = (type: string, details: string) => {
+      void (supabase as any).rpc('log_exam_violation', {
+        _attempt_id: attemptId,
+        _session_id: null,
+        _violation_type: type,
+        _details: details,
+      });
+    };
+
     const registerViolation = () => {
       setViolations((prev) => {
         const next = prev + 1;
+        logViolation('tab_switch', `warning ${next}/3`);
         if (next >= 3) {
           toast.error("3-chi ogohlantirish — imtihon avtomatik yakunlandi.");
           finishRef.current(true);
