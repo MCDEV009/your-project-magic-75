@@ -311,7 +311,7 @@ function TestInterfaceContent() {
     const logViolation = (type: string, details: string) => {
       void (supabase as any).rpc('log_exam_violation', {
         _attempt_id: attemptId,
-        _session_id: sessionId ?? null,
+        _session_id: null,
         _violation_type: type,
         _details: details,
       });
