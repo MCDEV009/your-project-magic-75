@@ -152,9 +152,21 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         condition_b_uz: q.condition_b ?? null,
       }));
       const { error: qErr } = await supabase.from('questions').insert(rows as any);
-      if (qErr) throw qErr;
+      if (qErr) {
+        // Bo'sh testni qoldirmaymiz
+        await supabase.from('tests').delete().eq('id', (test as any).id);
+        throw qErr;
+      }
 
-      toast.success(`${rows.length} ta savolli mock yaratildi`);
+      const { count: savedCount } = await supabase
+        .from('questions')
+        .select('id', { count: 'exact', head: true })
+        .eq('test_id', (test as any).id);
+      if ((savedCount ?? 0) !== rows.length) {
+        throw new Error(`Bazaga ${savedCount}/${rows.length} savol saqlandi`);
+      }
+
+      toast.success(`${rows.length} ta savol bazaga saqlandi — mock tayyor`);
       setOpen(false);
       setSelected(null);
       onCreated?.();
