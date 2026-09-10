@@ -106,14 +106,19 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         (s) => s.name_uz.toLowerCase().trim() === bp.name.toLowerCase().trim(),
       );
 
-      setStep("Blok 1: Yopiq testlar yaratilmoqda...");
-      const b1 = await generateBlock(bp, 'mcq', bp.blocks[0].to - bp.blocks[0].from + 1, bp.blocks[0].instruction);
+      const all: GenQuestion[] = [];
+      for (let bi = 0; bi < bp.blocks.length; bi++) {
+        const blk = bp.blocks[bi];
+        const need = blk.to - blk.from + 1;
+        setStep(`${blk.label} yaratilmoqda (${need} ta savol)...`);
+        const qs = await generateBlock(bp, blk.style, need, blk.instruction);
+        all.push(...qs);
+      }
 
-      setStep('Blok 2: Moslashtirish savollari yaratilmoqda...');
-      const b2 = await generateBlock(bp, 'matching', bp.blocks[1].to - bp.blocks[1].from + 1, bp.blocks[1].instruction);
+      if (all.length !== bp.totalQuestions) {
+        throw new Error(`Savollar soni mos kelmadi: ${all.length}/${bp.totalQuestions}`);
+      }
 
-      setStep('Blok 3: Ochiq / yozma savollar yaratilmoqda...');
-      const b3 = await generateBlock(bp, 'written', bp.blocks[2].to - bp.blocks[2].from + 1, bp.blocks[2].instruction);
 
       setStep('Test saqlanmoqda...');
       const { data: { user } } = await supabase.auth.getUser();
