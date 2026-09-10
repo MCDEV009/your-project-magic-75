@@ -137,7 +137,6 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         .single();
       if (testErr) throw testErr;
 
-      const all = [...b1, ...b2, ...b3];
       const rows = all.map((q, i) => ({
         test_id: (test as any).id,
         question_type: q.type === 'written' ? 'written' : 'single_choice',
