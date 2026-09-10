@@ -21,9 +21,9 @@ serve(async (req) => {
       });
     }
 
-    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
-    if (!GROQ_API_KEY) {
-      return new Response(JSON.stringify({ error: "GROQ_API_KEY not configured" }), {
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -108,14 +108,14 @@ serve(async (req) => {
 
       const summaryText = `Jami urinishlar: ${totalAttempts}. O'rtacha ball: ${avgScore.toFixed(1)}. Testlar: ${Object.values(testStats).map(t => `${t.name} (${t.attempts} urinish, o'rtacha: ${t.avgScore.toFixed(1)})`).join(', ')}.`;
 
-      const aiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${GROQ_API_KEY}`,
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "openai/gpt-oss-120b",
+          model: "google/gemini-3.8-flash",
           messages: [
             {
               role: "system",
@@ -259,14 +259,14 @@ Noto'g'ri javob berilgan savollar: ${wrongTopics || 'yo\'q'}.
 Yozma savollar: ${JSON.stringify(writtenResults)}.
 Umumiy ball: ${attempt.score}, MCQ ball: ${attempt.mcq_score}, Yozma ball: ${attempt.written_score}.`;
 
-    const aiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${GROQ_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
+        model: "google/gemini-3.8-flash",
         messages: [
           {
             role: "system",
