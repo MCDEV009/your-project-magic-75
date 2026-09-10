@@ -37,6 +37,16 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
   const [step, setStep] = useState('');
   const [done, setDone] = useState(0);
 
+  const isValid = (q: GenQuestion, style: 'mcq' | 'matching' | 'written') => {
+    if (!q?.question_text || typeof q.question_text !== 'string') return false;
+    if (style === 'written') return q.type === 'written';
+    return Array.isArray(q.options)
+      && q.options.length === 4
+      && q.options.every((o) => typeof o === 'string' && o.trim().length > 0)
+      && typeof q.correct_option === 'number'
+      && q.correct_option >= 0 && q.correct_option <= 3;
+  };
+
   const generateBlock = async (
     bp: SubjectBlueprint,
     style: 'mcq' | 'matching' | 'written',
@@ -45,8 +55,12 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
   ): Promise<GenQuestion[]> => {
     const out: GenQuestion[] = [];
     const chunk = style === 'written' ? 5 : 8;
-    for (let i = 0; i < count; i += chunk) {
-      const n = Math.min(chunk, count - i);
+    let guard = 0;
+
+    // Blok to'lguncha davom etamiz (AI kam yoki yaroqsiz savol qaytarsa qayta so'raladi)
+    while (out.length < count && guard < 12) {
+      guard++;
+      const n = Math.min(chunk, count - out.length);
       const { data, error } = await supabase.functions.invoke('generate-questions', {
         body: {
           subject: bp.name,
@@ -60,11 +74,26 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         },
       });
       if (error) throw error;
-      const qs: GenQuestion[] = data?.questions || [];
-      out.push(...qs.slice(0, n));
-      setDone((d) => d + qs.slice(0, n).length);
+      const raw: GenQuestion[] = Array.isArray(data?.questions) ? data.questions : [];
+      const seen = new Set(out.map((q) => q.question_text.trim().toLowerCase()));
+      const good = raw
+        .map((q) => ({ ...q, type: style === 'written' ? 'written' as const : 'single_choice' as const }))
+        .filter((q) => isValid(q, style))
+        .filter((q) => {
+          const k = q.question_text.trim().toLowerCase();
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        })
+        .slice(0, count - out.length);
+      out.push(...good);
+      setDone((d) => d + good.length);
     }
-    return out;
+
+    if (out.length < count) {
+      throw new Error(`${style} bloki to'liq yaratilmadi (${out.length}/${count}). Qayta urinib ko'ring.`);
+    }
+    return out.slice(0, count);
   };
 
   const handleGenerate = async () => {
