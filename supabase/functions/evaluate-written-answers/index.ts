@@ -222,7 +222,19 @@ serve(async (req) => {
     const mcqQuestions = allQuestions.filter((q: any) => q.question_type === 'single_choice');
     const writtenQuestions = allQuestions.filter((q: any) => q.question_type === 'written');
     const answers = attempt.answers || {};
-    const writtenAnswers = attempt.written_answers || {};
+    const rawWrittenAnswers = attempt.written_answers || {};
+    // Turli mijoz versiyalari {answer_a,answer_b} yoki {a,b} ko'rinishida yuborishi mumkin
+    const writtenAnswers: Record<string, WrittenAnswer> = {};
+    for (const [qid, val] of Object.entries(rawWrittenAnswers as Record<string, any>)) {
+      if (typeof val === 'string') {
+        writtenAnswers[qid] = { answer_a: val, answer_b: '' };
+      } else if (val && typeof val === 'object') {
+        writtenAnswers[qid] = {
+          answer_a: String(val.answer_a ?? val.a ?? ''),
+          answer_b: String(val.answer_b ?? val.b ?? ''),
+        };
+      }
+    }
     const isMilliySertifikat = attempt.tests?.test_format === 'milliy_sertifikat';
 
     // --- Compute MCQ scores server-side (difficulty-based points) ---
