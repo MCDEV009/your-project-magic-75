@@ -150,6 +150,8 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         rubric_uz: q.rubric ?? null,
         condition_a_uz: q.condition_a ?? null,
         condition_b_uz: q.condition_b ?? null,
+        points_a: q.type === 'written' ? 1.5 : null,
+        points_b: q.type === 'written' ? 1.7 : null,
       }));
       const { error: qErr } = await supabase.from('questions').insert(rows as any);
       if (qErr) {
