@@ -9,17 +9,12 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
-  const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [{ role: 'user', content: 'say OK' }],
-      max_tokens: 5,
-    }),
+  const r = await fetch('https://api.groq.com/openai/v1/models', {
+    headers: { Authorization: `Bearer ${key}` },
   })
-  const text = await r.text()
-  return new Response(JSON.stringify({ status: r.status, body: text.slice(0, 400) }), {
+  const data = await r.json()
+  const ids = (data?.data || []).map((m: any) => m.id)
+  return new Response(JSON.stringify({ status: r.status, ids }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
 })
