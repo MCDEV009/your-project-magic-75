@@ -44,6 +44,10 @@ interface TxnRow {
   paid_at: string | null;
 }
 
+const CARD_NUMBER = '9860 1666 5600 5377';
+const CARD_NUMBER_RAW = '9860166656005377';
+const TELEGRAM_USERNAME = '@kbg.of';
+
 const formatMoney = (n: number, currency = 'UZS') =>
   new Intl.NumberFormat('uz-UZ').format(Number(n || 0)) + ' ' + currency;
 
@@ -387,8 +391,8 @@ function WalletContent() {
               </div>
               <div className="space-y-2">
                 <Label>To'lov usuli</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(['payme', 'click'] as Provider[]).map((p) => (
+                <div className="grid grid-cols-3 gap-2">
+                  {(['payme', 'click', 'manual'] as Provider[]).map((p) => (
                     <button
                       key={p}
                       type="button"
@@ -397,14 +401,63 @@ function WalletContent() {
                         provider === p ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
                       }`}
                     >
-                      <div className="font-medium capitalize">{p}</div>
+                      <div className="font-medium capitalize">{p === 'manual' ? 'Karta' : p}</div>
                       <div className="text-xs text-muted-foreground">
-                        {p === 'payme' ? 'Payme orqali to\u2018lov' : 'Click orqali to\u2018lov'}
+                        {p === 'payme' ? 'Payme orqali to\u2018lov'
+                          : p === 'click' ? 'Click orqali to\u2018lov'
+                          : 'Kartaga o\u2018tkazma'}
                       </div>
                     </button>
                   ))}
                 </div>
               </div>
+
+              {provider === 'manual' && (
+                <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
+                  <div>
+                    <div className="text-xs text-muted-foreground">Karta raqami (Humo)</div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-lg font-semibold tracking-wider">{CARD_NUMBER}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(CARD_NUMBER_RAW);
+                          toast({ title: 'Nusxalandi', description: 'Karta raqami nusxalandi' });
+                        }}
+                      >
+                        Nusxalash
+                      </Button>
+                    </div>
+                  </div>
+                  <ol className="list-decimal space-y-1 pl-4 text-sm text-muted-foreground">
+                    <li>Yuqoridagi kartaga kerakli summani o'tkazing.</li>
+                    <li>
+                      Chek (kvitansiya) rasmini Telegram orqali{' '}
+                      <a
+                        href="https://t.me/kbg.of"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-primary underline"
+                      >
+                        {TELEGRAM_USERNAME}
+                      </a>{' '}
+                      akkauntiga yuboring.
+                    </li>
+                    <li>
+                      Chek bilan birga akkauntingiz e-mail pochtasini ham yozib yuboring
+                      {user?.email ? (
+                        <>
+                          {' '}— sizniki: <span className="font-semibold text-foreground">{user.email}</span>
+                        </>
+                      ) : null}
+                      .
+                    </li>
+                    <li>Tasdiqlangach balans avtomatik yangilanadi.</li>
+                  </ol>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-3 py-2">
