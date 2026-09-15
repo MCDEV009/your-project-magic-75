@@ -81,6 +81,7 @@ function WalletContent() {
   const [pendingTxnId, setPendingTxnId] = useState<string | null>(null);
   const [pendingTxn, setPendingTxn] = useState<TxnRow | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prevStatusRef = useRef<Map<string, TxnStatus>>(new Map());
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/auth');
