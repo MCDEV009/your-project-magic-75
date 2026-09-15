@@ -125,6 +125,38 @@ function WalletContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
+  // Notify the user automatically whenever a transaction status changes
+  useEffect(() => {
+    if (!txns.length) return;
+    const prev = prevStatusRef.current;
+    if (prev.size > 0) {
+      for (const t of txns) {
+        const before = prev.get(t.id);
+        if (before && before !== t.status) {
+          if (t.status === 'paid') {
+            toast({
+              title: "To'lov tasdiqlandi",
+              description: `${formatMoney(t.amount, t.currency)} hisobingizga qo'shildi`,
+            });
+          } else if (t.status === 'failed' || t.status === 'cancelled') {
+            toast({
+              title: "To'lov rad etildi",
+              description: `${formatMoney(t.amount, t.currency)} to'lovi bekor qilindi`,
+              variant: 'destructive',
+            });
+          } else if (t.status === 'refunded') {
+            toast({
+              title: "Mablag' qaytarildi",
+              description: formatMoney(t.amount, t.currency),
+            });
+          }
+        }
+      }
+    }
+    prevStatusRef.current = new Map(txns.map((t) => [t.id, t.status]));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [txns]);
+
   // Poll the pending transaction every 4s for status update (fallback to realtime)
   useEffect(() => {
     if (!pendingTxnId) return;
