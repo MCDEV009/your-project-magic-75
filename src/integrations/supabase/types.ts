@@ -1195,6 +1195,25 @@ export type Database = {
           unique_participants: number
         }[]
       }
+      admin_wallet_transactions: {
+        Args: { _limit?: number; _status?: string }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          email: string
+          full_name: string
+          id: string
+          metadata: Json
+          paid_at: string
+          provider: Database["public"]["Enums"]["wallet_provider"]
+          provider_txn_id: string
+          status: Database["public"]["Enums"]["wallet_txn_status"]
+          type: Database["public"]["Enums"]["wallet_txn_type"]
+          user_id: string
+          username: string
+        }[]
+      }
       can_start_attempt: { Args: { _test_id: string }; Returns: boolean }
       cancel_wallet_transaction: {
         Args: { _reason?: string; _txn_id: string }
