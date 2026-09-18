@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
@@ -19,7 +18,7 @@ interface GenerateRequest {
   instruction?: string;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -238,11 +237,26 @@ Return a JSON object with this exact structure:
         return JSON.parse(cleaned);
       } catch (_e) {
         // Fix common LLM JSON issues
-        let fixed = cleaned
-          .replace(/,\s*}/g, "}") // trailing commas
-          .replace(/,\s*]/g, "]")
-          .replace(/[\x00-\x1F\x7F]/g, "") // control characters
-          .replace(/\\(?!["\\/bfnrtu])/g, '\\\\'); // invalid escapes (LaTeX)
+        // Pairwise scanner: escape lone backslashes (LaTeX \frac, \sqrt ...)
+        // without breaking already-valid escape sequences like \\ or \"
+        const escapeLatex = (s: string) => {
+          let out = "";
+          for (let i = 0; i < s.length; i++) {
+            const c = s[i];
+            if (c !== "\\") { out += c; continue; }
+            const next = s[i + 1];
+            if (next === undefined) { out += "\\\\"; continue; }
+            if ('"\\/bfnrtu'.includes(next)) { out += c + next; i++; continue; }
+            out += "\\\\";
+          }
+          return out;
+        };
+        let fixed = escapeLatex(
+          cleaned
+            .replace(/,\s*}/g, "}") // trailing commas
+            .replace(/,\s*]/g, "]")
+            .replace(/[\x00-\x1F\x7F]/g, "") // control characters
+        );
         try {
           return JSON.parse(fixed);
         } catch (_e2) {
