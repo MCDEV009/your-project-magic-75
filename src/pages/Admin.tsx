@@ -1091,6 +1091,12 @@ function AdminContent() {
               <LiveSessionsAdmin />
             </div>
           )}
+
+          {activeTab === 'payments' && (
+            <div className="animate-fade-in">
+              <PaymentsAdminCard />
+            </div>
+          )}
         </div>
       </main>
 
