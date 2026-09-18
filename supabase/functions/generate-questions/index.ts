@@ -89,6 +89,30 @@ Deno.serve(async (req) => {
     let systemPrompt = "";
     let userPrompt = "";
 
+    // 131-MOCK matematika shabloni (PDF asosida): real mock savollar uslubi
+    const isMath = /matematik|math/i.test(subject) || /matematik/i.test(topic ?? "") || /matematik/i.test(instruction ?? "");
+    const MATH_STYLE_GUIDE = `
+MATH TEMPLATE (based on official "131-MOCK" Milliy Sertifikat sample):
+Style rules:
+1. Every math expression MUST be in LaTeX: inline $...$ (e.g. $\\overline{abcd}$, $\\frac{a}{b}$) and display $$...$$ for standalone formulas.
+2. Use official Uzbek exam phrasing: "Hisoblang.", "Ifodani soddalashtiring.", "Tenglamaning haqiqiy ildizlari ko'paytmasini toping.", "Tengsizlikni yeching.", "...ning qiymatini toping."
+3. Cover these topic types across the block: sonlar nazariyasi (raqamlar, $\\overline{abcd}$), hisoblash (ildizlar $4\\sqrt{3}$, kasr qismi $\\{x\\}$, butun qism $[x]$), foiz/masala (kran, savdo foyda-zarar), daraja ko'rsatkichli ifodalar ($2^x$, $6^{2-x}$), arifmetik/geometrik progressiya ($S_n$, maxraj), algebraik soddalashtirish ($\\frac{(m-n)^2+2n^2}{m^3+n^3}$), trigonometriya ($\\sin x$, $\\cos x$, $tg$), logarifmik/ko'rsatkichli tenglamalar ($\\log_{x^2}16$), modulli tenglamalar/sistemalar ($|x+y|+|x-y|=12$), tengsizliklar, funksiya grafigi Ox o'qiga urinishi, aniq integral $\\int_1^6 \\{x\\}dx$, hosila $f^{(2026)}(x)$, planimetriya (aylana, vatar, uchburchak yuzi, trapetsiya o'rta chizig'i), stereometriya (kub, prizma), kombinatorika, to'garak/Venn masalalari.
+4. Difficulty: multi-step, olympiad-lite like the samples — never one-step arithmetic. Distractor options must be plausible results of common mistakes.
+5. Options must be in LaTeX when they contain formulas, e.g. "$\\frac{1}{49}$", "$2\\sqrt{2}$", "$(-\\infty; 1) \\cup (1; \\infty)$", "$\\{2\\}$".
+Example items in this exact style (DO NOT copy, just match the style):
+- "$a,b,c,d$ - raqamlar bo'lib, $\\overline{abcd}$ to'rt xonali son uchun $\\overline{abcd} = \\overline{ab} \\cdot \\overline{cd} + \\overline{ab} + \\overline{cd}$ shartni qanoatlantiruvchi eng kichik to'rt xonali sonning raqamlari yig'indisini toping." options: 19 / 24 / 27 / 30
+- "Hisoblang. $$\\frac{2^x \\cdot 6^{2-x}}{15^{-x-1} \\cdot 5^{x+1}} \\cdot \\frac{2^x}{12}$$" options in LaTeX
+- "Idishning 30% qismi A krani orqali 6 soatda to'ldiriladi, 10% qismi B krani orqali 3 soatda bo'shatiladi..."
+`;
+
+    const MATH_WRITTEN_GUIDE = `
+MATH WRITTEN TEMPLATE (questions 36-45 of the official mock):
+1. Main text presents a rich multi-part problem with LaTeX: systems of equations in $$\\begin{cases}...\\end{cases}$$, trigonometric equations, function problems with conditions like $f(1)=6$, $f'(1)=8$, $\\int_0^1 f(x)dx = 3$, geometry with named points ($ABC$ uchburchak, $AD \\perp BC$), stereometry ($ABCDA_1B_1C_1D_1$ kub), applied problems (gugurt qutisi hajmi/xarajat).
+2. a-shart: the first computable result (e.g. "Tenglamaning eng kichik musbat ildizini toping").
+3. b-shart: a deeper follow-up depending on part a (e.g. "Tenglama $[0;\\pi]$ oraliqdagi nechta yechimga ega?").
+4. Model answer must show full step-by-step solution with LaTeX and final numeric answers for both a and b.
+`;
+
     if (questionType === "single_choice") {
       systemPrompt = `You are an expert exam question generator for the Uzbekistan Milliy Sertifikat (National Certificate) exam system.
 Your task is to generate high-quality multiple choice questions that match the official exam format and standards.
