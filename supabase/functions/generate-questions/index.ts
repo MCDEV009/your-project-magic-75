@@ -177,7 +177,7 @@ Return a JSON object with this exact structure:
       }
     }
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const callAI = () => fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${GROQ_API_KEY}`,
@@ -194,11 +194,28 @@ Return a JSON object with this exact structure:
       }),
     });
 
+    // Rate limit (429) va vaqtinchalik 5xx xatolarda Retry-After'ni hurmat qilgan holda qayta urinish
+    let response = await callAI();
+    for (let attempt = 1; attempt <= 3 && (response.status === 429 || response.status >= 500); attempt++) {
+      const retryAfter = Number(response.headers.get("retry-after"));
+      const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.min(retryAfter * 1000, 20000)
+        : Math.min(2000 * 2 ** (attempt - 1), 15000) + Math.floor(Math.random() * 500);
+      console.log(`AI ${response.status}; ${waitMs}ms kutib qayta urinish (${attempt}/3)`);
+      await new Promise((r) => setTimeout(r, waitMs));
+      response = await callAI();
+    }
+
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+        const retryAfter = Number(response.headers.get("retry-after"));
+        const seconds = Number.isFinite(retryAfter) && retryAfter > 0 ? Math.ceil(retryAfter) : 30;
+        return new Response(JSON.stringify({
+          error: `AI xizmati band (limit). ${seconds} soniyadan keyin qayta urinib ko'ring.`,
+          retry_after: seconds,
+        }), {
           status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(seconds) },
         });
       }
       if (response.status === 402) {

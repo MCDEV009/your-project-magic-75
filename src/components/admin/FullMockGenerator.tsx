@@ -56,6 +56,8 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
     const out: GenQuestion[] = [];
     const chunk = style === 'written' ? 5 : 8;
     let guard = 0;
+    let rateLimitHits = 0;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
     // Blok to'lguncha davom etamiz (AI kam yoki yaroqsiz savol qaytarsa qayta so'raladi)
     while (out.length < count && guard < 12) {
@@ -73,7 +75,18 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
           language: 'uz',
         },
       });
-      if (error) throw error;
+      if (error) {
+        const msg = String((error as any)?.message ?? '');
+        // AI limiti (429) — kutib, qayta urinamiz (guard hisobiga)
+        if (msg.includes('429') || msg.toLowerCase().includes('rate limit')) {
+          rateLimitHits++;
+          if (rateLimitHits > 4) throw new Error("AI xizmati limiti tugadi. Bir necha daqiqadan keyin qayta urinib ko'ring.");
+          await sleep(15000 * rateLimitHits);
+          guard--; // limit urinishi blok urinishi sifatida hisoblanmasin
+          continue;
+        }
+        throw error;
+      }
       const raw: GenQuestion[] = Array.isArray(data?.questions) ? data.questions : [];
       const seen = new Set(out.map((q) => q.question_text.trim().toLowerCase()));
       const good = raw
