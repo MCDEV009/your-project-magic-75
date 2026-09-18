@@ -73,7 +73,18 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
           language: 'uz',
         },
       });
-      if (error) throw error;
+      if (error) {
+        const msg = String((error as any)?.message ?? '');
+        // AI limiti (429) — kutib, qayta urinamiz (guard hisobiga)
+        if (msg.includes('429') || msg.toLowerCase().includes('rate limit')) {
+          rateLimitHits++;
+          if (rateLimitHits > 4) throw new Error("AI xizmati limiti tugadi. Bir necha daqiqadan keyin qayta urinib ko'ring.");
+          await sleep(15000 * rateLimitHits);
+          guard--; // limit urinishi blok urinishi sifatida hisoblanmasin
+          continue;
+        }
+        throw error;
+      }
       const raw: GenQuestion[] = Array.isArray(data?.questions) ? data.questions : [];
       const seen = new Set(out.map((q) => q.question_text.trim().toLowerCase()));
       const good = raw
