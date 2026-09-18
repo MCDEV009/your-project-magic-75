@@ -56,6 +56,8 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
     const out: GenQuestion[] = [];
     const chunk = style === 'written' ? 5 : 8;
     let guard = 0;
+    let rateLimitHits = 0;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
     // Blok to'lguncha davom etamiz (AI kam yoki yaroqsiz savol qaytarsa qayta so'raladi)
     while (out.length < count && guard < 12) {
