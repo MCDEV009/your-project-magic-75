@@ -72,6 +72,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { LiveSessionsAdmin } from '@/components/admin/LiveSessionsAdmin';
+import { PaymentsAdminCard } from '@/components/admin/PaymentsAdminCard';
+import { Wallet as WalletIcon } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
  import { useTheme } from 'next-themes';
@@ -95,7 +97,7 @@ function AdminContent() {
   const canSeeDashboard = canSeeTests || canSeeAnalytics;
   
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings' | 'live'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings' | 'live' | 'payments'>('dashboard');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   
   // Tests state
@@ -436,6 +438,7 @@ function AdminContent() {
     ...(canSeeTests ? [{ key: 'tests' as const, icon: FileQuestion, label: t('manageTests') }] : []),
     ...(canSeeAnalytics ? [{ key: 'analytics' as const, icon: BarChart3, label: t('analytics') }] : []),
     ...(canSeeTests ? [{ key: 'live' as const, icon: TrendingUp, label: 'Live Mock' }] : []),
+    ...(isFullAdmin || isSuperAdmin ? [{ key: 'payments' as const, icon: WalletIcon, label: "To'lovlar" }] : []),
   ];
 
   const SidebarInner = ({ onNavigate }: { onNavigate?: () => void }) => (
@@ -1086,6 +1089,12 @@ function AdminContent() {
           {activeTab === 'live' && (
             <div className="animate-fade-in">
               <LiveSessionsAdmin />
+            </div>
+          )}
+
+          {activeTab === 'payments' && (
+            <div className="animate-fade-in">
+              <PaymentsAdminCard />
             </div>
           )}
         </div>
