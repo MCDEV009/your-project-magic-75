@@ -72,6 +72,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { LiveSessionsAdmin } from '@/components/admin/LiveSessionsAdmin';
+import { PaymentsAdminCard } from '@/components/admin/PaymentsAdminCard';
+import { Wallet as WalletIcon } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
  import { useTheme } from 'next-themes';
