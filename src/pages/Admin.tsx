@@ -438,6 +438,7 @@ function AdminContent() {
     ...(canSeeTests ? [{ key: 'tests' as const, icon: FileQuestion, label: t('manageTests') }] : []),
     ...(canSeeAnalytics ? [{ key: 'analytics' as const, icon: BarChart3, label: t('analytics') }] : []),
     ...(canSeeTests ? [{ key: 'live' as const, icon: TrendingUp, label: 'Live Mock' }] : []),
+    ...(isAdmin ? [{ key: 'payments' as const, icon: WalletIcon, label: "To'lovlar" }] : []),
   ];
 
   const SidebarInner = ({ onNavigate }: { onNavigate?: () => void }) => (
