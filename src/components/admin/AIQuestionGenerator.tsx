@@ -77,9 +77,17 @@ export function AIQuestionGenerator({ testId, subjects, onQuestionsAdded }: AIQu
         }
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        const info = await readFunctionError(response.error);
+        throw new Error(info.message);
+      }
 
-      const questions = response.data.questions.map((q: any, i: number) => ({
+      const raw = Array.isArray(response.data?.questions) ? response.data.questions : [];
+      if (raw.length === 0) {
+        throw new Error("AI savol qaytarmadi. Mavzuni aniqroq yozib, qayta urinib ko'ring.");
+      }
+
+      const questions = raw.map((q: any, i: number) => ({
         ...q,
         id: `gen-${Date.now()}-${i}`,
         selected: true
