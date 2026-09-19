@@ -146,6 +146,10 @@ Return a JSON object with this exact structure:
 
 IMPORTANT: correct_option is a zero-based index (0 for A, 1 for B, 2 for C, 3 for D).`;
 
+      if (isMath) {
+        userPrompt += `\n${MATH_STYLE_GUIDE}`;
+      }
+
       if (style === "matching") {
         userPrompt += `
 
@@ -196,6 +200,9 @@ Return a JSON object with this exact structure:
     }
   ]
 }`;
+      if (isMath) {
+        userPrompt += `\n${MATH_WRITTEN_GUIDE}`;
+      }
       if (instruction) {
         userPrompt += `\n\nADDITIONAL BLUEPRINT INSTRUCTION: ${instruction}`;
       }
