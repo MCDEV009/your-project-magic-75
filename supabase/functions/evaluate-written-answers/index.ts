@@ -428,14 +428,14 @@ Evaluate each condition separately. The total score should reflect performance o
 Respond with JSON only.`;
 
       try {
-        const aiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${GROQ_API_KEY}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "openai/gpt-oss-120b",
+            model: "gemini-3.5-flash",
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt }
