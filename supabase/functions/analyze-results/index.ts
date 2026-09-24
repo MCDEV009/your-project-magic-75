@@ -20,9 +20,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
-    if (!GROQ_API_KEY) {
-      return new Response(JSON.stringify({ error: "GROQ_API_KEY not configured" }), {
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
+    if (!GEMINI_API_KEY) {
+      return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -107,14 +107,14 @@ Deno.serve(async (req) => {
 
       const summaryText = `Jami urinishlar: ${totalAttempts}. O'rtacha ball: ${avgScore.toFixed(1)}. Testlar: ${Object.values(testStats).map(t => `${t.name} (${t.attempts} urinish, o'rtacha: ${t.avgScore.toFixed(1)})`).join(', ')}.`;
 
-      const aiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${GROQ_API_KEY}`,
+          Authorization: `Bearer ${GEMINI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "openai/gpt-oss-120b",
+          model: "gemini-3.5-flash",
           messages: [
             {
               role: "system",
@@ -258,14 +258,14 @@ Noto'g'ri javob berilgan savollar: ${wrongTopics || 'yo\'q'}.
 Yozma savollar: ${JSON.stringify(writtenResults)}.
 Umumiy ball: ${attempt.score}, MCQ ball: ${attempt.mcq_score}, Yozma ball: ${attempt.written_score}.`;
 
-    const aiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${GROQ_API_KEY}`,
+        Authorization: `Bearer ${GEMINI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
+        model: "gemini-3.5-flash",
         messages: [
           {
             role: "system",
