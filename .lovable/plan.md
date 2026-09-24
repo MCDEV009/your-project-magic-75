@@ -74,3 +74,16 @@ Host                Participants
 - Chat during the session.
 - Reconnect-during-running is already handled by existing progress-save code.
 - Payments/entry fees for live sessions.
+
+
+## Implementation Status (September 2026)
+
+- [x] Data model:  and  tables with RLS and Realtime.
+- [x] Edge functions:  and  with cohort-wide Rasch analysis.
+- [x] Admin UI:  tab in  for creating and managing live mock tests.
+- [x] Participant Flow:
+  -  (LiveJoin.tsx): Session code entry and participant registration.
+  -  (LiveLobby.tsx): Realtime countdown, roster, and synchronized transition to exam.
+  - Test mode:  integrated with live session timers and participant tracking.
+  -  (LiveResults.tsx): Gated publication of ranking and Rasch analysis.
+- [x] AI Infrastructure: Migrated all edge functions (, , , ) to Google Gemini 3.5 Flash using  / .
