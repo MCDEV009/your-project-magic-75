@@ -20,6 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sparkles, Loader2, Check, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { readFunctionError } from '@/lib/functionError';
 
 interface GeneratedQuestion {
   id: string;
@@ -135,7 +136,9 @@ export function AIQuestionGenerator({ testId, subjects, onQuestionsAdded }: AIQu
         model_answer_uz: q.model_answer,
         rubric_uz: q.rubric,
         condition_a_uz: q.condition_a || null,
-        condition_b_uz: q.condition_b || null
+        condition_b_uz: q.condition_b || null,
+        points_a: q.type === 'written' ? 1.5 : null,
+        points_b: q.type === 'written' ? 1.7 : null,
       }));
 
       const { error } = await supabase
