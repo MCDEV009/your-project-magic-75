@@ -20,6 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sparkles, Loader2, Check, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { readFunctionError } from '@/lib/functionError';
 
 interface GeneratedQuestion {
   id: string;

@@ -76,16 +76,24 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         },
       });
       if (error) {
-        const msg = String((error as any)?.message ?? '');
+        const { readFunctionError } = await import('@/lib/functionError');
+        const info = await readFunctionError(error);
         // AI limiti (429) — kutib, qayta urinamiz (guard hisobiga)
-        if (msg.includes('429') || msg.toLowerCase().includes('rate limit')) {
+        if (info.isRateLimit) {
           rateLimitHits++;
           if (rateLimitHits > 4) throw new Error("AI xizmati limiti tugadi. Bir necha daqiqadan keyin qayta urinib ko'ring.");
-          await sleep(15000 * rateLimitHits);
-          guard--; // limit urinishi blok urinishi sifatida hisoblanmasin
+          const wait = info.retryAfter ? Math.min(info.retryAfter * 1000, 60000) : 15000 * rateLimitHits;
+          setStep(`AI band — ${Math.ceil(wait / 1000)} soniya kutilmoqda...`);
+          await sleep(wait);
+          guard--;
           continue;
         }
-        throw error;
+        // Vaqtinchalik server xatosi — bir oz kutib qayta urinamiz
+        if (info.status && info.status >= 500) {
+          await sleep(3000);
+          continue;
+        }
+        throw new Error(info.message);
       }
       const raw: GenQuestion[] = Array.isArray(data?.questions) ? data.questions : [];
       const seen = new Set(out.map((q) => q.question_text.trim().toLowerCase()));
