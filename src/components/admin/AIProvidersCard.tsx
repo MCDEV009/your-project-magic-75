@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Bot, Trash2, Zap, CheckCircle2, GraduationCap, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import { getFunctionErrorMessage } from '@/lib/functionError';
+import { readFunctionError } from '@/lib/functionError';
 
 interface Provider { id: string; name: string; base_url: string; model: string; is_active: boolean }
 interface Job { id: string; provider_id: string | null; base_model: string; fine_tuned_model: string | null; status: string; examples_count: number; error: string | null; created_at: string }
@@ -23,7 +23,7 @@ const PRESETS = [
 
 async function callAdmin(body: Record<string, unknown>) {
   const { data, error } = await supabase.functions.invoke('ai-admin', { body });
-  if (error) throw new Error(await getFunctionErrorMessage(error));
+  if (error) throw new Error((await readFunctionError(error)).message);
   if (data?.error) throw new Error(data.error);
   return data;
 }
