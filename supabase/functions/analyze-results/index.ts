@@ -1,3 +1,4 @@
+import { resolveAIProvider } from "../_shared/aiProvider.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -20,7 +21,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
+    const ai = await resolveAIProvider();
+    const GEMINI_API_KEY = ai.key;
     if (!GEMINI_API_KEY) {
       return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured" }), {
         status: 500,
@@ -107,14 +109,14 @@ Deno.serve(async (req) => {
 
       const summaryText = `Jami urinishlar: ${totalAttempts}. O'rtacha ball: ${avgScore.toFixed(1)}. Testlar: ${Object.values(testStats).map(t => `${t.name} (${t.attempts} urinish, o'rtacha: ${t.avgScore.toFixed(1)})`).join(', ')}.`;
 
-      const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+      const aiResponse = await fetch(ai.url, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${GEMINI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gemini-3.5-flash",
+          model: ai.model,
           messages: [
             {
               role: "system",
@@ -258,14 +260,14 @@ Noto'g'ri javob berilgan savollar: ${wrongTopics || 'yo\'q'}.
 Yozma savollar: ${JSON.stringify(writtenResults)}.
 Umumiy ball: ${attempt.score}, MCQ ball: ${attempt.mcq_score}, Yozma ball: ${attempt.written_score}.`;
 
-    const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+    const aiResponse = await fetch(ai.url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${GEMINI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gemini-3.5-flash",
+        model: ai.model,
         messages: [
           {
             role: "system",

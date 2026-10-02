@@ -1,3 +1,4 @@
+import { resolveAIProvider } from "../_shared/aiProvider.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
@@ -136,7 +137,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
+    const ai = await resolveAIProvider();
+    const GEMINI_API_KEY = ai.key;
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
@@ -428,14 +430,14 @@ Evaluate each condition separately. The total score should reflect performance o
 Respond with JSON only.`;
 
       try {
-        const aiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+        const aiResponse = await fetch(ai.url, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${GEMINI_API_KEY}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "gemini-3.5-flash",
+            model: ai.model,
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt }

@@ -1,3 +1,4 @@
+import { resolveAIProvider } from "../_shared/aiProvider.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
 const corsHeaders = {
@@ -38,7 +39,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
+    const ai = await resolveAIProvider();
+    const GEMINI_API_KEY = ai.key;
     if (!GEMINI_API_KEY) {
       return new Response(JSON.stringify({ error: "GEMINI_API_KEY missing" }), {
         status: 500,
@@ -133,7 +135,7 @@ VAZIFA: Talaba o'zlashtirmagan mavzular bo'yicha mashq savollarini yarat.
     }
 
     const aiResponse = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      ai.url,
       {
         method: "POST",
         headers: {
@@ -141,7 +143,7 @@ VAZIFA: Talaba o'zlashtirmagan mavzular bo'yicha mashq savollarini yarat.
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gemini-3.5-flash",
+          model: ai.model,
           stream: true,
           messages: [
             { role: "system", content: systemPrompt },
