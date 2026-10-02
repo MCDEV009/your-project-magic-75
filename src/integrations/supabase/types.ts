@@ -95,6 +95,95 @@ export type Database = {
           },
         ]
       }
+      ai_finetune_jobs: {
+        Row: {
+          base_model: string
+          created_at: string
+          created_by: string | null
+          error: string | null
+          examples_count: number
+          fine_tuned_model: string | null
+          id: string
+          provider_id: string | null
+          provider_job_id: string | null
+          status: string
+          subject_id: string | null
+          training_file_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          base_model: string
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          examples_count?: number
+          fine_tuned_model?: string | null
+          id?: string
+          provider_id?: string | null
+          provider_job_id?: string | null
+          status?: string
+          subject_id?: string | null
+          training_file_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          base_model?: string
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          examples_count?: number
+          fine_tuned_model?: string | null
+          id?: string
+          provider_id?: string | null
+          provider_job_id?: string | null
+          status?: string
+          subject_id?: string | null
+          training_file_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_finetune_jobs_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "ai_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_providers: {
+        Row: {
+          api_key: string
+          base_url: string
+          created_at: string
+          id: string
+          is_active: boolean
+          model: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          api_key: string
+          base_url: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          model: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string
+          base_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          model?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       al_xorazmiy_chat_messages: {
         Row: {
           attempt_id: string | null

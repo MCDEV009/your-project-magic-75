@@ -1,3 +1,4 @@
+import { resolveAIProvider } from "../_shared/aiProvider.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
@@ -63,7 +64,8 @@ Deno.serve(async (req) => {
     }
     // --- End authentication ---
 
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY");
+    const ai = await resolveAIProvider();
+    const GEMINI_API_KEY = ai.key;
     if (!GEMINI_API_KEY) {
       throw new Error("GEMINI_API_KEY is not configured");
     }
@@ -207,14 +209,14 @@ Return a JSON object with this exact structure:
       }
     }
 
-    const callAI = () => fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+    const callAI = () => fetch(ai.url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${GEMINI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gemini-3.5-flash",
+        model: ai.model,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
