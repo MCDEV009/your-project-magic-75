@@ -442,6 +442,7 @@ function TestEditorContent() {
                       <QuestionImageInput
                         value={mcqForm.image_url}
                         onChange={(url) => setMcqForm({ ...mcqForm, image_url: url })}
+                        defaultPrompt={mcqForm.question_text_uz}
                       />
                       
                       <div className="space-y-3">

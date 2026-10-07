@@ -27,6 +27,8 @@ interface GenQuestion {
   rubric?: string;
   condition_a?: string;
   condition_b?: string;
+  needs_image?: boolean;
+  image_prompt?: string | null;
 }
 
 export function FullMockGenerator({ subjects, onCreated }: Props) {
@@ -36,6 +38,7 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
   const [busy, setBusy] = useState(false);
   const [step, setStep] = useState('');
   const [done, setDone] = useState(0);
+  const [imageProgress, setImageProgress] = useState({ done: 0, total: 0 });
 
   const isValid = (q: GenQuestion, style: 'mcq' | 'matching' | 'written') => {
     if (!q?.question_text || typeof q.question_text !== 'string') return false;
@@ -121,6 +124,7 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
     if (!selected) return;
     setBusy(true);
     setDone(0);
+    setImageProgress({ done: 0, total: 0 });
     try {
       const bp = selected;
       const subjectRow = subjects.find(
@@ -149,7 +153,7 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
           title_uz: `${bp.name} — To'liq Mock (AI)`,
           description_uz: `BMBA formatidagi to'liq mock imtihon: ${bp.totalQuestions} savol, ${bp.durationMinutes} daqiqa.`,
           subject_id: subjectRow?.id ?? null,
-          visibility: 'private',
+          visibility: 'paid',
           duration_minutes: bp.durationMinutes,
           test_format: 'milliy_sertifikat',
           created_by: user?.id ?? null,
@@ -158,14 +162,25 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         .single();
       if (testErr) throw testErr;
 
+      const testId = (test as { id: string }).id;
+      const { error: pricingError } = await supabase.from('test_pricing').insert({
+        test_id: testId,
+        price_uzs: 10000,
+        is_free: false,
+      });
+      if (pricingError) {
+        await supabase.from('tests').delete().eq('id', testId);
+        throw new Error(`Test narxini saqlab bo'lmadi: ${pricingError.message}`);
+      }
+
       const rows = all.map((q, i) => ({
-        test_id: (test as any).id,
+        test_id: testId,
         question_type: q.type === 'written' ? 'written' : 'single_choice',
         question_text_uz: q.question_text,
         options: q.options || [],
         correct_option: q.correct_option ?? 0,
-        points: q.type === 'written' ? 0 : 1,
-        max_points: q.type === 'written' ? 2 : 1,
+        points: q.type === 'written' ? 3.2 : 1,
+        max_points: q.type === 'written' ? 3.2 : 1,
         order_index: i,
         model_answer_uz: q.model_answer ?? null,
         rubric_uz: q.rubric ?? null,
@@ -174,26 +189,61 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         points_a: q.type === 'written' ? 1.5 : null,
         points_b: q.type === 'written' ? 1.7 : null,
       }));
-      const { error: qErr } = await supabase.from('questions').insert(rows as any);
+      const { data: insertedQuestions, error: qErr } = await supabase
+        .from('questions')
+        .insert(rows as any)
+        .select('id, order_index');
       if (qErr) {
         // Bo'sh testni qoldirmaymiz
-        await supabase.from('tests').delete().eq('id', (test as any).id);
+        await supabase.from('tests').delete().eq('id', testId);
         throw qErr;
       }
 
       const { count: savedCount } = await supabase
         .from('questions')
         .select('id', { count: 'exact', head: true })
-        .eq('test_id', (test as any).id);
+        .eq('test_id', testId);
       if ((savedCount ?? 0) !== rows.length) {
+        await supabase.from('tests').delete().eq('id', testId);
         throw new Error(`Bazaga ${savedCount}/${rows.length} savol saqlandi`);
       }
 
-      toast.success(`${rows.length} ta savol bazaga saqlandi — mock tayyor`);
+      const imageQuestions = all
+        .map((question, index) => ({ question, index }))
+        .filter(({ question }) => question.needs_image && question.image_prompt?.trim());
+      setImageProgress({ done: 0, total: imageQuestions.length });
+      let imageFailures = 0;
+      for (const [position, item] of imageQuestions.entries()) {
+        setStep(`Rasmlar yaratilmoqda (${position + 1}/${imageQuestions.length})...`);
+        const inserted = insertedQuestions?.find((row) => row.order_index === item.index);
+        if (!inserted) {
+          imageFailures++;
+          continue;
+        }
+        const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-question-image', {
+          body: { prompt: item.question.image_prompt, questionId: inserted.id },
+        });
+        if (imageError || typeof imageData?.image_url !== 'string') {
+          imageFailures++;
+        } else {
+          const { error: updateError } = await supabase
+            .from('questions')
+            .update({ image_url: imageData.image_url })
+            .eq('id', inserted.id);
+          if (updateError) imageFailures++;
+        }
+        setImageProgress({ done: position + 1, total: imageQuestions.length });
+      }
+
+      if (imageFailures > 0) {
+        toast.warning(`Mock tayyor, lekin ${imageFailures} ta rasm yaratilmadi. Ularni tahrirlash sahifasida qayta yarating.`);
+      } else {
+        toast.success(`${rows.length} ta savol saqlandi, test narxi 10 000 so'm`);
+      }
       setOpen(false);
       setSelected(null);
       onCreated?.();
-      navigate(`/urecheater/test/${(test as any).id}`);
+      navigate(`/urecheater/test/${testId}`);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Mock yaratishda xatolik");
@@ -280,6 +330,11 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
               </div>
               <Progress value={Math.min(100, (done / total) * 100)} />
               <div className="text-xs text-muted-foreground">{done}/{total} savol tayyor</div>
+              {imageProgress.total > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  {imageProgress.done}/{imageProgress.total} rasm tayyor
+                </div>
+              )}
             </div>
           )}
 

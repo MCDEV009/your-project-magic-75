@@ -140,12 +140,18 @@ Return a JSON object with this exact structure:
       "question_text": "Question text here",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correct_option": 0,
-      "explanation": "Brief explanation of why this answer is correct"
+      "explanation": "Brief explanation of why this answer is correct",
+      "needs_image": false,
+      "image_prompt": null
     }
   ]
 }
 
-IMPORTANT: correct_option is a zero-based index (0 for A, 1 for B, 2 for C, 3 for D).`;
+IMPORTANT:
+- correct_option is a zero-based index (0 for A, 1 for B, 2 for C, 3 for D).
+- Set needs_image=true ONLY when a diagram, graph, map, circuit, geometric figure, apparatus or other visual is essential to solve the question.
+- When needs_image=true, image_prompt must precisely describe a clean, text-free exam illustration, including required point labels, axes, dimensions and relationships. The question_text must reference that figure.
+- For all other questions set needs_image=false and image_prompt=null. Never request decorative images.`;
 
       if (isMath) {
         userPrompt += `\n${MATH_STYLE_GUIDE}`;
@@ -197,10 +203,14 @@ Return a JSON object with this exact structure:
       "condition_a": "First condition/task (a-shart)",
       "condition_b": "Second condition/task (b-shart)",
       "model_answer": "Expected model answer covering both conditions (0-2 points)",
-      "rubric": "Scoring: 0 = no answer; 0.5 = weak attempt; 1 = one condition correct; 1.5 = both partially; 2 = both fully correct"
+      "rubric": "Scoring: 0 = no answer; 0.5 = weak attempt; 1 = one condition correct; 1.5 = both partially; 2 = both fully correct",
+      "needs_image": false,
+      "image_prompt": null
     }
   ]
-}`;
+}
+
+Set needs_image=true ONLY when a diagram, graph, map, circuit, geometric figure, apparatus or other visual is essential to solve the problem. In that case image_prompt must precisely describe a clean exam illustration and all required labels. Otherwise use needs_image=false and image_prompt=null. Never request decorative images.`;
       if (isMath) {
         userPrompt += `\n${MATH_WRITTEN_GUIDE}`;
       }

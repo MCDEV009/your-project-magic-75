@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Sparkles, Crown, Zap } from 'lucide-react';
+import { Check, Sparkles, Crown, Zap, Loader2, Wallet } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,8 +63,9 @@ const PLANS = [
 function PricingContent() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [comingSoon, setComingSoon] = useState<{ plan: string; price: number } | null>(null);
+  const [purchased, setPurchased] = useState<{ plan: string; price: number } | null>(null);
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
+  const [buying, setBuying] = useState<'pro' | 'premium' | null>(null);
 
   const handleSelect = async (planId: 'free' | 'pro' | 'premium', price: number) => {
     if (!user) {
@@ -76,16 +77,23 @@ function PricingContent() {
       toast.success('Siz Free tarifdan foydalanmoqdasiz');
       return;
     }
-    // Record pending payment
-    await (supabase.from('plan_payments') as any).insert({
-      user_id: user.id,
-      plan: planId,
-      amount: price,
-      currency: 'UZS',
-      status: 'pending',
-      provider: 'coming_soon',
+    setBuying(planId);
+    const { error } = await supabase.rpc('purchase_plan_with_wallet', {
+      _plan: planId,
+      _billing: billing,
     });
-    setComingSoon({ plan: planId, price });
+    setBuying(null);
+    if (error) {
+      if (/insufficient_balance/i.test(error.message)) {
+        toast.error("Balansda mablag' yetarli emas");
+        navigate('/wallet');
+        return;
+      }
+      toast.error(error.message || "Tarifni sotib olishda xatolik");
+      return;
+    }
+    setPurchased({ plan: planId, price });
+    toast.success(`${planId.toUpperCase()} tarifi faollashtirildi`);
   };
 
   return (
@@ -166,10 +174,12 @@ function PricingContent() {
                   </ul>
                   <Button
                     onClick={() => handleSelect(p.id, displayPrice)}
+                    disabled={buying !== null}
                     className="w-full"
                     variant={p.highlight ? 'default' : 'outline'}
                   >
-                    {displayPrice === 0 ? 'Joriy reja' : "Tanlash"}
+                    {buying === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    {displayPrice === 0 ? 'Joriy reja' : buying === p.id ? "Xarid qilinmoqda..." : "Balansdan sotib olish"}
                   </Button>
                 </CardContent>
               </Card>
@@ -181,18 +191,17 @@ function PricingContent() {
           Yopiq testlar o'rniga endi <strong>pulli testlar</strong> mavjud — har bir mock atigi <strong>10 000 so'm</strong>.
         </p>
 
-        <Dialog open={!!comingSoon} onOpenChange={(v) => !v && setComingSoon(null)}>
+        <Dialog open={!!purchased} onOpenChange={(v) => !v && setPurchased(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>To'lov tizimi tez orada</DialogTitle>
+              <DialogTitle className="flex items-center gap-2"><Wallet className="h-5 w-5" /> Tarif faollashtirildi</DialogTitle>
               <DialogDescription>
-                <strong>{comingSoon?.plan?.toUpperCase()}</strong> rejasi ({comingSoon?.price.toLocaleString('uz-UZ')} so'm) uchun
-                so'rovingiz qabul qilindi. To'lov usuli (Click / Payme / Uzum)
-                tez orada qo'shiladi. Tayyor bo'lganda sizga xabar beramiz.
+                <strong>{purchased?.plan?.toUpperCase()}</strong> rejasi uchun {purchased?.price.toLocaleString('uz-UZ')} so'm
+                balansingizdan yechildi. Tarif hozir ishlaydi.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button onClick={() => setComingSoon(null)}>Tushundim</Button>
+              <Button onClick={() => setPurchased(null)}>Tushundim</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
