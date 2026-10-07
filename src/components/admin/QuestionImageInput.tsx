@@ -3,18 +3,22 @@ import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Image as ImageIcon, Upload, Loader2, X, Link as LinkIcon } from 'lucide-react';
+import { Image as ImageIcon, Upload, Loader2, X, Link as LinkIcon, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface QuestionImageInputProps {
   value: string;
   onChange: (url: string) => void;
   label?: string;
+  defaultPrompt?: string;
 }
 
-export function QuestionImageInput({ value, onChange, label = "Rasm (ixtiyoriy)" }: QuestionImageInputProps) {
+export function QuestionImageInput({ value, onChange, label = "Rasm (ixtiyoriy)", defaultPrompt = "" }: QuestionImageInputProps) {
   const [uploading, setUploading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [prompt, setPrompt] = useState(defaultPrompt);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (file: File) => {
@@ -53,6 +57,32 @@ export function QuestionImageInput({ value, onChange, label = "Rasm (ixtiyoriy)"
     }
   };
 
+  const handleGenerate = async () => {
+    const finalPrompt = prompt.trim() || defaultPrompt.trim();
+    if (finalPrompt.length < 10) {
+      toast.error("Rasm uchun kamida 10 belgili tavsif yozing");
+      return;
+    }
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-question-image', {
+        body: { prompt: finalPrompt },
+      });
+      if (error) {
+        const { readFunctionError } = await import('@/lib/functionError');
+        const info = await readFunctionError(error);
+        throw new Error(info.message);
+      }
+      if (typeof data?.image_url !== 'string') throw new Error("AI rasm manzilini qaytarmadi");
+      onChange(data.image_url);
+      toast.success("AI rasm yaratdi");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Rasm yaratishda xatolik");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <Label className="flex items-center gap-2">
@@ -61,12 +91,15 @@ export function QuestionImageInput({ value, onChange, label = "Rasm (ixtiyoriy)"
       </Label>
 
       <Tabs defaultValue={value && !value.includes('question-images') ? 'url' : 'upload'} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-9">
+        <TabsList className="grid w-full grid-cols-3 h-9">
           <TabsTrigger value="upload" className="gap-1.5 text-xs">
             <Upload className="h-3.5 w-3.5" /> Qurilmadan
           </TabsTrigger>
           <TabsTrigger value="url" className="gap-1.5 text-xs">
             <LinkIcon className="h-3.5 w-3.5" /> URL
+          </TabsTrigger>
+          <TabsTrigger value="ai" className="gap-1.5 text-xs">
+            <Sparkles className="h-3.5 w-3.5" /> AI
           </TabsTrigger>
         </TabsList>
 
@@ -103,6 +136,19 @@ export function QuestionImageInput({ value, onChange, label = "Rasm (ixtiyoriy)"
             onChange={(e) => onChange(e.target.value)}
             placeholder="https://..."
           />
+        </TabsContent>
+        <TabsContent value="ai" className="mt-2 space-y-2">
+          <Textarea
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            placeholder="Masalan: ABC uchburchak, AD balandlik, A va D nuqtalari aniq belgilansin..."
+            rows={3}
+            maxLength={3000}
+          />
+          <Button type="button" variant="outline" className="w-full gap-2" disabled={generating} onClick={handleGenerate}>
+            {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {generating ? "Rasm yaratilmoqda..." : "AI rasm yaratish"}
+          </Button>
         </TabsContent>
       </Tabs>
 

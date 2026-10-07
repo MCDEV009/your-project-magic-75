@@ -116,6 +116,7 @@ export function WrittenQuestionForm({ form, onChange }: WrittenQuestionFormProps
       <QuestionImageInput
         value={form.image_url}
         onChange={(url) => onChange({ image_url: url })}
+        defaultPrompt={[form.question_text_uz, form.condition_a_uz, form.condition_b_uz].filter(Boolean).join('\n')}
       />
 
       {/* Model Answer */}
