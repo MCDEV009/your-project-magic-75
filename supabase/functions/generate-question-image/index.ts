@@ -42,7 +42,7 @@ async function readFinalImage(response: Response): Promise<string> {
       streamError = payload.error?.message || "AI rasm yaratishni rad etdi";
       return;
     }
-    if (payload.type === "image_generation.completed" && payload.b64_json) {
+    if ((eventName === "image_generation.completed" || payload.type === "image_generation.completed") && payload.b64_json) {
       finalImage = payload.b64_json;
     }
   };
