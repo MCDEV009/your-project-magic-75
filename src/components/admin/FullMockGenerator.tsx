@@ -204,6 +204,7 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
         .select('id', { count: 'exact', head: true })
         .eq('test_id', testId);
       if ((savedCount ?? 0) !== rows.length) {
+        await supabase.from('tests').delete().eq('id', testId);
         throw new Error(`Bazaga ${savedCount}/${rows.length} savol saqlandi`);
       }
 
