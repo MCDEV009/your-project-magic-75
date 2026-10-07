@@ -1533,6 +1533,28 @@ export type Database = {
         Returns: undefined
       }
       lookup_email_by_username: { Args: { _username: string }; Returns: string }
+      purchase_plan_with_wallet: {
+        Args: {
+          _billing: string
+          _plan: Database["public"]["Enums"]["subscription_plan"]
+        }
+        Returns: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_plans"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       purchase_test_with_wallet: {
         Args: { _test_id: string }
         Returns: {

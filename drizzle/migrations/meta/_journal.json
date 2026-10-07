@@ -22,6 +22,13 @@
       "when": 1790915352833,
       "tag": "0002_ai_providers_finetune",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791354786661,
+      "tag": "0003_purchase_plan_with_wallet",
+      "breakpoints": true
     }
   ]
 }
