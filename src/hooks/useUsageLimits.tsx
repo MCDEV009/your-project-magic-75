@@ -41,7 +41,13 @@ export function useUsageLimits() {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const limits = PLAN_LIMITS[plan];
+  const [dbMocks, setDbMocks] = useState<number | null>(null);
+  useEffect(() => {
+    supabase.from('plan_settings').select('mocks_limit').eq('plan', plan).maybeSingle()
+      .then(({ data }) => setDbMocks(data?.mocks_limit ?? null));
+  }, [plan]);
+
+  const limits = { ...PLAN_LIMITS[plan], ...(dbMocks != null ? { mocks: dbMocks } : {}) };
   const remaining = {
     mocks: limits.mocks - usage.mocks_taken,
     ai: limits.ai - usage.ai_requests,

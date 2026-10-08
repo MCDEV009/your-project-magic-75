@@ -359,6 +359,30 @@ export type Database = {
           },
         ]
       }
+      live_settings: {
+        Row: {
+          auto_delete_enabled: boolean
+          default_duration_minutes: number
+          id: boolean
+          retention_days: number
+          updated_at: string
+        }
+        Insert: {
+          auto_delete_enabled?: boolean
+          default_duration_minutes?: number
+          id?: boolean
+          retention_days?: number
+          updated_at?: string
+        }
+        Update: {
+          auto_delete_enabled?: boolean
+          default_duration_minutes?: number
+          id?: boolean
+          retention_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_settings: {
         Row: {
           bank_name: string
@@ -422,6 +446,30 @@ export type Database = {
           status?: string
           test_id?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      plan_settings: {
+        Row: {
+          mocks_limit: number
+          monthly_price: number
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          updated_at: string
+          yearly_price: number
+        }
+        Insert: {
+          mocks_limit?: number
+          monthly_price?: number
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          updated_at?: string
+          yearly_price?: number
+        }
+        Update: {
+          mocks_limit?: number
+          monthly_price?: number
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          updated_at?: string
+          yearly_price?: number
         }
         Relationships: []
       }
@@ -1272,6 +1320,29 @@ export type Database = {
       }
     }
     Functions: {
+      admin_set_user_plan: {
+        Args: {
+          _months?: number
+          _plan: Database["public"]["Enums"]["subscription_plan"]
+          _user_id: string
+        }
+        Returns: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_plans"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_test_stats: {
         Args: never
         Returns: {
@@ -1282,6 +1353,18 @@ export type Database = {
           test_id: string
           title: string
           unique_participants: number
+        }[]
+      }
+      admin_users_overview: {
+        Args: { _limit?: number; _search?: string }
+        Returns: {
+          balance: number
+          email: string
+          expires_at: string
+          full_name: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          user_id: string
+          username: string
         }[]
       }
       admin_wallet_transactions: {
@@ -1327,6 +1410,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cleanup_old_live_sessions: { Args: { _force?: boolean }; Returns: number }
       credit_wallet_for_transaction: {
         Args: { _provider_txn_id?: string; _txn_id: string }
         Returns: {
