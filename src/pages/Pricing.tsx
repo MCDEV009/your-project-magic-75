@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -66,6 +66,14 @@ function PricingContent() {
   const [purchased, setPurchased] = useState<{ plan: string; price: number } | null>(null);
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
   const [buying, setBuying] = useState<'pro' | 'premium' | null>(null);
+  const [prices, setPrices] = useState<Record<string, { m: number; y: number; mocks: number }>>({});
+  useEffect(() => {
+    supabase.from('plan_settings').select('plan,monthly_price,yearly_price,mocks_limit').then(({ data }) => {
+      const r: Record<string, { m: number; y: number; mocks: number }> = {};
+      (data ?? []).forEach((x) => { r[x.plan] = { m: Number(x.monthly_price), y: Number(x.yearly_price), mocks: x.mocks_limit }; });
+      setPrices(r);
+    });
+  }, []);
 
   const handleSelect = async (planId: 'free' | 'pro' | 'premium', price: number) => {
     if (!user) {
@@ -142,9 +150,11 @@ function PricingContent() {
           </div>
         </div>
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {PLANS.map((p) => {
+          {PLANS.map((p0) => {
+            const p = prices[p0.id] ? { ...p0, perks: p0.perks.map((x, i) => (i === 0 ? `Oyiga ${prices[p0.id].mocks} ta mock test` : x)) } : p0;
             const Icon = p.icon;
-            const displayPrice = billing === 'yearly' ? p.yearlyPrice : p.price;
+            const dbp = prices[p.id];
+            const displayPrice = billing === 'yearly' ? (dbp?.y ?? p.yearlyPrice) : (dbp?.m ?? p.price);
             const periodLabel = billing === 'yearly' ? '/yil' : '/oy';
             return (
               <Card key={p.id} className={p.highlight ? 'border-primary shadow-elevated relative' : 'shadow-card'}>

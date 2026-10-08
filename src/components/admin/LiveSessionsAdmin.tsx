@@ -35,6 +35,33 @@ export function LiveSessionsAdmin() {
   const [duration, setDuration] = useState(90);
   const [creating, setCreating] = useState(false);
 
+  const [settings, setSettings] = useState({ default_duration_minutes: 90, auto_delete_enabled: true, retention_days: 30 });
+  const [savingSettings, setSavingSettings] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data: st } = await supabase.from("live_settings").select("default_duration_minutes, auto_delete_enabled, retention_days").maybeSingle();
+      if (st) { setSettings(st); setDuration(st.default_duration_minutes); }
+      if (st?.auto_delete_enabled) await supabase.rpc("cleanup_old_live_sessions", { _force: false });
+    })();
+  }, []);
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    const { error } = await supabase.from("live_settings").update({ ...settings, updated_at: new Date().toISOString() }).eq("id", true);
+    setSavingSettings(false);
+    if (error) return toast.error(error.message);
+    setDuration(settings.default_duration_minutes);
+    toast.success("Sozlamalar saqlandi");
+  };
+
+  const cleanupNow = async () => {
+    const { data, error } = await supabase.rpc("cleanup_old_live_sessions", { _force: true });
+    if (error) return toast.error(error.message);
+    toast.success(`${data ?? 0} ta eski sessiya o'chirildi`);
+    loadSessions();
+  };
+
   useEffect(() => {
     (async () => {
       const { data } = await supabase.from("tests").select("id, title_uz, test_format").order("created_at", { ascending: false });
@@ -106,6 +133,33 @@ export function LiveSessionsAdmin() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold flex items-center gap-2"><Radio className="h-6 w-6 text-primary" /> Live Mock Sessiyalari</h1>
+
+      <Card>
+        <CardHeader><CardTitle>Sessiya sozlamalari</CardTitle></CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-3">
+          <div>
+            <Label>Standart davomiylik (daqiqa)</Label>
+            <Input type="number" min={5} max={300} value={settings.default_duration_minutes}
+              onChange={(e) => setSettings({ ...settings, default_duration_minutes: Number(e.target.value) })} />
+          </div>
+          <div>
+            <Label>Necha kundan keyin o'chirilsin</Label>
+            <Input type="number" min={1} max={365} value={settings.retention_days}
+              onChange={(e) => setSettings({ ...settings, retention_days: Number(e.target.value) })} />
+          </div>
+          <label className="flex items-center gap-2 text-sm md:mt-7">
+            <input type="checkbox" checked={settings.auto_delete_enabled}
+              onChange={(e) => setSettings({ ...settings, auto_delete_enabled: e.target.checked })} />
+            Tugagan sessiyalarni avtomatik o'chirish
+          </label>
+          <div className="md:col-span-3 flex flex-wrap gap-2">
+            <Button onClick={saveSettings} disabled={savingSettings}>
+              {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : "Saqlash"}
+            </Button>
+            <Button variant="outline" onClick={cleanupNow}>Eski sessiyalarni hozir o'chirish</Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle>Yangi sessiya yaratish</CardTitle></CardHeader>
