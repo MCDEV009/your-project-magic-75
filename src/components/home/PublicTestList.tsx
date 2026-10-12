@@ -78,7 +78,7 @@ export function PublicTestList() {
   );
 
   return (
-    <section className="py-16 bg-muted/30">
+    <section className="py-12 bg-secondary/30">
       <div className="test-container">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <h2 className="text-2xl font-bold">{t('publicTests')}</h2>
@@ -89,6 +89,7 @@ export function PublicTestList() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
+              aria-label="Testlarni qidirish"
             />
           </div>
         </div>
@@ -96,7 +97,7 @@ export function PublicTestList() {
         {loading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-48 rounded-xl" />
+              <Skeleton key={i} className="h-48 rounded-lg" />
             ))}
           </div>
         ) : filteredTests.length > 0 ? (

@@ -1,9 +1,9 @@
- import { Link, useNavigate } from 'react-router-dom';
+ import { Link, NavLink, useNavigate } from 'react-router-dom';
  import { useLanguage } from '@/hooks/useLanguage';
  import { LanguageSelector } from '@/components/ui/LanguageSelector';
  import { ThemeToggle } from '@/components/ui/ThemeToggle';
  import { Button } from '@/components/ui/button';
-import { LogIn, LogOut, User, LayoutDashboard, Sparkles, Wallet as WalletIcon, Info } from 'lucide-react';
+import { LogIn, LogOut, LayoutDashboard, Wallet as WalletIcon } from 'lucide-react';
  import { useAuth } from '@/hooks/useAuth';
 
 /** Custom mark: an open compass-triangle with an algebra crossbar — a nod to
@@ -33,15 +33,15 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 glass border-b">
+    <header className="site-header sticky top-0 z-50 border-b">
       <div className="test-container">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex min-h-20 flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary shadow-soft group-hover:shadow-glow transition-shadow">
-              <BrandMark className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent/50 text-accent">
+              <BrandMark className="h-6 w-6" />
             </div>
             <div className="flex flex-col">
-              <span className="font-serif text-lg font-bold leading-tight tracking-tight text-foreground">ALKHARAZMIY XYZ</span>
+              <span className="font-serif text-xs sm:text-sm font-semibold leading-tight text-foreground">ALKHARAZMIY XYZ</span>
               <span className="text-[11px] leading-tight text-muted-foreground">Barcha milliy sertifikat fanlari</span>
             </div>
           </Link>
@@ -49,29 +49,12 @@ export function Header() {
           <div className="flex items-center gap-1 sm:gap-2">
              <ThemeToggle />
             <LanguageSelector />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/pricing')}
-              className="hidden sm:inline-flex gap-1.5"
-            >
-              <Sparkles className="h-4 w-4" />
-              <span className="text-sm">Tariflar</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/about')}
-              className="hidden sm:inline-flex gap-1.5"
-            >
-              <Info className="h-4 w-4" />
-              <span className="text-sm">{t('about')}</span>
-            </Button>
             {user && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/dashboard')}
+                 aria-label="Kabinet"
                 className="sm:gap-2 sm:w-auto sm:px-3"
               >
                 <LayoutDashboard className="h-4 w-4" />
@@ -90,16 +73,11 @@ export function Header() {
                 <span className="hidden sm:inline text-sm">Hamyon</span>
               </Button>
             )}
-            {user && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full text-sm">
-                <User className="h-4 w-4" />
-                <span className="truncate max-w-[120px]">{user.email}</span>
-              </div>
-            )}
             <Button
               variant={user ? "outline" : "default"}
               size="icon"
               onClick={handleAuth}
+               aria-label={user ? t('logout') : t('login')}
               className={user ? "sm:gap-2 sm:w-auto sm:px-3" : "sm:gap-2 sm:w-auto sm:px-3 gradient-primary border-0 shadow-soft hover:shadow-glow transition-shadow"}
             >
               {user ? (
@@ -115,6 +93,15 @@ export function Header() {
               )}
             </Button>
           </div>
+          <nav aria-label="Asosiy navigatsiya" className="order-last flex w-full items-center gap-1 overflow-x-auto border-t border-border/60 pt-2 lg:order-none lg:w-auto lg:border-0 lg:pt-0">
+            {[
+              { to: '/', label: 'Bosh sahifa' },
+              { to: '/tests', label: t('publicTests') },
+              { to: '/live', label: 'Live imtihon' },
+              { to: '/pricing', label: 'Tariflar' },
+              { to: '/about', label: t('about') },
+            ].map((item) => <Button key={item.to} asChild variant="ghost" size="sm" className="shrink-0 rounded-none text-muted-foreground"><NavLink end={item.to === '/'} to={item.to} className="site-nav-link">{item.label}</NavLink></Button>)}
+          </nav>
         </div>
       </div>
     </header>

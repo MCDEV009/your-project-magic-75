@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=PT+Serif:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -23,125 +21,83 @@
 
 @layer base {
   :root {
-    /* ALKHARAZMIY XYZ — design system grounded in the exam/document world:
-       cool paper, ink-navy text, a single institutional blue, a single
-       muted teal for correctness/emphasis. No amber, no glow. */
-    --background: 140 10% 96%;
-    --foreground: 213 32% 13%;
-
+    --background: 220 33% 98%;
+    --foreground: 226 55% 18%;
     --card: 0 0% 100%;
-    --card-foreground: 213 32% 13%;
-
+    --card-foreground: 226 55% 18%;
     --popover: 0 0% 100%;
-    --popover-foreground: 213 32% 13%;
-
-    --primary: 208 44% 30%;
+    --popover-foreground: 226 55% 18%;
+    --primary: 228 75% 52%;
     --primary-foreground: 0 0% 100%;
-
-    --secondary: 200 15% 93%;
-    --secondary-foreground: 213 32% 13%;
-
-    --muted: 200 14% 92%;
-    --muted-foreground: 210 14% 42%;
-
-    --accent: 165 56% 26%;
+    --secondary: 225 40% 94%;
+    --secondary-foreground: 226 55% 18%;
+    --muted: 225 32% 94%;
+    --muted-foreground: 224 22% 43%;
+    --accent: 174 72% 29%;
     --accent-foreground: 0 0% 100%;
-
-    --destructive: 358 62% 44%;
+    --destructive: 8 68% 44%;
     --destructive-foreground: 0 0% 100%;
-
-    --success: 152 55% 30%;
+    --success: 174 72% 29%;
     --success-foreground: 0 0% 100%;
-
-    --warning: 34 68% 42%;
+    --warning: 37 80% 32%;
     --warning-foreground: 0 0% 100%;
-
-    --border: 208 18% 87%;
-    --input: 208 18% 87%;
-    --ring: 208 44% 30%;
-
+    --border: 224 30% 86%;
+    --input: 224 30% 86%;
+    --ring: 228 75% 52%;
+    --overlay: 226 70% 8%;
     --radius: 0.5rem;
-
-    /* Custom tokens — near-flat by design; these read as a single deliberate
-       color, not a decorative gradient. */
-    --gradient-primary: linear-gradient(135deg, hsl(208 44% 30%) 0%, hsl(208 44% 25%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(165 56% 26%) 0%, hsl(165 56% 22%) 100%);
-    --gradient-hero: hsl(208 44% 30%);
-    --gradient-card: hsl(0 0% 100%);
-
-    --shadow-soft: 0 1px 2px hsl(213 32% 13% / 0.06), 0 1px 1px hsl(213 32% 13% / 0.04);
-    --shadow-card: 0 1px 2px hsl(213 32% 13% / 0.06), 0 6px 16px -8px hsl(213 32% 13% / 0.12);
-    --shadow-elevated: 0 12px 28px -10px hsl(213 32% 13% / 0.22);
-    --shadow-glow: 0 0 0 3px hsl(208 44% 30% / 0.14);
-
-    --sidebar-background: 0 0% 99%;
-    --sidebar-foreground: 213 25% 30%;
-    --sidebar-primary: 208 44% 30%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 15% 94%;
-    --sidebar-accent-foreground: 213 32% 13%;
-    --sidebar-border: 208 18% 88%;
-    --sidebar-ring: 208 44% 30%;
-
-    --font-sans: 'Inter', system-ui, sans-serif;
-    --font-serif: 'PT Serif', Georgia, serif;
+    --gradient-primary: hsl(var(--primary));
+    --gradient-accent: hsl(var(--accent));
+    --gradient-hero: hsl(var(--primary));
+    --gradient-card: hsl(var(--card));
+    --shadow-soft: 0 2px 6px hsl(var(--foreground) / 0.05);
+    --shadow-card: 0 4px 20px -8px hsl(var(--foreground) / 0.12);
+    --shadow-elevated: 0 12px 32px -12px hsl(var(--foreground) / 0.2);
+    --shadow-glow: 0 0 0 3px hsl(var(--accent) / 0.15);
+    --sidebar-background: 225 40% 96%;
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: var(--secondary);
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
+    --font-sans: 'Onest', system-ui, sans-serif;
+    --font-serif: 'Unbounded', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    --surface-turquoise: #2ec4b6;
+    --surface-gold: #f2b84b;
   }
 
   .dark {
-     /* ALKHARAZMIY XYZ — ink-navy, same restrained palette lightened for contrast */
-     --background: 213 28% 9%;
-     --foreground: 200 20% 92%;
-
-     --card: 213 26% 12%;
-     --card-foreground: 200 20% 92%;
-
-     --popover: 213 26% 13%;
-     --popover-foreground: 200 20% 92%;
-
-     --primary: 205 55% 58%;
-     --primary-foreground: 213 32% 10%;
-
-     --secondary: 213 20% 17%;
-     --secondary-foreground: 200 20% 92%;
-
-     --muted: 213 20% 16%;
-     --muted-foreground: 210 12% 65%;
-
-     --accent: 165 45% 48%;
-     --accent-foreground: 213 32% 10%;
-
-     --destructive: 358 60% 55%;
-     --destructive-foreground: 0 0% 98%;
-
-     --success: 152 45% 46%;
-     --success-foreground: 213 32% 10%;
-
-     --warning: 34 60% 55%;
-     --warning-foreground: 213 32% 10%;
-
-     --border: 213 18% 22%;
-     --input: 213 18% 20%;
-     --ring: 205 55% 58%;
-
-     --gradient-primary: linear-gradient(135deg, hsl(205 55% 58%) 0%, hsl(205 55% 50%) 100%);
-     --gradient-accent: linear-gradient(135deg, hsl(165 45% 48%) 0%, hsl(165 45% 40%) 100%);
-     --gradient-hero: hsl(205 55% 62%);
-     --gradient-card: hsl(213 26% 12%);
-
-     --shadow-soft: 0 1px 2px hsl(0 0% 0% / 0.3);
-     --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.3), 0 8px 20px -8px hsl(0 0% 0% / 0.5);
-     --shadow-elevated: 0 16px 32px -10px hsl(0 0% 0% / 0.6);
-     --shadow-glow: 0 0 0 3px hsl(205 55% 58% / 0.22);
-
-     --sidebar-background: 213 28% 8%;
-     --sidebar-foreground: 200 15% 85%;
-     --sidebar-primary: 205 55% 58%;
-     --sidebar-primary-foreground: 213 32% 10%;
-     --sidebar-accent: 213 20% 16%;
-     --sidebar-accent-foreground: 200 20% 92%;
-     --sidebar-border: 213 18% 22%;
-     --sidebar-ring: 205 55% 58%;
+    color-scheme: dark;
+    --background: 227 70% 13%;
+    --foreground: 220 100% 96%;
+    --card: 226 64% 18%;
+    --card-foreground: 220 100% 96%;
+    --popover: 226 60% 17%;
+    --popover-foreground: 220 100% 96%;
+    --primary: 39 86% 62%;
+    --primary-foreground: 227 70% 13%;
+    --secondary: 227 61% 19%;
+    --secondary-foreground: 220 100% 96%;
+    --muted: 226 48% 22%;
+    --muted-foreground: 223 45% 76%;
+    --accent: 174 62% 47%;
+    --accent-foreground: 227 70% 10%;
+    --destructive: 8 100% 77%;
+    --destructive-foreground: 227 70% 13%;
+    --success: 174 62% 47%;
+    --success-foreground: 227 70% 10%;
+    --warning: 39 86% 62%;
+    --warning-foreground: 227 70% 13%;
+    --border: 225 33% 31%;
+    --input: 225 33% 34%;
+    --ring: 174 62% 47%;
+    --sidebar-background: 227 65% 11%;
+    --shadow-soft: 0 2px 6px hsl(var(--overlay) / 0.2);
+    --shadow-card: 0 6px 24px -10px hsl(var(--overlay) / 0.4);
+    --shadow-elevated: 0 18px 36px -14px hsl(var(--overlay) / 0.55);
   }
 }
 
@@ -156,7 +112,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight;
+    letter-spacing: 0;
     font-family: var(--font-serif);
     font-weight: 700;
   }
@@ -211,7 +167,7 @@
   }
 
   .test-container {
-    @apply max-w-5xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-10;
   }
 
   /* A quiet nod to the subject matter (mathematics / worked exam sheets) —
@@ -256,4 +212,28 @@
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
+}
+
+@layer components {
+  .home-hero { background: hsl(var(--background)); }
+  .rasch-stage { position: absolute; inset: 0 0 0 25%; z-index: -1; opacity: 0.85; }
+  .rasch-stage canvas { display: block; width: 100%; height: 100%; }
+  .rasch-stage::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, hsl(var(--background)), hsl(var(--background) / 0.15) 60%); pointer-events: none; }
+  .home-hero h1 { font-weight: 600; }
+  .site-header { background: hsl(var(--background) / 0.9); backdrop-filter: blur(16px); }
+  .site-nav-link[aria-current="page"] { color: hsl(var(--foreground)); box-shadow: inset 0 -2px hsl(var(--warning)); }
+}
+@layer base {
+  html { scroll-padding-top: 5rem; }
+  body { overflow-wrap: break-word; }
+  h1, h2, h3, h4, h5, h6 { letter-spacing: 0; }
+  input, textarea, select { font-family: var(--font-sans); }
+  ::selection { background: hsl(var(--accent) / 0.3); color: hsl(var(--foreground)); }
+}
+@media (max-width: 639px) {
+  .rasch-stage { inset: 0 -25% 0 5%; opacity: 0.27; }
+  h1 { overflow-wrap: anywhere; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

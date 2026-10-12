@@ -43,8 +43,8 @@ export function TestCard({ test, questionCount = 0, priceUzs, isFree, purchased 
   const formatPrice = (n: number) => new Intl.NumberFormat('uz-UZ').format(n) + " so'm";
 
   return (
-    <Card className="group shadow-card hover:shadow-elevated transition-all duration-300 border-transparent hover:border-primary/20 overflow-hidden">
-      <div className="absolute inset-0 gradient-primary opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />
+    <Card className="relative group flex flex-col shadow-card hover:shadow-elevated transition-all duration-300 hover:border-accent/50 overflow-hidden">
+      <div className="h-0.5 bg-accent/60" />
       <CardHeader className="pb-3">
         <div className="flex flex-wrap items-center gap-2 mb-2">
           {subjectName && (
@@ -70,7 +70,7 @@ export function TestCard({ test, questionCount = 0, priceUzs, isFree, purchased 
             </Badge>
           )}
         </div>
-        <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="font-sans font-semibold text-lg line-clamp-2 group-hover:text-accent transition-colors">
           {title}
         </h3>
       </CardHeader>
@@ -86,7 +86,7 @@ export function TestCard({ test, questionCount = 0, priceUzs, isFree, purchased 
           </div>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="mt-auto">
         <Button 
           onClick={handleStartTest}
           className="w-full gradient-primary border-0 shadow-soft group-hover:shadow-glow transition-shadow"
