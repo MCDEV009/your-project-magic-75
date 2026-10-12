@@ -4,6 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, Lock } from 'lucide-react';
+import { RaschSurface } from './RaschSurface';
 
 export function HeroSection() {
   const { t } = useLanguage();
@@ -17,26 +18,27 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative overflow-hidden border-b py-16 lg:py-24">
-      {/* Quiet graph-paper texture — the one deliberate motif, used once */}
-      <div className="grid-paper absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black,transparent)]" />
+    <section className="home-hero relative isolate overflow-hidden border-b py-12 lg:py-16">
+      <RaschSurface />
 
       <div className="test-container">
-        <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+        <div className="relative z-10 grid gap-10 lg:grid-cols-[1.35fr_0.65fr] lg:items-end">
           <div>
-            <p className="mb-3 text-sm font-medium text-muted-foreground">
+            <p className="mb-5 flex items-center gap-2 text-sm font-medium text-accent">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
               Milliy Sertifikat imtihoniga tayyorgarlik
             </p>
 
-            <h1 className="max-w-xl text-4xl leading-tight sm:text-5xl">
-              Imtihon kunidan oldin, imtihon kabi mashq qiling
+            <h1 className="max-w-2xl text-3xl leading-tight sm:text-5xl">
+              Milliy Sertifikat
             </h1>
 
-            <p className="mt-6 max-w-lg text-lg text-muted-foreground">
-              Har bir mock test — 35 ta yopiq savol va 10 ta yozma savol — Milliy Sertifikat
-              imtihonining aniq nusxasi. Barcha umumta'lim fanlari bo'yicha: matematika,
-              fizika, kimyo, biologiya, tarix, geografiya, ona tili va adabiyot, huquqshunoslik,
-              boshlang'ich ta'lim, musiqa madaniyati va chet tili. Yozma javoblaringizni AI baholaydi.
+            <p className="mt-4 max-w-lg text-xl font-medium text-foreground">
+              Imtihon kunidan oldin, imtihon kabi mashq qiling.
+            </p>
+            <p className="mt-4 max-w-lg text-base leading-relaxed text-muted-foreground">
+              Barcha milliy sertifikat fanlari bo‘yicha mock testlar.
+              Yozma javoblar uchun AI baholash va Rasch modeli asosida natijalar.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -44,27 +46,30 @@ export function HeroSection() {
                 {t('publicTests')}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
+              <Button size="lg" variant="outline" onClick={() => navigate('/live')} className="h-12 px-6">
+                Live imtihon <ArrowRight className="h-4 w-4" />
+              </Button>
             </div>
 
             {/* Structured like an exam cover sheet, not an icon badge row */}
             <dl className="mt-10 grid max-w-lg grid-cols-3 divide-x divide-border border-y">
               <div className="py-4 pr-4">
                 <dt className="text-xs text-muted-foreground">Savollar</dt>
-                <dd className="mt-1 font-serif text-2xl text-foreground">35 + 10</dd>
+                <dd className="mt-1 font-serif text-2xl text-warning">35 + 10</dd>
               </div>
               <div className="py-4 px-4">
                 <dt className="text-xs text-muted-foreground">Fanlar</dt>
-                <dd className="mt-1 font-serif text-2xl text-foreground">12</dd>
+                <dd className="mt-1 font-serif text-2xl text-warning">12</dd>
               </div>
               <div className="py-4 pl-4">
                 <dt className="text-xs text-muted-foreground">Baholash</dt>
-                <dd className="mt-1 font-serif text-2xl text-foreground">AI</dd>
+                <dd className="mt-1 font-serif text-2xl text-accent">AI</dd>
               </div>
             </dl>
           </div>
 
           {/* Private test code entry — framed as an access panel, not a floating card */}
-          <div className="border bg-card p-6 shadow-card">
+          <form className="rounded-lg border bg-card/90 p-5 backdrop-blur-md" onSubmit={(event) => { event.preventDefault(); handlePrivateTest(); }}>
             <div className="mb-4 flex items-center gap-2 text-muted-foreground">
               <Lock className="h-4 w-4" />
               <span className="text-sm font-medium">{t('privateTest')}</span>
@@ -77,12 +82,13 @@ export function HeroSection() {
                 onChange={(e) => setTestCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
                 className="text-center text-lg font-mono tracking-widest"
                 maxLength={5}
+                aria-label={t('enterTestCode5')}
               />
-              <Button onClick={handlePrivateTest} disabled={testCode.length !== 5}>
+              <Button type="submit" disabled={testCode.length !== 5} aria-label={t('privateTest')}>
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </section>

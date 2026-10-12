@@ -24,7 +24,7 @@ const Index = () => {
         </main>
         <footer className="border-t py-8">
           <div className="test-container text-center text-sm text-muted-foreground">
-            <p>© 2026 TestHub. Barcha huquqlar himoyalangan.</p>
+            <p>© 2026 ALKHARAZMIY XYZ. Barcha huquqlar himoyalangan.</p>
           </div>
         </footer>
       </div>
