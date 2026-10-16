@@ -80,7 +80,7 @@ export function QuestionAnalyticsTable() {
   const getDifficultyBadge = (score: number) => {
     if (score >= 0.7) return <Badge variant="destructive">Qiyin</Badge>;
     if (score >= 0.4) return <Badge variant="secondary">O'rta</Badge>;
-    return <Badge className="bg-green-500/10 text-green-600 border-green-500/20">Oson</Badge>;
+    return <Badge className="bg-success/10 text-success border-success/20">Oson</Badge>;
   };
 
   const filtered = selectedTest === 'all' ? stats : stats.filter(s => s.test_id === selectedTest);
@@ -141,7 +141,7 @@ export function QuestionAnalyticsTable() {
                       <TableCell>{stat.total_attempts}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-green-600">{stat.correct_count}</span>
+                          <span className="text-sm text-success">{stat.correct_count}</span>
                           <Progress value={correctPct} className="w-16 h-1.5" />
                         </div>
                       </TableCell>
