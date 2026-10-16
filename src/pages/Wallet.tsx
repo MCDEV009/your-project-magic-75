@@ -264,13 +264,13 @@ function WalletContent() {
         <Card className="overflow-hidden border-0 shadow-soft gradient-primary text-primary-foreground">
           <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
+              <div className="h-14 w-14 rounded-lg bg-primary-foreground/10 backdrop-blur flex items-center justify-center">
                 <WalletIcon className="h-7 w-7" />
               </div>
               <div>
                 <div className="text-sm opacity-80">Joriy balans</div>
                 {loading ? (
-                  <Skeleton className="h-9 w-40 bg-white/20" />
+                  <Skeleton className="h-9 w-40 bg-primary-foreground/20" />
                 ) : (
                   <div className="text-3xl sm:text-4xl font-bold tracking-tight">
                     {formatMoney(wallet?.balance ?? 0, wallet?.currency ?? 'UZS')}
@@ -346,13 +346,13 @@ function WalletContent() {
                           <TableCell>
                             <div className="flex items-center gap-1.5 text-sm">
                               {isIn
-                                ? <ArrowDownLeft className="h-4 w-4 text-emerald-500" />
-                                : <ArrowUpRight className="h-4 w-4 text-orange-500" />}
+                                ? <ArrowDownLeft className="h-4 w-4 text-success" />
+                                : <ArrowUpRight className="h-4 w-4 text-warning" />}
                               <span className="capitalize">{tx.type}</span>
                             </div>
                           </TableCell>
                           <TableCell className="text-sm capitalize">{tx.provider}</TableCell>
-                          <TableCell className={`text-right font-semibold ${isIn ? 'text-emerald-600' : ''}`}>
+                          <TableCell className={`text-right font-semibold ${isIn ? 'text-success' : ''}`}>
                             {isIn ? '+' : '-'} {formatMoney(tx.amount, tx.currency)}
                           </TableCell>
                           <TableCell>{renderStatusBadge(tx.status)}</TableCell>
@@ -463,7 +463,7 @@ function WalletContent() {
             <div className="space-y-3 py-2">
               <div className="flex items-center gap-3 p-4 rounded-lg border bg-muted/30">
                 {pendingTxn.status === 'pending' && <Loader2 className="h-8 w-8 animate-spin text-primary" />}
-                {pendingTxn.status === 'paid' && <CheckCircle2 className="h-8 w-8 text-emerald-500" />}
+                {pendingTxn.status === 'paid' && <CheckCircle2 className="h-8 w-8 text-success" />}
                 {(pendingTxn.status === 'failed' || pendingTxn.status === 'cancelled') && <XCircle className="h-8 w-8 text-destructive" />}
                 <div className="flex-1">
                   <div className="font-semibold">

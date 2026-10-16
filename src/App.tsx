@@ -26,6 +26,7 @@ import LiveResults from "./pages/live/LiveResults";
 import OAuthConsent from "./pages/OAuthConsent";
 import Connect from "./pages/Connect";
 import { Helmet } from "react-helmet-async";
+import { LanguageProvider } from "@/hooks/useLanguage";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
         <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
       </Helmet>
       <AuthProvider>
+        <LanguageProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -79,6 +81,7 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
+        </LanguageProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
