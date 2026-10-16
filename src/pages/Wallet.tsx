@@ -46,7 +46,7 @@ interface TxnRow {
 
 const CARD_NUMBER = '9860 1666 5600 5377';
 const CARD_NUMBER_RAW = '9860166656005377';
-const TELEGRAM_USERNAME = '@kbg.of';
+const TELEGRAM_USERNAME = '@kbg_of';
 
 const formatMoney = (n: number, currency = 'UZS') =>
   new Intl.NumberFormat('uz-UZ').format(Number(n || 0)) + ' ' + currency;
@@ -436,7 +436,7 @@ function WalletContent() {
                     <li>
                       Chek (kvitansiya) rasmini Telegram orqali{' '}
                       <a
-                        href="https://t.me/kbg.of"
+                        href="https://t.me/kbg_of"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-semibold text-primary underline"
