@@ -261,7 +261,7 @@ function WalletContent() {
           </Button>
         </div>
 
-        <Card className="overflow-hidden border-0 shadow-soft gradient-primary text-primary-foreground">
+        <Card className="overflow-hidden border-0 shadow-soft bg-primary text-primary-foreground">
           <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="h-14 w-14 rounded-lg bg-primary-foreground/10 backdrop-blur flex items-center justify-center">
