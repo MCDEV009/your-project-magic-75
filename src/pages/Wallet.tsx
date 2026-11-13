@@ -104,13 +104,14 @@ function WalletContent() {
     ]);
     setWallet(w ?? { balance: 0, currency: 'UZS' });
     // Extra client-side guard: only show txns owned by current user
-    const safe = ((t ?? []) as any[]).filter(row => row.user_id === user.id);
+    const safe = (t ?? []).filter(row => row.user_id === user.id);
     setTxns(safe as TxnRow[]);
     setLoading(false);
     setRefreshing(false);
   };
 
-  useEffect(() => { if (user) load(); /* eslint-disable-next-line */ }, [user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- load is a non-memoized closure; effect intentionally keyed on user only
+  useEffect(() => { if (user) load(); }, [user]);
 
   // Real-time subscription to this user's transactions and wallet
   useEffect(() => {

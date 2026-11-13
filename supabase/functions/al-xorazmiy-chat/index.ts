@@ -7,6 +7,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface AnalysisRow {
+  question_id?: unknown;
+  question_type?: unknown;
+  is_correct?: unknown;
+  points_earned?: unknown;
+  max_points?: unknown;
+}
+
 interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
@@ -29,7 +37,7 @@ Deno.serve(async (req) => {
 
     // Cap total message length to mitigate prompt-injection / credit abuse
     const totalLen = messages.reduce(
-      (n: number, m: any) => n + (typeof m?.content === "string" ? m.content.length : 0),
+      (n: number, m: { content?: unknown } | null) => n + (typeof m?.content === "string" ? m.content.length : 0),
       0,
     );
     if (totalLen > 8000) {
@@ -90,7 +98,7 @@ Deno.serve(async (req) => {
       total_questions: attempt?.total_questions,
       correct_answers: attempt?.correct_answers,
       previous_analysis: previousAnalysis,
-      questions_summary: (analyses || []).map((a: any) => ({
+      questions_summary: (analyses || []).map((a: AnalysisRow) => ({
         question_id: a.question_id,
         type: a.question_type,
         is_correct: a.is_correct,
@@ -201,7 +209,7 @@ VAZIFA: Talaba o'zlashtirmagan mavzular bo'yicha mashq savollarini yarat.
               const json = JSON.parse(payload);
               const delta = json.choices?.[0]?.delta?.content;
               if (delta) assistantText += delta;
-            } catch {}
+            } catch { /* ignore malformed SSE chunk */ }
           }
         }
         if (assistantText && effectiveParticipantId) {
@@ -225,9 +233,9 @@ VAZIFA: Talaba o'zlashtirmagan mavzular bo'yicha mashq savollarini yarat.
         Connection: "keep-alive",
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("al-xorazmiy-chat error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: (err as { message?: string }).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

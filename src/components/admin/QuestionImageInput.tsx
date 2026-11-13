@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Image as ImageIcon, Upload, Loader2, X, Link as LinkIcon, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 
 interface QuestionImageInputProps {
   value: string;
@@ -48,9 +49,9 @@ export function QuestionImageInput({ value, onChange, label = "Rasm (ixtiyoriy)"
       if (signErr || !signed?.signedUrl) throw signErr ?? new Error('Sign URL failed');
       onChange(signed.signedUrl);
       toast.success("Rasm yuklandi");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Upload error:', err);
-      toast.error(err.message || "Rasmni yuklashda xatolik");
+      toast.error(errorMessage(err) || "Rasmni yuklashda xatolik");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

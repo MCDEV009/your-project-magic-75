@@ -1,4 +1,5 @@
 import { resolveAIProvider } from "../_shared/aiProvider.ts";
+import { estimateAbility, estimateItemDifficulties, calculateTScore } from "../_shared/rasch.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
@@ -11,106 +12,31 @@ interface WrittenAnswer {
   answer_b: string;
 }
 
+interface QuestionRow {
+  id: string;
+  correct_option: number;
+  question_type?: string;
+  points?: number | null;
+  points_a?: number | null;
+  points_b?: number | null;
+  question_text_uz?: string | null;
+  question_text_ru?: string | null;
+  condition_a_uz?: string | null;
+  condition_a_ru?: string | null;
+  condition_b_uz?: string | null;
+  condition_b_ru?: string | null;
+  model_answer_uz?: string | null;
+  model_answer_ru?: string | null;
+  rubric_uz?: string | null;
+  rubric_ru?: string | null;
+}
+
 interface EvaluationResult {
   score: number;
   feedback_uz: string;
   feedback_ru: string;
   strengths: string[];
   missing_points: string[];
-}
-
-// --- Rasch Model & T-Score Functions ---
-
-/** Rasch probability: P = e^(θ - b) / (1 + e^(θ - b)) */
-function raschProbability(theta: number, difficulty: number): number {
-  const exponent = theta - difficulty;
-  return Math.exp(exponent) / (1 + Math.exp(exponent));
-}
-
-/**
- * Estimate ability (θ) using Newton-Raphson method on Rasch model.
- * responses: array of {correct: boolean, difficulty: number}
- */
-function estimateAbility(responses: { correct: boolean; difficulty: number }[]): number {
-  if (responses.length === 0) return 0;
-  
-  const totalCorrect = responses.filter(r => r.correct).length;
-  // Edge cases: all correct or all wrong
-  if (totalCorrect === 0) return -3;
-  if (totalCorrect === responses.length) return 3;
-  
-  let theta = 0; // initial estimate
-  
-  for (let iter = 0; iter < 50; iter++) {
-    let sumP = 0;
-    let sumPQ = 0;
-    
-    for (const r of responses) {
-      const p = raschProbability(theta, r.difficulty);
-      sumP += p;
-      sumPQ += p * (1 - p);
-    }
-    
-    // Newton-Raphson update: θ_new = θ + (X - Σp) / ΣpQ
-    const adjustment = (totalCorrect - sumP) / sumPQ;
-    theta += adjustment;
-    
-    if (Math.abs(adjustment) < 0.001) break;
-  }
-  
-  // Clamp to reasonable range
-  return Math.max(-4, Math.min(4, theta));
-}
-
-/**
- * Estimate item difficulties from all attempts using Rasch model.
- * Uses proportion correct as initial estimate, then refines.
- */
-function estimateItemDifficulties(
-  allAttempts: { answers: Record<string, number>; }[],
-  questions: { id: string; correct_option: number }[]
-): Map<string, number> {
-  const difficulties = new Map<string, number>();
-  
-  for (const q of questions) {
-    let correct = 0;
-    let total = 0;
-    
-    for (const attempt of allAttempts) {
-      if (attempt.answers && attempt.answers[q.id] !== undefined) {
-        total++;
-        if (attempt.answers[q.id] === q.correct_option) {
-          correct++;
-        }
-      }
-    }
-    
-    // Convert proportion correct to logit difficulty
-    // b = -ln(p / (1-p)) where p is proportion correct
-    const p = total > 0 ? Math.max(0.01, Math.min(0.99, correct / total)) : 0.5;
-    const difficulty = -Math.log(p / (1 - p));
-    difficulties.set(q.id, difficulty);
-  }
-  
-  return difficulties;
-}
-
-/**
- * Calculate T-score: T = 50 + 10 * Z where Z = (θ - μ) / σ
- * Uses population mean and std dev of all abilities.
- */
-function calculateTScore(theta: number, allThetas: number[]): number {
-  if (allThetas.length <= 1) {
-    // With insufficient data, use a simple mapping
-    return Math.round(50 + 10 * theta);
-  }
-  
-  const mean = allThetas.reduce((a, b) => a + b, 0) / allThetas.length;
-  const variance = allThetas.reduce((a, b) => a + (b - mean) ** 2, 0) / allThetas.length;
-  const stdDev = Math.sqrt(variance) || 1;
-  
-  const z = (theta - mean) / stdDev;
-  return Math.round(50 + 10 * z);
 }
 
 Deno.serve(async (req) => {
@@ -220,13 +146,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    const mcqQuestions = allQuestions.filter((q: any) => q.question_type === 'single_choice');
-    const writtenQuestions = allQuestions.filter((q: any) => q.question_type === 'written');
+    const mcqQuestions = (allQuestions as QuestionRow[]).filter((q) => q.question_type === 'single_choice');
+    const writtenQuestions = (allQuestions as QuestionRow[]).filter((q) => q.question_type === 'written');
     const answers = attempt.answers || {};
     const rawWrittenAnswers = attempt.written_answers || {};
     // Turli mijoz versiyalari {answer_a,answer_b} yoki {a,b} ko'rinishida yuborishi mumkin
     const writtenAnswers: Record<string, WrittenAnswer> = {};
-    for (const [qid, val] of Object.entries(rawWrittenAnswers as Record<string, any>)) {
+    for (const [qid, val] of Object.entries(rawWrittenAnswers as Record<string, string | { answer_a?: unknown; a?: unknown; answer_b?: unknown; b?: unknown } | null>)) {
       if (typeof val === 'string') {
         writtenAnswers[qid] = { answer_a: val, answer_b: '' };
       } else if (val && typeof val === 'object') {
@@ -240,7 +166,7 @@ Deno.serve(async (req) => {
 
     // --- Compute MCQ scores server-side (difficulty-based points) ---
     let mcqScore = 0;
-    const allEvaluations: Record<string, any> = {};
+    const allEvaluations: Record<string, Record<string, unknown>> = {};
 
     for (const q of mcqQuestions) {
       const userAnswer = answers[q.id];
@@ -257,7 +183,7 @@ Deno.serve(async (req) => {
     }
 
     // --- Rasch Model Scoring for Milliy Sertifikat ---
-    let raschData: any = null;
+    let raschData: Record<string, unknown> | null = null;
     
     if (mcqQuestions.length > 0) {
       try {
@@ -333,7 +259,7 @@ Deno.serve(async (req) => {
       }
 
       const mcqCorrectCount = mcqQuestions.filter(q => answers[q.id] === q.correct_option).length;
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         ai_evaluation: raschData ? { ...allEvaluations, _rasch: raschData } : allEvaluations,
         mcq_score: mcqScore,
         correct_answers: mcqCorrectCount,
@@ -529,7 +455,7 @@ Respond with JSON only.`;
 
     // --- Persist per-question analyses ---
     try {
-      const analysisRows: any[] = [];
+      const analysisRows: Record<string, unknown>[] = [];
       for (const q of mcqQuestions) {
         const ev = allEvaluations[q.id] || {};
         analysisRows.push({

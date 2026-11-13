@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(async () => {
             if (mounted) {
               await checkAdminRole(session.user.id);
-              try { await (supabase as any).rpc('ensure_profile', { _username: null }); } catch {}
+              try { await supabase.rpc('ensure_profile', { _username: null as unknown as string }); } catch { /* profile bootstrap is best-effort */ }
             }
           }, 0);
         } else {

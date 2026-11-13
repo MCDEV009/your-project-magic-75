@@ -7,6 +7,17 @@ const json = (body: unknown, status = 200) =>
 
 const base = (u: string) => u.trim().replace(/\/+$/, "").replace(/\/chat\/completions$/, "");
 
+interface FinetuneQuestionRow {
+  question_text_uz?: string | null;
+  question_type?: string;
+  options?: unknown;
+  correct_option?: unknown;
+  model_answer_uz?: unknown;
+  condition_a_uz?: unknown;
+  condition_b_uz?: unknown;
+  tests?: { subjects?: { name_uz?: string } | null } | null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -41,7 +52,7 @@ Deno.serve(async (req) => {
       const text = await r.text();
       if (!r.ok) return json({ ok: false, status: r.status, error: text.slice(0, 500) });
       let reply = "";
-      try { reply = JSON.parse(text).choices?.[0]?.message?.content ?? ""; } catch {}
+      try { reply = JSON.parse(text).choices?.[0]?.message?.content ?? ""; } catch { /* non-JSON response: keep empty reply */ }
       return json({ ok: true, ms: Date.now() - t0, reply: reply.slice(0, 200) });
     }
 
@@ -55,7 +66,7 @@ Deno.serve(async (req) => {
       const { data: qs, error } = await q;
       if (error) throw error;
       const sys = "Sen Milliy Sertifikat imtihoni uchun savol yaratuvchi ekspertsan. Faqat JSON qaytar.";
-      const lines = (qs ?? []).filter((x: any) => x.question_text_uz?.trim()).map((x: any) => {
+      const lines = (qs ?? []).filter((x: FinetuneQuestionRow) => x.question_text_uz?.trim()).map((x: FinetuneQuestionRow) => {
         const subject = x.tests?.subjects?.name_uz ?? "Umumiy";
         const out = x.question_type === "written"
           ? { type: "written", question: x.question_text_uz, condition_a: x.condition_a_uz, condition_b: x.condition_b_uz, model_answer: x.model_answer_uz }
@@ -114,8 +125,8 @@ Deno.serve(async (req) => {
     }
 
     return json({ error: "Noma'lum amal" }, 400);
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("ai-admin", e);
-    return json({ error: e?.message ?? String(e) }, 500);
+    return json({ error: (e as { message?: string } | null)?.message ?? String(e) }, 500);
   }
 });

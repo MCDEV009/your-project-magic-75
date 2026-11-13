@@ -55,16 +55,16 @@ export function QuestionAnalyticsTable() {
 
     if (analyticsData && analyticsData.length > 0) {
       // Fetch question texts
-      const qIds = analyticsData.map((a: any) => a.question_id);
+      const qIds = analyticsData.map((a) => a.question_id);
       const { data: questions } = await supabase
         .from('questions')
         .select('id, question_text_uz, test_id')
         .in('id', qIds);
 
-      const qMap = new Map((questions || []).map((q: any) => [q.id, q]));
-      const tMap = new Map((testsData || []).map((t: any) => [t.id, t.title_uz]));
+      const qMap = new Map((questions || []).map((q) => [q.id, q] as const));
+      const tMap = new Map((testsData || []).map((t) => [t.id, t.title_uz] as const));
 
-      const mapped: QuestionStat[] = analyticsData.map((a: any) => {
+      const mapped: QuestionStat[] = analyticsData.map((a) => {
         const q = qMap.get(a.question_id);
         return {
           ...a,

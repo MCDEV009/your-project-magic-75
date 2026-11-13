@@ -43,21 +43,26 @@ export default function LiveResults() {
 
   const load = useCallback(async () => {
     if (!code) return;
-    const { data: sList } = await (supabase as any).rpc("find_live_session_by_code", { _code: code });
+    const { data: sList } = await supabase.rpc("find_live_session_by_code", { _code: code });
     const s = Array.isArray(sList) ? sList[0] : sList;
     if (!s) return;
-    setSession(s as Session);
+    setSession(s as unknown as Session);
 
-    const { data: parts } = await (supabase as any).rpc("get_live_participants", { _session_id: s.id });
+    const { data: parts } = await supabase.rpc("get_live_participants", { _session_id: s.id });
 
     const attemptIds = (parts ?? []).map((p) => p.attempt_id).filter(Boolean) as string[];
-    let attempts: any[] = [];
+    type AttemptLite = {
+      id: string;
+      score: number | null;
+      ai_evaluation: { _rasch?: { theta?: number; t_score?: number; rank?: number } } | null;
+    };
+    let attempts: AttemptLite[] = [];
     if (attemptIds.length) {
       const { data: att } = await supabase
         .from("test_attempts")
         .select("id, score, ai_evaluation")
         .in("id", attemptIds);
-      attempts = att ?? [];
+      attempts = (att ?? []) as unknown as AttemptLite[];
     }
 
     const merged: Row[] = (parts ?? []).map((p) => {

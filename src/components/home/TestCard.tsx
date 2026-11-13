@@ -36,7 +36,7 @@ export function TestCard({ test, questionCount = 0, priceUzs, isFree, purchased 
     language === 'en' && test.subjects.name_en ? test.subjects.name_en : test.subjects.name_uz
   ) : null;
 
-  const isSundayFree = !!(test as any).is_sunday_free
+  const isSundayFree = !!test.is_sunday_free
     && new Date().toLocaleString('en-US', { weekday: 'short', timeZone: 'Asia/Tashkent' }) === 'Sun';
   const isPaid = (test.visibility as string) === 'paid' && !isFree && !isSundayFree;
   const displayPrice = priceUzs ?? 10000;

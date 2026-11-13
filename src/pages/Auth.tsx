@@ -89,7 +89,7 @@ function AuthContent() {
     // If not an email, resolve username -> email
     let loginEmail = id;
     if (!id.includes('@')) {
-      const { data: resolved, error: rpcErr } = await (supabase.rpc as any)('lookup_email_by_username', { _username: id });
+      const { data: resolved, error: rpcErr } = await supabase.rpc('lookup_email_by_username', { _username: id });
       if (rpcErr || !resolved) {
         toast.error('Bunday username topilmadi');
         setLoading(false);
@@ -112,7 +112,7 @@ function AuthContent() {
     } else {
       toast.success('Muvaffaqiyatli kirdingiz!');
       // ensure profile exists (no-op if already)
-      try { await (supabase.rpc as any)('ensure_profile', { _username: null }); } catch {}
+      try { await supabase.rpc('ensure_profile', { _username: null }); } catch { /* profile creation is best-effort; ignore failures */ }
     }
   };
 
@@ -128,7 +128,7 @@ function AuthContent() {
       return;
     }
     // pre-check uniqueness
-    const { data: taken } = await (supabase.rpc as any)('lookup_email_by_username', { _username: username });
+    const { data: taken } = await supabase.rpc('lookup_email_by_username', { _username: username });
     if (taken) { toast.error('Bu username band'); return; }
     
     setLoading(true);
@@ -155,7 +155,7 @@ function AuthContent() {
       }
     } else {
       toast.success('Ro\'yxatdan o\'tdingiz! Emailingizni tasdiqlang.');
-      try { await (supabase.rpc as any)('ensure_profile', { _username: username.trim() }); } catch {}
+      try { await supabase.rpc('ensure_profile', { _username: username.trim() }); } catch { /* profile creation is best-effort; ignore failures */ }
     }
     
     setLoading(false);

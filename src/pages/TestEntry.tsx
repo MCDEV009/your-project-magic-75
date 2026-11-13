@@ -114,6 +114,7 @@ function TestEntryContent() {
       setPurchased(!!purchase);
     }
     loadPaymentState();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on ids so a new user/test object identity does not refetch
   }, [user?.id, test?.id]);
 
   // Update clock every second for countdown
@@ -156,7 +157,7 @@ function TestEntryContent() {
       return;
     }
     // Sunday free bypass (Asia/Tashkent)
-    const isSundayFreeNow = !!(test as any)?.is_sunday_free
+    const isSundayFreeNow = !!(test as (Test & { is_sunday_free?: boolean }) | null)?.is_sunday_free
       && new Date().toLocaleString('en-US', { weekday: 'short', timeZone: 'Asia/Tashkent' }) === 'Sun';
     // Paid test handling — pay via wallet balance
     if ((test?.visibility as string) === 'paid' && !isFreePricing && plan !== 'premium' && !purchased && !isSundayFreeNow) {
@@ -205,9 +206,9 @@ function TestEntryContent() {
       toast.success("To'lov muvaffaqiyatli amalga oshirildi!");
       setShowPayModal(false);
       setShowRulesModal(true);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      toast.error(e?.message || t('error'));
+      toast.error((e as { message?: string } | null)?.message || t('error'));
     } finally {
       setPaying(false);
     }
@@ -245,7 +246,7 @@ function TestEntryContent() {
       if (attemptError) throw attemptError;
       
       // Track usage for free plan
-      if (user) { try { await increment('mocks_taken'); } catch {} }
+      if (user) { try { await increment('mocks_taken'); } catch { /* usage tracking is best-effort */ } }
 
       // Navigate to test
       navigate(`/test/${attempt.id}`, { 

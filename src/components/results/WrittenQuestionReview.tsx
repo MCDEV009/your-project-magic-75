@@ -39,11 +39,10 @@ export function WrittenQuestionReview({
     : null;
 
   const maxPoints = question.max_points || 3.2;
-  const evalAny = evaluation as any;
-  const scoreA = evalAny?.score_a;
-  const scoreB = evalAny?.score_b;
-  const maxPointsA = evalAny?.max_points_a || 1.5;
-  const maxPointsB = evalAny?.max_points_b || 1.7;
+  const scoreA = evaluation?.score_a;
+  const scoreB = evaluation?.score_b;
+  const maxPointsA = evaluation?.max_points_a || 1.5;
+  const maxPointsB = evaluation?.max_points_b || 1.7;
   const scorePercentage = evaluation ? (evaluation.score / maxPoints) * 100 : 0;
 
   const getScoreColor = (score: number, max: number) => {

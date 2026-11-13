@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Sparkles, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 import { EXAM_CATEGORIES, type SubjectBlueprint } from '@/lib/examBlueprints';
 
 interface Props {
@@ -157,7 +158,7 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
           duration_minutes: bp.durationMinutes,
           test_format: 'milliy_sertifikat',
           created_by: user?.id ?? null,
-        } as any)
+        })
         .select()
         .single();
       if (testErr) throw testErr;
@@ -175,7 +176,7 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
 
       const rows = all.map((q, i) => ({
         test_id: testId,
-        question_type: q.type === 'written' ? 'written' : 'single_choice',
+        question_type: q.type === 'written' ? ('written' as const) : ('single_choice' as const),
         question_text_uz: q.question_text,
         options: q.options || [],
         correct_option: q.correct_option ?? 0,
@@ -191,7 +192,7 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
       }));
       const { data: insertedQuestions, error: qErr } = await supabase
         .from('questions')
-        .insert(rows as any)
+        .insert(rows)
         .select('id, order_index');
       if (qErr) {
         // Bo'sh testni qoldirmaymiz
@@ -244,9 +245,9 @@ export function FullMockGenerator({ subjects, onCreated }: Props) {
       setSelected(null);
       onCreated?.();
       navigate(`/urecheater/test/${testId}`);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      toast.error(e?.message || "Mock yaratishda xatolik");
+      toast.error(errorMessage(e) || "Mock yaratishda xatolik");
     } finally {
       setBusy(false);
       setStep('');

@@ -15,7 +15,7 @@ interface ProtectedRouteProps {
 
 async function logAudit(opts: { userId: string | null; userEmail: string | null; route: string; required: string[]; granted: boolean; }) {
   try {
-    await (supabase as any).rpc('log_admin_audit', {
+    await supabase.rpc('log_admin_audit', {
       _route: opts.route,
       _required_roles: opts.required,
       _granted: opts.granted,
@@ -45,7 +45,7 @@ export function ProtectedRoute({ children, requireAdmin = false, requiredRoles }
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .in('role', requiredList as any);
+        .in('role', requiredList);
       if (cancelled) return;
       const ok = (data?.length ?? 0) > 0;
       setAuthorized(ok);
@@ -60,6 +60,7 @@ export function ProtectedRoute({ children, requireAdmin = false, requiredRoles }
       if (!ok) toast.error("Ruxsat berilmadi: yetarli huquq yo'q");
     })();
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- requiredList is rebuilt every render; its joined value is the intended dep
   }, [needsRoleCheck, user, location.pathname, requiredList.join(',')]);
 
   if (loading || verifying) {

@@ -27,7 +27,7 @@ export default defineTool({
       .from("test_participants")
       .select("id")
       .eq("user_id", uid);
-    const pids = (parts ?? []).map((p: any) => p.id);
+    const pids = (parts ?? []).map((p: { id: string }) => p.id);
     if (pids.length === 0) {
       return { content: [{ type: "text", text: "[]" }], structuredContent: { attempts: [] } };
     }

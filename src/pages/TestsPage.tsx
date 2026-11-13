@@ -17,7 +17,7 @@ function TestsPageContent() {
       .order('created_at', { ascending: false })
       .limit(20)
       .then(({ data }) => {
-        if (data) setTestNames(data.map((t: any) => t.title_uz).filter(Boolean));
+        if (data) setTestNames(data.map((t) => t.title_uz).filter(Boolean));
       });
   }, []);
 

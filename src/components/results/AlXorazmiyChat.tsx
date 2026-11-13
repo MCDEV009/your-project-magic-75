@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { GraduationCap, Send, Loader2, User, Sparkles, Trash2 } from 'lucide-react';
 import LatexRenderer from '@/components/ui/LatexRenderer';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
@@ -45,7 +46,7 @@ export function AlXorazmiyChat({ attemptId, participantId }: AlXorazmiyChatProps
         .eq('participant_id', participantId)
         .order('created_at', { ascending: true });
       if (data && data.length > 0) {
-        setMessages([WELCOME, ...data.map((m: any) => ({ id: m.id, role: m.role as 'user' | 'assistant', content: m.content }))]);
+        setMessages([WELCOME, ...data.map((m) => ({ id: m.id, role: m.role as 'user' | 'assistant', content: m.content }))]);
       }
       setHistoryLoaded(true);
     })();
@@ -125,9 +126,9 @@ export function AlXorazmiyChat({ attemptId, participantId }: AlXorazmiyChatProps
           }
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Xatolik yuz berdi');
+      toast.error(errorMessage(err) || 'Xatolik yuz berdi');
       setMessages((m) => m.slice(0, -1));
     } finally {
       setStreaming(false);
@@ -172,7 +173,7 @@ export function AlXorazmiyChat({ attemptId, participantId }: AlXorazmiyChatProps
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : (
-        <ScrollArea className="h-[400px] pr-3" ref={scrollRef as any}>
+        <ScrollArea className="h-[400px] pr-3" ref={scrollRef}>
           <div className="space-y-3">
             {messages.map((m, i) => (
               <div

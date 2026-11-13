@@ -11,7 +11,7 @@ export function LiveGate({ sessionId }: { sessionId: string }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await (supabase as any).rpc("get_live_session_code", { _session_id: sessionId });
+      const { data } = await supabase.rpc("get_live_session_code", { _session_id: sessionId });
       if (cancelled) return;
       const code = typeof data === "string" ? data : (Array.isArray(data) ? data[0] : null);
       if (code) {

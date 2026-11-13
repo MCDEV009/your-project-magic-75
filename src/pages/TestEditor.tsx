@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { LanguageProvider, useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
+import type { TablesInsert } from '@/integrations/supabase/types';
 import { Test, Question, Subject } from '@/types/test';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -213,17 +214,17 @@ function TestEditorContent() {
         setWrittenForm({
           question_text_uz: question.question_text_uz,
           question_text_ru: question.question_text_ru || '',
-          condition_a_uz: (question as any).condition_a_uz || '',
-          condition_a_ru: (question as any).condition_a_ru || '',
-          condition_b_uz: (question as any).condition_b_uz || '',
-          condition_b_ru: (question as any).condition_b_ru || '',
+          condition_a_uz: question.condition_a_uz || '',
+          condition_a_ru: question.condition_a_ru || '',
+          condition_b_uz: question.condition_b_uz || '',
+          condition_b_ru: question.condition_b_ru || '',
           model_answer_uz: question.model_answer_uz || '',
           model_answer_ru: question.model_answer_ru || '',
           rubric_uz: question.rubric_uz || '',
           rubric_ru: question.rubric_ru || '',
           max_points: question.max_points || 3.2,
-          points_a: (question as any).points_a ?? 1.5,
-          points_b: (question as any).points_b ?? 1.7,
+          points_a: (question as Question & { points_a?: number | null }).points_a ?? 1.5,
+          points_b: (question as Question & { points_b?: number | null }).points_b ?? 1.7,
           image_url: question.image_url || ''
         });
       }
@@ -259,7 +260,7 @@ function TestEditorContent() {
     const writtenQuestionCount = questions.filter(q => q.question_type === 'written').length;
     
     // Calculate order_index: MCQs first (0-34), then written (35-44)
-    let orderIndex = editingQuestion 
+    const orderIndex = editingQuestion 
       ? editingQuestion.order_index 
       : isMcq 
         ? mcqQuestionCount 
@@ -271,7 +272,7 @@ function TestEditorContent() {
       order_index: orderIndex
     };
     
-    const questionData = isMcq ? {
+    const questionData: TablesInsert<'questions'> = isMcq ? {
       ...baseData,
       question_text_uz: mcqForm.question_text_uz.trim(),
       question_text_ru: mcqForm.question_text_ru.trim() || null,
@@ -304,7 +305,7 @@ function TestEditorContent() {
     if (editingQuestion) {
       const { error } = await supabase
         .from('questions')
-        .update(questionData as any)
+        .update(questionData)
         .eq('id', editingQuestion.id);
       
       if (error) {
@@ -318,7 +319,7 @@ function TestEditorContent() {
     } else {
       const { data, error } = await supabase
         .from('questions')
-        .insert(questionData as any)
+        .insert(questionData)
         .select()
         .single();
       
