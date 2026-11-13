@@ -21,7 +21,7 @@ interface AdminTxn {
   provider_txn_id: string | null;
   status: string;
   type: string;
-  metadata: any;
+  metadata: { payer_note?: string; cancel_reason?: string } | null;
   paid_at: string | null;
   created_at: string;
 }
@@ -57,8 +57,9 @@ export function PaymentsAdminCard() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await (supabase as any).rpc('admin_wallet_transactions', {
-      _status: filter === 'all' ? null : filter,
+    const { data, error } = await supabase.rpc('admin_wallet_transactions', {
+      // null (not undefined) is sent on purpose to keep the original request body
+      _status: (filter === 'all' ? null : filter) as unknown as string,
       _limit: 200,
     });
     if (error) toast.error(error.message);
@@ -90,7 +91,7 @@ export function PaymentsAdminCard() {
 
   const approve = async (t: AdminTxn) => {
     setBusyId(t.id);
-    const { error } = await (supabase as any).rpc('credit_wallet_for_transaction', {
+    const { error } = await supabase.rpc('credit_wallet_for_transaction', {
       _txn_id: t.id,
       _provider_txn_id: t.provider_txn_id,
     });
@@ -103,7 +104,7 @@ export function PaymentsAdminCard() {
   const reject = async (t: AdminTxn) => {
     const reason = window.prompt('Rad etish sababi (ixtiyoriy):') ?? undefined;
     setBusyId(t.id);
-    const { error } = await (supabase as any).rpc('cancel_wallet_transaction', {
+    const { error } = await supabase.rpc('cancel_wallet_transaction', {
       _txn_id: t.id,
       _reason: reason || 'Admin tomonidan rad etildi',
     });
@@ -122,7 +123,7 @@ export function PaymentsAdminCard() {
       bank_name: bankName,
       instructions,
       updated_at: new Date().toISOString(),
-    } as any);
+    });
     setSavingSettings(false);
     if (error) return toast.error(error.message);
     toast.success('Karta rekvizitlari saqlandi');

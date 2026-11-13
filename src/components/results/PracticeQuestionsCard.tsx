@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, RefreshCw } from 'lucide-react';
 import LatexRenderer from '@/components/ui/LatexRenderer';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 
 interface Props {
   attemptId: string;
@@ -75,11 +76,11 @@ export const PracticeQuestionsCard = forwardRef<PracticeCardHandle, Props>(({ at
             const json = JSON.parse(payload);
             const delta = json.choices?.[0]?.delta?.content;
             if (delta) { acc += delta; setContent(acc); }
-          } catch {}
+          } catch { /* ignore malformed SSE chunk */ }
         }
       }
-    } catch (err: any) {
-      toast.error(err.message || 'Xatolik yuz berdi');
+    } catch (err: unknown) {
+      toast.error(errorMessage(err) || 'Xatolik yuz berdi');
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Bot, Trash2, Zap, CheckCircle2, GraduationCap, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 import { readFunctionError } from '@/lib/functionError';
 
 interface Provider { id: string; name: string; base_url: string; model: string; is_active: boolean }
@@ -87,8 +88,8 @@ export function AIProvidersCard() {
     setBusy(p.id);
     try {
       const r = await callAdmin({ action: 'test', provider_id: p.id });
-      r.ok ? toast.success(`Ishlayapti (${r.ms} ms): ${r.reply}`) : toast.error(`Xato ${r.status}: ${r.error}`);
-    } catch (e: any) { toast.error(e.message); }
+      if (r.ok) toast.success(`Ishlayapti (${r.ms} ms): ${r.reply}`); else toast.error(`Xato ${r.status}: ${r.error}`);
+    } catch (e: unknown) { toast.error(errorMessage(e)); }
     setBusy(null);
   };
 
@@ -99,7 +100,7 @@ export function AIProvidersCard() {
       const r = await callAdmin({ action: 'finetune_start', provider_id: ft.provider_id, base_model: ft.base_model || undefined, subject_id: ft.subject_id || undefined });
       toast.success(`O'qitish boshlandi: ${r.job.examples_count} ta namuna`);
       load();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: unknown) { toast.error(errorMessage(e)); }
     setBusy(null);
   };
 
@@ -109,7 +110,7 @@ export function AIProvidersCard() {
       await callAdmin({ action, job_id: j.id });
       toast.success(action === 'finetune_apply' ? "O'qitilgan model provayderga o'rnatildi" : 'Holat yangilandi');
       load();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: unknown) { toast.error(errorMessage(e)); }
     setBusy(null);
   };
 

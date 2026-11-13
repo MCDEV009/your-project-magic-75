@@ -14,7 +14,7 @@ export function RaschSettingsCard() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await (supabase as any).from('rasch_settings').select('*').eq('id', true).maybeSingle();
+      const { data } = await supabase.from('rasch_settings').select('*').eq('id', true).maybeSingle();
       if (data) setForm({
         prior_mean: Number(data.prior_mean),
         prior_strength: Number(data.prior_strength),
@@ -35,7 +35,7 @@ export function RaschSettingsCard() {
       return;
     }
     setSaving(true);
-    const { error } = await (supabase as any).from('rasch_settings').update({
+    const { error } = await supabase.from('rasch_settings').update({
       ...form, updated_at: new Date().toISOString(),
     }).eq('id', true);
     setSaving(false);

@@ -23,7 +23,7 @@ export function RaschMiniAnalytics() {
   const [rows, setRows] = useState<Row[] | null>(null);
 
   const downloadCsv = (filename: string, header: string[], data: (string | number)[][]) => {
-    const esc = (v: any) => {
+    const esc = (v: unknown) => {
       const s = String(v ?? '');
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     };
@@ -45,7 +45,7 @@ export function RaschMiniAnalytics() {
   };
 
   const exportSundayLog = async () => {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('sunday_free_redemptions')
       .select('id, user_id, test_id, redeemed_at, weekday_tashkent')
       .order('redeemed_at', { ascending: false });
@@ -54,13 +54,13 @@ export function RaschMiniAnalytics() {
     downloadCsv(
       `sunday-free-redemptions-${new Date().toISOString().slice(0,10)}.csv`,
       ['id','user_id','test_id','redeemed_at','weekday_tashkent'],
-      data.map((r: any) => [r.id, r.user_id, r.test_id, r.redeemed_at, r.weekday_tashkent]),
+      data.map((r) => [r.id, r.user_id, r.test_id, r.redeemed_at, r.weekday_tashkent]),
     );
   };
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await (supabase.rpc as any)('admin_test_stats');
+      const { data, error } = await supabase.rpc('admin_test_stats');
       if (!error) setRows((data || []) as Row[]);
       else setRows([]);
     })();

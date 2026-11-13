@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { LanguageProvider, useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { Question, TestAttempt, Test, WrittenAnswer } from '@/types/test';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -76,11 +77,11 @@ function TestInterfaceContent() {
       }
 
       if (participantId) {
-        try { localStorage.setItem(`tia:pid:${attemptId}`, participantId); } catch {}
+        try { localStorage.setItem(`tia:pid:${attemptId}`, participantId); } catch { /* storage unavailable; ignore */ }
       }
       
       if (attemptData.status === 'finished') {
-        if (sessionCode || (attemptData as any).session_id) {
+        if (sessionCode || (attemptData as { session_id?: string | null }).session_id) {
           navigate(sessionCode ? `/live/${sessionCode}/results` : `/results/${attemptId}`);
         } else {
           navigate(`/results/${attemptId}`);
@@ -106,9 +107,9 @@ function TestInterfaceContent() {
             setCurrentIndex(parsed.currentIndex);
           }
         }
-      } catch {}
-      setMcqAnswers(serverAnswers as any);
-      setWrittenAnswers(serverWritten as any);
+      } catch { /* corrupt or unavailable cached progress; fall back to server answers */ }
+      setMcqAnswers(serverAnswers);
+      setWrittenAnswers(serverWritten);
       
       // Get test
       const { data: testData } = await supabase
@@ -175,6 +176,7 @@ function TestInterfaceContent() {
     }
     
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- participantId/sessionCode are read once per attempt; adding them would refetch and reshuffle questions
   }, [attemptId, navigate, t]);
 
   // Timer
@@ -195,18 +197,19 @@ function TestInterfaceContent() {
     }, 1000);
     
     return () => clearInterval(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- handleFinish is recreated each render; adding it would reset the exam timer every render
   }, [timeLeft, loading, attempt]);
 
   // Auto-save every 5 seconds
   useEffect(() => {
     autoSaveRef.current = setInterval(() => {
       if (attemptId && participantId && (Object.keys(mcqAnswers).length > 0 || Object.keys(writtenAnswers).length > 0)) {
-        (supabase as any)
+        supabase
           .rpc('update_test_attempt', {
             _attempt_id: attemptId,
             _participant_id: participantId,
             _answers: mcqAnswers,
-            _written_answers: writtenAnswers,
+            _written_answers: writtenAnswers as unknown as Json,
             _finish: false,
           })
           .then(() => {});
@@ -218,6 +221,7 @@ function TestInterfaceContent() {
         clearInterval(autoSaveRef.current);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- participantId is stable for the attempt; adding it must not reset the autosave interval
   }, [attemptId, mcqAnswers, writtenAnswers]);
 
   // Fullscreen handling
@@ -261,7 +265,7 @@ function TestInterfaceContent() {
             mcq: mcqAnswers, written: writtenAnswers, currentIndex, ts: Date.now(),
           }));
         }
-      } catch {}
+      } catch { /* best-effort progress cache; ignore storage/beacon errors */ }
       if (attemptId && participantId) {
         try {
           const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/update_test_attempt`;
@@ -271,7 +275,7 @@ function TestInterfaceContent() {
           })], { type: 'application/json' });
           // Best-effort sync save
           navigator.sendBeacon?.(url, blob);
-        } catch {}
+        } catch { /* best-effort progress cache; ignore storage/beacon errors */ }
       }
       e.preventDefault();
       e.returnValue = '';
@@ -282,7 +286,7 @@ function TestInterfaceContent() {
           localStorage.setItem(progressKey, JSON.stringify({
             mcq: mcqAnswers, written: writtenAnswers, currentIndex, ts: Date.now(),
           }));
-        } catch {}
+        } catch { /* best-effort progress cache; ignore storage/beacon errors */ }
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -301,7 +305,7 @@ function TestInterfaceContent() {
       localStorage.setItem(progressKey, JSON.stringify({
         mcq: mcqAnswers, written: writtenAnswers, currentIndex, ts: Date.now(),
       }));
-    } catch {}
+    } catch { /* best-effort progress cache; ignore storage/beacon errors */ }
   }, [mcqAnswers, writtenAnswers, currentIndex, progressKey]);
 
   // ── Anti-cheat guard: tab switch (max 3 warnings) + copy/paste blocking ──
@@ -309,7 +313,7 @@ function TestInterfaceContent() {
     if (loading || submitting) return;
 
     const logViolation = (type: string, details: string) => {
-      void (supabase as any).rpc('log_exam_violation', {
+      void supabase.rpc('log_exam_violation', {
         _attempt_id: attemptId,
         _session_id: null,
         _violation_type: type,
@@ -357,7 +361,7 @@ function TestInterfaceContent() {
       document.removeEventListener('paste', block);
       document.removeEventListener('contextmenu', blockContext);
     };
-  }, [loading, submitting]);
+  }, [loading, submitting, attemptId]);
 
   const handleSelectOption = (questionId: string, displayIndex: number) => {
     const optionData = shuffledOptions.get(questionId);
@@ -383,11 +387,11 @@ function TestInterfaceContent() {
     setSubmitting(true);
     
     try {
-      const { error: updateError } = await (supabase as any).rpc('update_test_attempt', {
+      const { error: updateError } = await supabase.rpc('update_test_attempt', {
         _attempt_id: attemptId,
         _participant_id: participantId,
         _answers: mcqAnswers,
-        _written_answers: writtenAnswers,
+        _written_answers: writtenAnswers as unknown as Json,
         _finish: true,
       });
       

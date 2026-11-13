@@ -51,7 +51,7 @@ export function AIAnalyticsDashboard() {
       }
 
       setData(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Dashboard analysis error:', err);
       toast.error('Tahlil qilishda xatolik');
     } finally {

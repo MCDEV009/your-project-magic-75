@@ -56,7 +56,7 @@ export function useUsageLimits() {
 
   const increment = async (field: 'mocks_taken' | 'ai_requests' | 'image_uploads') => {
     if (!user) return;
-    await (supabase.rpc as any)('increment_usage_counter', { _field: field });
+    await supabase.rpc('increment_usage_counter', { _field: field });
     refresh();
   };
 

@@ -23,6 +23,11 @@ import { format } from 'date-fns';
 import { exportAttemptSummaryPdf } from '@/lib/attemptPdfExport';
 import { toast } from 'sonner';
 
+interface ParticipantRow {
+  participant_id: string;
+  full_name: string;
+}
+
 interface AttemptWithTest {
   id: string;
   test_id: string;
@@ -81,7 +86,7 @@ function DashboardContent() {
     async function fetchAttempts() {
       // Backfill: link any legacy participants (anonymous attempts created before signup)
       // to this auth user so their attempts/tests become visible via RLS.
-      try { await (supabase as any).rpc('link_my_participants'); } catch {}
+      try { await supabase.rpc('link_my_participants'); } catch { /* legacy participant linking is best-effort */ }
 
       // Resolve participant IDs via two robust queries (avoid .or() parsing edge cases)
       const legacyName = user!.user_metadata?.full_name || user!.email || '';
@@ -89,9 +94,9 @@ function DashboardContent() {
         supabase.from('test_participants').select('participant_id, full_name').eq('user_id', user!.id),
         legacyName
           ? supabase.from('test_participants').select('participant_id, full_name').eq('full_name', legacyName)
-          : Promise.resolve({ data: [] as any[] }),
+          : Promise.resolve({ data: [] as ParticipantRow[] }),
       ]);
-      const participants = [...((byId as any).data ?? []), ...((byName as any).data ?? [])];
+      const participants = [...(byId.data ?? []), ...(byName.data ?? [])] as ParticipantRow[];
 
       if (!participants.length) {
         setAttempts([]);
@@ -99,9 +104,9 @@ function DashboardContent() {
         return;
       }
 
-      const participantIds = Array.from(new Set(participants.map((p: any) => p.participant_id)));
+      const participantIds = Array.from(new Set(participants.map((p) => p.participant_id)));
       const nameMap: Record<string, string> = {};
-      for (const p of participants as any[]) nameMap[p.participant_id] = p.full_name;
+      for (const p of participants) nameMap[p.participant_id] = p.full_name;
       setParticipantNames(nameMap);
 
       const [attemptsRes, walletRes] = await Promise.all([

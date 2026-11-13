@@ -42,18 +42,18 @@ export function PublicTestList() {
             .from('test_purchases')
             .select('test_id')
             .eq('user_id', user.id);
-          purchasedIds = new Set((purchases ?? []).map((p: any) => p.test_id));
+          purchasedIds = new Set((purchases ?? []).map((p) => p.test_id));
         }
         // Get question counts for each test
         const testsWithCounts = await Promise.all(
           data.map(async (test) => {
             const { count } = await supabase
-              .from('questions_public' as any)
+              .from('questions_public')
               .select('id', { count: 'exact', head: true })
               .eq('test_id', test.id);
-            const pricing = Array.isArray((test as any).test_pricing)
-              ? (test as any).test_pricing[0]
-              : (test as any).test_pricing;
+            const pricing = Array.isArray(test.test_pricing)
+              ? test.test_pricing[0]
+              : test.test_pricing;
             return {
               ...test,
               question_count: count || 0,
@@ -69,6 +69,7 @@ export function PublicTestList() {
     }
 
     fetchTests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when the user id changes, not on every user object update
   }, [user?.id]);
 
   const filteredTests = tests.filter((test) =>

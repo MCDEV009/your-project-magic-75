@@ -43,7 +43,7 @@ export function PlansAdminCard() {
       .update({ monthly_price: p.monthly_price, yearly_price: p.yearly_price, mocks_limit: p.mocks_limit, updated_at: new Date().toISOString() })
       .eq('plan', p.plan);
     setBusy(null);
-    error ? toast.error(error.message) : toast.success(`${p.plan.toUpperCase()} tarifi saqlandi`);
+    if (error) toast.error(error.message); else toast.success(`${p.plan.toUpperCase()} tarifi saqlandi`);
   };
 
   const setField = (plan: Plan, k: keyof PlanRow, v: number) =>

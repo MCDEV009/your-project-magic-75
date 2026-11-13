@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import type { Json } from '@/integrations/supabase/types';
 import { History, ChevronDown, ChevronUp, Brain } from 'lucide-react';
 
 interface AnalysisRecord {
   id: string;
   analysis_type: string;
-  analysis_result: any;
+  analysis_result: Json;
   model_used: string;
   created_at: string;
   test_name?: string;
@@ -33,14 +34,14 @@ export function AIAnalysisHistory() {
 
     if (data) {
       // Fetch test names
-      const testIds = [...new Set(data.filter((d: any) => d.test_id).map((d: any) => d.test_id))];
-      let testMap = new Map();
+      const testIds = [...new Set(data.filter((d) => d.test_id).map((d) => d.test_id as string))];
+      let testMap = new Map<string, string>();
       if (testIds.length > 0) {
         const { data: tests } = await supabase.from('tests').select('id, title_uz').in('id', testIds);
-        testMap = new Map((tests || []).map((t: any) => [t.id, t.title_uz]));
+        testMap = new Map((tests || []).map((t) => [t.id, t.title_uz] as [string, string]));
       }
 
-      setRecords(data.map((d: any) => ({
+      setRecords(data.map((d) => ({
         ...d,
         test_name: d.test_id ? testMap.get(d.test_id) || 'N/A' : undefined,
       })));

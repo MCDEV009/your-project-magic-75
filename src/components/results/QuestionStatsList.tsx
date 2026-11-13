@@ -70,11 +70,11 @@ export function QuestionStatsList({ attemptId, theta }: Props) {
       if (list.length > 0) {
         const ids = list.map(s => s.question_id);
         const { data: qs } = await supabase
-          .from('questions_public' as any)
+          .from('questions_public')
           .select('id, question_text_uz, order_index')
           .in('id', ids);
         const map: Record<string, QuestionRow> = {};
-        (qs || []).forEach((q: any) => { map[q.id] = q; });
+        (qs || []).forEach((q) => { map[q.id] = q; });
         setQuestions(map);
 
         const { data: an } = await supabase
@@ -82,7 +82,7 @@ export function QuestionStatsList({ attemptId, theta }: Props) {
           .select('question_id, total_attempts, correct_count, difficulty_score')
           .in('question_id', ids);
         const aMap: Record<string, QAnalytics> = {};
-        (an || []).forEach((a: any) => {
+        (an || []).forEach((a) => {
           aMap[a.question_id] = {
             total_attempts: a.total_attempts ?? 0,
             correct_count: a.correct_count ?? 0,

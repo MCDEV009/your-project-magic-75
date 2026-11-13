@@ -238,14 +238,14 @@ Deno.serve(async (req) => {
     const writtenQs = (questions || []).filter(q => q.question_type === "written");
 
     // Build analysis context
-    const correctMcq = mcqQuestions.filter(q => (answers as any)[q.id] === q.correct_option).length;
-    const wrongMcq = mcqQuestions.filter(q => (answers as any)[q.id] !== undefined && (answers as any)[q.id] !== q.correct_option);
-    const unansweredMcq = mcqQuestions.filter(q => (answers as any)[q.id] === undefined).length;
+    const correctMcq = mcqQuestions.filter(q => (answers as Record<string, unknown>)[q.id] === q.correct_option).length;
+    const wrongMcq = mcqQuestions.filter(q => (answers as Record<string, unknown>)[q.id] !== undefined && (answers as Record<string, unknown>)[q.id] !== q.correct_option);
+    const unansweredMcq = mcqQuestions.filter(q => (answers as Record<string, unknown>)[q.id] === undefined).length;
 
     const wrongTopics = wrongMcq.map(q => q.question_text_uz.substring(0, 80)).join("; ");
 
     const writtenResults = writtenQs.map(q => {
-      const ev = (aiEvaluation as any)[q.id];
+      const ev = (aiEvaluation as Record<string, { score_a?: unknown; score_b?: unknown; feedback_a?: string; feedback_b?: string } | undefined>)[q.id];
       return {
         question: q.question_text_uz.substring(0, 60),
         score_a: ev?.score_a ?? 'N/A',

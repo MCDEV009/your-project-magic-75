@@ -29,7 +29,7 @@ export default function LiveJoin() {
     }
     setLoading(true);
     try {
-      const { data: sessions, error } = await (supabase as any).rpc("find_live_session_by_code", { _code: c });
+      const { data: sessions, error } = await supabase.rpc("find_live_session_by_code", { _code: c });
       const session = Array.isArray(sessions) ? sessions[0] : sessions;
       if (error || !session) {
         toast.error("Sessiya topilmadi");
@@ -44,7 +44,7 @@ export default function LiveJoin() {
 
       const storeKey = `live:${c}`;
       const existing = localStorage.getItem(storeKey);
-      let pid = existing ? JSON.parse(existing).participant_id : genPid();
+      const pid = existing ? JSON.parse(existing).participant_id : genPid();
 
       const { data: userRes } = await supabase.auth.getUser();
       const uid = userRes?.user?.id ?? null;
@@ -68,9 +68,9 @@ export default function LiveJoin() {
 
       localStorage.setItem(storeKey, JSON.stringify({ participant_id: pid, full_name: n }));
       navigate(`/live/${c}/lobby`);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      toast.error(e?.message ?? "Xatolik");
+      toast.error((e as { message?: string } | null)?.message ?? "Xatolik");
     } finally {
       setLoading(false);
     }

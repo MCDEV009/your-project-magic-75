@@ -56,6 +56,7 @@ function ResultsContent() {
     }, 3000);
     
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- depending on attempt/participantId would reset the polling interval on every poll
   }, [attempt?.evaluation_status, attemptId]);
 
   useEffect(() => {
@@ -94,6 +95,7 @@ function ResultsContent() {
     }
     
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- participantId is intentionally read once per attemptId to avoid refetching
   }, [attemptId, navigate]);
 
   const toggleQuestion = (questionId: string) => {
@@ -128,7 +130,7 @@ function ResultsContent() {
     return null;
   }
 
-  const sessionId = (attempt as any).session_id as string | null | undefined;
+  const sessionId = (attempt as TestAttempt & { session_id?: string | null }).session_id;
   if (sessionId) {
     return <LiveGate sessionId={sessionId} />;
   }
@@ -169,25 +171,25 @@ function ResultsContent() {
         .select('question_id, question_type, is_correct, points_earned, max_points')
         .eq('attempt_id', attempt.id);
 
-      const qIds = (qaData || []).map((q: any) => q.question_id);
+      const qIds = (qaData || []).map((q) => q.question_id);
       const qTextMap: Record<string, { text: string; order: number }> = {};
       if (qIds.length > 0) {
         const { data: qs } = await supabase
-          .from('questions_public' as any)
+          .from('questions_public')
           .select('id, question_text_uz, order_index')
           .in('id', qIds);
-        (qs || []).forEach((q: any) => {
-          qTextMap[q.id] = { text: q.question_text_uz || '', order: q.order_index };
+        (qs || []).forEach((q) => {
+          qTextMap[q.id as string] = { text: q.question_text_uz || '', order: q.order_index };
         });
       }
 
       const stats = (qaData || [])
-        .map((q: any) => ({
+          .map((q) => ({
           ...q,
           question_text: qTextMap[q.question_id]?.text,
           order_index: qTextMap[q.question_id]?.order ?? 0,
         }))
-        .sort((a: any, b: any) => a.order_index - b.order_index);
+        .sort((a, b) => a.order_index - b.order_index);
 
       const cert = getCertificate(percentage);
       exportResultsPdf({
@@ -204,7 +206,7 @@ function ResultsContent() {
         generatedAt: new Date(),
       });
       toast.success('PDF yuklab olindi');
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       toast.error('PDF yaratishda xatolik');
     } finally {
@@ -218,7 +220,7 @@ function ResultsContent() {
   const answers = (attempt.answers || {}) as Record<string, number>;
   const writtenAnswers = (attempt.written_answers || {}) as Record<string, WrittenAnswer>;
   const aiEvaluation = (attempt.ai_evaluation || {}) as Record<string, EvaluationResult>;
-  const raschData = (aiEvaluation as any)['_rasch'] as { theta: number; t_score: number; total_attempts_analyzed: number } | undefined;
+  const raschData = (aiEvaluation as Record<string, unknown>)['_rasch'] as { theta: number; t_score: number; total_attempts_analyzed: number } | undefined;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -379,7 +381,7 @@ function ResultsContent() {
               
               {mcqQuestions.map((question, index) => {
                 const userAnswer = answers[question.id];
-                const mcqResult = aiEvaluation[question.id] as any;
+                const mcqResult = aiEvaluation[question.id] as (EvaluationResult & { is_correct?: boolean; correct_option?: number }) | undefined;
                 const isCorrect = mcqResult?.is_correct ?? false;
                 const isExpanded = expandedQuestions.has(question.id);
                 const options = question.options as string[];

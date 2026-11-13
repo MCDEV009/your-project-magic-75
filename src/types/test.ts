@@ -1,3 +1,4 @@
+import type { Json } from '@/integrations/supabase/types';
 export interface Test {
   id: string;
   title_uz: string;
@@ -14,6 +15,7 @@ export interface Test {
   negative_marking: boolean;
   test_format: 'standard' | 'milliy_sertifikat';
   scheduled_start?: string;
+  is_sunday_free?: boolean;
   created_by?: string;
   created_at: string;
   updated_at: string;
@@ -66,6 +68,10 @@ export interface EvaluationResult {
   feedback_ru: string;
   strengths: string[];
   missing_points: string[];
+  score_a?: number;
+  score_b?: number;
+  max_points_a?: number;
+  max_points_b?: number;
 }
 
 export interface TestParticipant {
@@ -85,9 +91,9 @@ export interface TestAttempt {
   score: number;
   total_questions: number;
   correct_answers: number;
-  answers: Record<string, number> | any;
-  written_answers: Record<string, WrittenAnswer> | any;
-  ai_evaluation: Record<string, EvaluationResult> | any;
+  answers: Record<string, number> | Json;
+  written_answers: Record<string, WrittenAnswer> | Json;
+  ai_evaluation: Record<string, EvaluationResult> | Json;
   mcq_score: number;
   written_score: number;
   evaluation_status: string;

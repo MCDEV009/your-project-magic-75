@@ -48,7 +48,7 @@ export function AIAnalysis({ attemptId, participantId }: AIAnalysisProps) {
       }
 
       setAnalysis(data.analysis);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Analysis error:', err);
       toast.error('Tahlil qilishda xatolik yuz berdi');
     } finally {

@@ -23,4 +23,12 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    // shadcn/ui primitives and context hooks intentionally co-export
+    // components with variants/hooks; splitting them would break imports.
+    files: ["src/components/ui/**/*.{ts,tsx}", "src/hooks/useAuth.tsx", "src/hooks/useLanguage.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 );

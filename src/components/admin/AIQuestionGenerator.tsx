@@ -20,6 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sparkles, Loader2, Check, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/errorMessage';
 import { readFunctionError } from '@/lib/functionError';
 
 interface GeneratedQuestion {
@@ -88,7 +89,7 @@ export function AIQuestionGenerator({ testId, subjects, onQuestionsAdded }: AIQu
         throw new Error("AI savol qaytarmadi. Mavzuni aniqroq yozib, qayta urinib ko'ring.");
       }
 
-      const questions = raw.map((q: any, i: number) => ({
+      const questions = raw.map((q: Omit<GeneratedQuestion, 'id' | 'selected'>, i: number) => ({
         ...q,
         id: `gen-${Date.now()}-${i}`,
         selected: true
@@ -96,9 +97,9 @@ export function AIQuestionGenerator({ testId, subjects, onQuestionsAdded }: AIQu
 
       setGeneratedQuestions(questions);
       toast.success(`${questions.length} ta savol yaratildi`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Generation error:', error);
-      toast.error(error.message || 'Savollarni yaratishda xatolik');
+      toast.error(errorMessage(error) || 'Savollarni yaratishda xatolik');
     } finally {
       setGenerating(false);
     }
@@ -150,9 +151,9 @@ export function AIQuestionGenerator({ testId, subjects, onQuestionsAdded }: AIQu
       toast.success(`${selected.length} ta savol qo'shildi`);
       setGeneratedQuestions([]);
       onQuestionsAdded();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Save error:', error);
-      toast.error(error.message || 'Savollarni saqlashda xatolik');
+      toast.error(errorMessage(error) || 'Savollarni saqlashda xatolik');
     } finally {
       setSaving(false);
     }

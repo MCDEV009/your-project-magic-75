@@ -53,11 +53,11 @@ export default function LiveLobby() {
 
     let cancelled = false;
     async function load() {
-      const { data: sList } = await (supabase as any).rpc("find_live_session_by_code", { _code: code });
+      const { data: sList } = await supabase.rpc("find_live_session_by_code", { _code: code });
       const s = Array.isArray(sList) ? sList[0] : sList;
       if (cancelled || !s) return;
       setSession(s as Session);
-      const { data: p } = await (supabase as any).rpc("get_live_participants", { _session_id: s.id });
+      const { data: p } = await supabase.rpc("get_live_participants", { _session_id: s.id });
       if (!cancelled) setParticipants((p ?? []) as Participant[]);
     }
     load();
@@ -115,9 +115,9 @@ export default function LiveLobby() {
             sessionEndsAt: session.ends_at,
           },
         });
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error(e);
-        toast.error(e?.message ?? "Xatolik");
+        toast.error((e as { message?: string } | null)?.message ?? "Xatolik");
         startingRef.current = false;
         setStarting(false);
       }

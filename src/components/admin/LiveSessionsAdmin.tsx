@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Play, Square, Copy, Radio, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { errorMessage } from "@/lib/errorMessage";
 
 interface LiveSession {
   id: string;
@@ -92,7 +93,6 @@ export function LiveSessionsAdmin() {
       .on("postgres_changes", { event: "*", schema: "public", table: "live_participants" }, loadSessions)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const createSession = async () => {
@@ -110,8 +110,8 @@ export function LiveSessionsAdmin() {
       toast.success("Sessiya yaratildi");
       setTitle("");
       loadSessions();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Xatolik");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e) ?? "Xatolik");
     } finally {
       setCreating(false);
     }

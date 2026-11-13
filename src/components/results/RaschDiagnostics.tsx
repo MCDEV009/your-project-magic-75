@@ -41,19 +41,19 @@ export function RaschDiagnostics({ attemptId, percentage }: Props) {
         .select('question_id, question_type, is_correct, points_earned, max_points, p_correct')
         .eq('attempt_id', attemptId);
 
-      const list = (stats as any[]) || [];
+      const list = stats || [];
       if (list.length === 0) { if (!cancelled) setRows([]); return; }
 
       const ids = list.map((s) => s.question_id);
       const [{ data: qs }, { data: an }] = await Promise.all([
-        supabase.from('questions_public' as any).select('id, order_index').in('id', ids),
+        supabase.from('questions_public').select('id, order_index').in('id', ids),
         supabase.from('question_analytics').select('question_id, total_attempts, correct_count').in('question_id', ids),
       ]);
 
       const orderMap: Record<string, number> = {};
-      (qs as any[] | null)?.forEach((q) => { orderMap[q.id] = q.order_index ?? 0; });
+      qs?.forEach((q) => { orderMap[q.id] = q.order_index ?? 0; });
       const pMap: Record<string, number> = {};
-      (an as any[] | null)?.forEach((a) => {
+      an?.forEach((a) => {
         const total = Number(a.total_attempts || 0);
         // Bayes smoothing (prior 0.5, strength 4)
         pMap[a.question_id] = (Number(a.correct_count || 0) + 2) / (total + 4);
@@ -221,7 +221,7 @@ export function RaschDiagnostics({ attemptId, percentage }: Props) {
                     fontSize: 12,
                     color: 'hsl(var(--popover-foreground))',
                   }}
-                  formatter={(value: any, name: string) => [value, name]}
+                  formatter={(value: string | number | (string | number)[], name: string) => [value, name]}
                   labelFormatter={() => ''}
                 />
                 <ReferenceLine

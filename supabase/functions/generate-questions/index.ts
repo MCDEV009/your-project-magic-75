@@ -283,7 +283,7 @@ Set needs_image=true ONLY when a diagram, graph, map, circuit, geometric figure,
         .replace(/```\s*/g, "")
         .trim();
 
-      const jsonStart = cleaned.search(/[\{\[]/);
+      const jsonStart = cleaned.search(/[{[]/);
       const jsonEnd = cleaned.lastIndexOf(jsonStart !== -1 && cleaned[jsonStart] === '[' ? ']' : '}');
 
       if (jsonStart === -1 || jsonEnd === -1) {
@@ -310,10 +310,11 @@ Set needs_image=true ONLY when a diagram, graph, map, circuit, geometric figure,
           }
           return out;
         };
-        let fixed = escapeLatex(
+        const fixed = escapeLatex(
           cleaned
             .replace(/,\s*}/g, "}") // trailing commas
             .replace(/,\s*]/g, "]")
+            // eslint-disable-next-line no-control-regex -- intentionally strips control characters
             .replace(/[\x00-\x1F\x7F]/g, "") // control characters
         );
         try {
