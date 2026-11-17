@@ -29,3 +29,8 @@ pnpm-debug.log*
 coverage/
 playwright-report/
 test-results/
+
+# Environment variables (set in Vercel/Lovable instead)
+.env
+.env.*
+!.env.example
