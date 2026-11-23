@@ -43,6 +43,13 @@
       "when": 1791438424313,
       "tag": "0005_plan_and_live_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795434140216,
+      "tag": "0006_restrict_open_read_policies",
+      "breakpoints": true
     }
   ]
 }
