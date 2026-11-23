@@ -382,7 +382,12 @@ Respond with JSON only.`;
               { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
           }
-          if (aiResponse.status === 402) {
+          if (aiResponse.status === 413) {
+          return new Response(JSON.stringify({ error: "So'rov AI provayder limitidan katta. Matnni qisqartiring yoki birozdan keyin qayta urinib ko'ring." }), {
+            status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (aiResponse.status === 402) {
             return new Response(
               JSON.stringify({ error: "Payment required. Please add credits to your workspace." }),
               { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }

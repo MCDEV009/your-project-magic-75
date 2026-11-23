@@ -140,6 +140,11 @@ Deno.serve(async (req) => {
             status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
+        if (aiResponse.status === 413) {
+          return new Response(JSON.stringify({ error: "So'rov AI provayder limitidan katta. Matnni qisqartiring yoki birozdan keyin qayta urinib ko'ring." }), {
+            status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
         if (aiResponse.status === 402) {
           return new Response(JSON.stringify({ error: "Credits exhausted" }), {
             status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -293,7 +298,12 @@ Umumiy ball: ${attempt.score}, MCQ ball: ${attempt.mcq_score}, Yozma ball: ${att
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (aiResponse.status === 402) {
+      if (aiResponse.status === 413) {
+          return new Response(JSON.stringify({ error: "So'rov AI provayder limitidan katta. Matnni qisqartiring yoki birozdan keyin qayta urinib ko'ring." }), {
+            status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (aiResponse.status === 402) {
         return new Response(JSON.stringify({ error: "Credits exhausted" }), {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

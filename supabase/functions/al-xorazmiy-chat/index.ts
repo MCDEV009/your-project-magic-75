@@ -172,7 +172,12 @@ VAZIFA: Talaba o'zlashtirmagan mavzular bo'yicha mashq savollarini yarat.
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (aiResponse.status === 402) {
+      if (aiResponse.status === 413) {
+          return new Response(JSON.stringify({ error: "So'rov AI provayder limitidan katta. Matnni qisqartiring yoki birozdan keyin qayta urinib ko'ring." }), {
+            status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (aiResponse.status === 402) {
         return new Response(JSON.stringify({ error: "AI krediti tugagan" }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
