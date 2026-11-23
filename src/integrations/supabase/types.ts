@@ -609,6 +609,63 @@ export type Database = {
           },
         ]
       }
+      question_bank: {
+        Row: {
+          created_at: string
+          has_figure: boolean
+          id: string
+          items: Json | null
+          options: Json | null
+          parts: Json | null
+          q_type: string
+          qnum: number
+          quality: string
+          source_date: string | null
+          source_id: string
+          source_kind: string
+          subject_key: string
+          text: string | null
+          text_reliable: boolean
+          topic: string | null
+        }
+        Insert: {
+          created_at?: string
+          has_figure?: boolean
+          id: string
+          items?: Json | null
+          options?: Json | null
+          parts?: Json | null
+          q_type: string
+          qnum: number
+          quality?: string
+          source_date?: string | null
+          source_id: string
+          source_kind?: string
+          subject_key?: string
+          text?: string | null
+          text_reliable?: boolean
+          topic?: string | null
+        }
+        Update: {
+          created_at?: string
+          has_figure?: boolean
+          id?: string
+          items?: Json | null
+          options?: Json | null
+          parts?: Json | null
+          q_type?: string
+          qnum?: number
+          quality?: string
+          source_date?: string | null
+          source_id?: string
+          source_kind?: string
+          subject_key?: string
+          text?: string | null
+          text_reliable?: boolean
+          topic?: string | null
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           condition_a_ru: string | null
