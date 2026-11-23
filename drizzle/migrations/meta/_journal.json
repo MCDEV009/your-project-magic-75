@@ -50,6 +50,13 @@
       "when": 1795434140216,
       "tag": "0006_restrict_open_read_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795435606491,
+      "tag": "0007_ensure_question_bank_schema_and_policies",
+      "breakpoints": true
     }
   ]
 }

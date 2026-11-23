@@ -19,6 +19,14 @@ interface GenerateRequest {
   instruction?: string;
 }
 
+interface QuestionBankExample {
+  id: string;
+  topic: string | null;
+  text: string | null;
+  options: Record<string, unknown> | null;
+  parts: Record<string, unknown> | null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -92,6 +100,60 @@ Deno.serve(async (req) => {
 
     // 131-MOCK matematika shabloni (PDF asosida): real mock savollar uslubi
     const isMath = /matematik|math/i.test(subject) || /matematik/i.test(topic ?? "") || /matematik/i.test(instruction ?? "");
+    const useQuestionBank = isMath && style !== "matching";
+    const bankQuestionType = questionType === "single_choice" ? "mcq" : "open";
+    const bankLimit = questionType === "single_choice" ? 6 : 3;
+    let mathBankExamples: QuestionBankExample[] = [];
+
+    if (useQuestionBank) {
+      try {
+        const fetchBankExamples = async (topicPattern?: string) => {
+          let query = supabaseClient
+            .from("question_bank")
+            .select("id, topic, text, options, parts")
+            .eq("subject_key", "matematika")
+            .eq("quality", "gold")
+            .eq("q_type", bankQuestionType);
+
+          if (topicPattern) query = query.ilike("topic", topicPattern);
+
+          const { data, error } = await query;
+          if (error) throw error;
+          return (data ?? []) as unknown as QuestionBankExample[];
+        };
+
+        // Fisher–Yates: har bir generatsiyada namunalar tasodifiy tanlanadi.
+        const shuffle = <T,>(items: T[]): T[] => {
+          const shuffled = [...items];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          return shuffled;
+        };
+
+        const normalizedTopic = topic?.trim();
+        const prioritized = normalizedTopic
+          ? await fetchBankExamples(`%${normalizedTopic.replace(/([%_\\])/g, "\\$1")}%`)
+          : [];
+        const selected = shuffle(prioritized);
+
+        if (selected.length < bankLimit) {
+          const allExamples = await fetchBankExamples();
+          const selectedIds = new Set(selected.map((example) => example.id));
+          const remaining = allExamples.filter((example) => !selectedIds.has(example.id));
+          selected.push(...shuffle(remaining).slice(0, bankLimit - selected.length));
+        }
+
+        mathBankExamples = selected.slice(0, bankLimit);
+        console.log(`Question bank: ${mathBankExamples.length} ${bankQuestionType} examples used`);
+      } catch (bankError) {
+        mathBankExamples = [];
+        console.warn("Question bank examples unavailable; using static math guide:", bankError);
+        console.log("Question bank: 0 examples used");
+      }
+    }
+
     const MATH_STYLE_GUIDE = `
 MATH TEMPLATE (based on official "131-MOCK" Milliy Sertifikat sample):
 Style rules:
@@ -100,6 +162,9 @@ Style rules:
 3. Cover these topic types across the block: sonlar nazariyasi (raqamlar, $\\overline{abcd}$), hisoblash (ildizlar $4\\sqrt{3}$, kasr qismi $\\{x\\}$, butun qism $[x]$), foiz/masala (kran, savdo foyda-zarar), daraja ko'rsatkichli ifodalar ($2^x$, $6^{2-x}$), arifmetik/geometrik progressiya ($S_n$, maxraj), algebraik soddalashtirish ($\\frac{(m-n)^2+2n^2}{m^3+n^3}$), trigonometriya ($\\sin x$, $\\cos x$, $tg$), logarifmik/ko'rsatkichli tenglamalar ($\\log_{x^2}16$), modulli tenglamalar/sistemalar ($|x+y|+|x-y|=12$), tengsizliklar, funksiya grafigi Ox o'qiga urinishi, aniq integral $\\int_1^6 \\{x\\}dx$, hosila $f^{(2026)}(x)$, planimetriya (aylana, vatar, uchburchak yuzi, trapetsiya o'rta chizig'i), stereometriya (kub, prizma), kombinatorika, to'garak/Venn masalalari.
 4. Difficulty: multi-step, olympiad-lite like the samples — never one-step arithmetic. Distractor options must be plausible results of common mistakes.
 5. Options must be in LaTeX when they contain formulas, e.g. "$\\frac{1}{49}$", "$2\\sqrt{2}$", "$(-\\infty; 1) \\cup (1; \\infty)$", "$\\{2\\}$".
+`;
+
+    const MATH_STATIC_EXAMPLES = `
 Example items in this exact style (DO NOT copy, just match the style):
 - "$a,b,c,d$ - raqamlar bo'lib, $\\overline{abcd}$ to'rt xonali son uchun $\\overline{abcd} = \\overline{ab} \\cdot \\overline{cd} + \\overline{ab} + \\overline{cd}$ shartni qanoatlantiruvchi eng kichik to'rt xonali sonning raqamlari yig'indisini toping." options: 19 / 24 / 27 / 30
 - "Hisoblang. $$\\frac{2^x \\cdot 6^{2-x}}{15^{-x-1} \\cdot 5^{x+1}} \\cdot \\frac{2^x}{12}$$" options in LaTeX
@@ -155,6 +220,7 @@ IMPORTANT:
 
       if (isMath) {
         userPrompt += `\n${MATH_STYLE_GUIDE}`;
+        if (mathBankExamples.length < 3) userPrompt += `\n${MATH_STATIC_EXAMPLES}`;
       }
 
       if (style === "matching") {
@@ -217,6 +283,37 @@ Set needs_image=true ONLY when a diagram, graph, map, circuit, geometric figure,
       if (instruction) {
         userPrompt += `\n\nADDITIONAL BLUEPRINT INSTRUCTION: ${instruction}`;
       }
+    }
+
+    if (mathBankExamples.length > 0) {
+      const exampleBlocks = mathBankExamples.map((example, index) => {
+        const lines = [
+          `Example ${index + 1}:`,
+          `Topic: ${example.topic?.trim() || "General mathematics"}`,
+          `Question: ${example.text ?? ""}`,
+        ];
+
+        if (questionType === "single_choice") {
+          for (const letter of ["A", "B", "C", "D"]) {
+            const option = example.options?.[letter];
+            if (typeof option === "string") lines.push(`${letter}) ${option}`);
+          }
+        } else {
+          const partA = example.parts?.a;
+          const partB = example.parts?.b;
+          if (typeof partA === "string") lines.push(`a) ${partA}`);
+          if (typeof partB === "string") lines.push(`b) ${partB}`);
+        }
+
+        return lines.join("\n");
+      }).join("\n\n");
+
+      userPrompt += `
+
+REAL EXAM EXAMPLES (official-style mock bank). Use them ONLY for style, difficulty, topic variety and LaTeX conventions. NEVER copy numbers, wording or structure verbatim; create NEW problems with different data and different final answers.
+The answers are intentionally omitted.
+
+${exampleBlocks}`;
     }
 
     const callAI = () => fetch(ai.url, {
