@@ -97,6 +97,7 @@ Deno.serve(async (req) => {
 
     let systemPrompt = "";
     let userPrompt = "";
+    let promptWithoutBank: string | undefined;
 
     // 131-MOCK matematika shabloni (PDF asosida): real mock savollar uslubi
     const isMath = /matematik|math/i.test(subject) || /matematik/i.test(topic ?? "") || /matematik/i.test(instruction ?? "");
@@ -308,6 +309,7 @@ Set needs_image=true ONLY when a diagram, graph, map, circuit, geometric figure,
         return lines.join("\n");
       }).join("\n\n");
 
+      promptWithoutBank = userPrompt;
       userPrompt += `
 
 REAL EXAM EXAMPLES (official-style mock bank). Use them ONLY for style, difficulty, topic variety and LaTeX conventions. NEVER copy numbers, wording or structure verbatim; create NEW problems with different data and different final answers.
@@ -316,7 +318,7 @@ The answers are intentionally omitted.
 ${exampleBlocks}`;
     }
 
-    const callAI = () => fetch(ai.url, {
+    const callAI = (prompt: string = userPrompt, maxTokens = 16000) => fetch(ai.url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${GEMINI_API_KEY}`,
@@ -326,10 +328,10 @@ ${exampleBlocks}`;
         model: ai.model,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
+          { role: "user", content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 16000,
+        max_tokens: maxTokens,
       }),
     });
 
@@ -345,7 +347,19 @@ ${exampleBlocks}`;
       response = await callAI();
     }
 
+    // 413: so'rov provayder limitidan katta — namunalarsiz, qisqaroq so'rov bilan qayta urinish
+    if (response.status === 413) {
+      await response.text();
+      console.warn("AI 413 (so'rov juda katta); bank namunalarisiz qayta urinish");
+      response = await callAI(promptWithoutBank ?? userPrompt, 6000);
+    }
+
     if (!response.ok) {
+      if (response.status === 413) {
+        return new Response(JSON.stringify({
+          error: "So'rov AI provayder limitidan katta. Savollar sonini kamaytiring yoki birozdan keyin qayta urinib ko'ring.",
+        }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       if (response.status === 429) {
         const retryAfter = Number(response.headers.get("retry-after"));
         const seconds = Number.isFinite(retryAfter) && retryAfter > 0 ? Math.ceil(retryAfter) : 30;
