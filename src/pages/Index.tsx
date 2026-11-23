@@ -1,3 +1,4 @@
+import { openCookieSettings } from "@/components/common/CookieBanner";
 import { LanguageProvider } from '@/hooks/useLanguage';
 import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/layout/Header';
@@ -25,6 +26,7 @@ const Index = () => {
         <footer className="border-t py-8">
           <div className="test-container text-center text-sm text-muted-foreground">
             <p>© 2026 ALKHARAZMIY XYZ. Barcha huquqlar himoyalangan.</p>
+            <button type="button" onClick={openCookieSettings} className="mt-2 underline hover:text-foreground">Cookie sozlamalari</button>
           </div>
         </footer>
       </div>

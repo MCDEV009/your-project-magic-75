@@ -27,6 +27,8 @@ import OAuthConsent from "./pages/OAuthConsent";
 import Connect from "./pages/Connect";
 import { Helmet } from "react-helmet-async";
 import { LanguageProvider } from "@/hooks/useLanguage";
+import { CookieBanner } from "@/components/common/CookieBanner";
+import { FeedbackWidget } from "@/components/common/FeedbackWidget";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +81,8 @@ const App = () => (
               } />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <CookieBanner />
+            <FeedbackWidget />
           </BrowserRouter>
         </TooltipProvider>
         </LanguageProvider>

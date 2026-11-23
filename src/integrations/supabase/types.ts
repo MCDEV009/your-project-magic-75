@@ -259,6 +259,39 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          message: string
+          name: string | null
+          page: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message: string
+          name?: string | null
+          page?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message?: string
+          name?: string | null
+          page?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       live_participants: {
         Row: {
           attempt_id: string | null
