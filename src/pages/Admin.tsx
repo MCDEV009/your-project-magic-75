@@ -73,7 +73,8 @@ import {
 import { toast } from 'sonner';
 import { LiveSessionsAdmin } from '@/components/admin/LiveSessionsAdmin';
 import { PaymentsAdminCard } from '@/components/admin/PaymentsAdminCard';
-import { Wallet as WalletIcon, Bot as BotIcon } from 'lucide-react';
+import { Wallet as WalletIcon, Bot as BotIcon, MessageSquare as MessageSquareIcon } from 'lucide-react';
+import { FeedbackAdminCard } from '@/components/admin/FeedbackAdminCard';
 import { AIProvidersCard } from '@/components/admin/AIProvidersCard';
 import { PlansAdminCard } from '@/components/admin/PlansAdminCard';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -99,7 +100,7 @@ function AdminContent() {
   const canSeeDashboard = canSeeTests || canSeeAnalytics;
   
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings' | 'live' | 'payments' | 'ai' | 'plans'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'tests' | 'analytics' | 'settings' | 'live' | 'payments' | 'ai' | 'plans' | 'feedback'>('dashboard');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   
   // Tests state
@@ -443,6 +444,7 @@ function AdminContent() {
     ...(isFullAdmin || isSuperAdmin ? [{ key: 'payments' as const, icon: WalletIcon, label: "To'lovlar" }] : []),
     ...(isFullAdmin || isSuperAdmin ? [{ key: 'ai' as const, icon: BotIcon, label: "AI sozlamalari" }] : []),
     ...(isFullAdmin || isSuperAdmin ? [{ key: 'plans' as const, icon: WalletIcon, label: "Tariflar" }] : []),
+    ...(isFullAdmin || isSuperAdmin ? [{ key: 'feedback' as const, icon: MessageSquareIcon, label: "Fikrlar" }] : []),
   ];
 
   const SidebarInner = ({ onNavigate }: { onNavigate?: () => void }) => (
@@ -1098,6 +1100,7 @@ function AdminContent() {
 
           {activeTab === 'ai' && (<AIProvidersCard />)}
           {activeTab === 'plans' && (<PlansAdminCard />)}
+          {activeTab === 'feedback' && (<FeedbackAdminCard />)}
           {activeTab === 'payments' && (
             <div className="animate-fade-in">
               <PaymentsAdminCard />

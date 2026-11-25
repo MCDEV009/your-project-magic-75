@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { MessageSquarePlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,7 @@ export function FeedbackWidget() {
   const [captcha, setCaptcha] = useState<CaptchaValue | null>(null);
   const [resetKey, setResetKey] = useState(0);
   const [sending, setSending] = useState(false);
+  const { pathname } = useLocation();
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +38,9 @@ export function FeedbackWidget() {
     toast.success("Rahmat! Fikringiz yuborildi.");
     setMessage(""); setOpen(false); setResetKey((k) => k + 1);
   };
+
+  // Imtihon paytida tugma xalaqit bermasin
+  if (pathname.startsWith("/test/") || /^\/live\/.+\/lobby/.test(pathname)) return null;
 
   return (
     <>

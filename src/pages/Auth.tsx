@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { MathCaptcha, verifyCaptcha, type CaptchaValue } from '@/components/common/MathCaptcha';
 import { Mail, Lock, User, Loader2, AlertTriangle, ShieldAlert } from 'lucide-react';
 
 const emailSchema = z.string().email('Noto\'g\'ri email formati');
@@ -40,6 +41,14 @@ function AuthContent() {
   const [username, setUsername] = useState('');
   const [loginId, setLoginId] = useState(''); // email yoki username
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState<CaptchaValue | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const checkCaptcha = async () => {
+    const err = await verifyCaptcha(captcha);
+    setCaptchaKey((k) => k + 1);
+    if (err) { toast.error(err); return false; }
+    return true;
+  };
   const [errors, setErrors] = useState<{ email?: string; password?: string; username?: string; loginId?: string }>({});
 
   // Check for admin-required redirect
@@ -85,6 +94,7 @@ function AuthContent() {
     setErrors({});
 
     setLoading(true);
+    if (!(await checkCaptcha())) { setLoading(false); return; }
 
     // If not an email, resolve username -> email
     let loginEmail = id;
@@ -132,6 +142,7 @@ function AuthContent() {
     if (taken) { toast.error('Bu username band'); return; }
     
     setLoading(true);
+    if (!(await checkCaptcha())) { setLoading(false); return; }
     
     const redirectUrl = `${window.location.origin}/`;
     
@@ -240,6 +251,7 @@ function AuthContent() {
                   {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
                 
+                <MathCaptcha onChange={setCaptcha} resetKey={captchaKey} />
                 <Button 
                   onClick={handleLogin}
                   disabled={loading}
@@ -315,6 +327,7 @@ function AuthContent() {
                   {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
                 
+                <MathCaptcha onChange={setCaptcha} resetKey={captchaKey} />
                 <Button 
                   onClick={handleSignup}
                   disabled={loading}
