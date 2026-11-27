@@ -4,19 +4,8 @@
  import { ThemeToggle } from '@/components/ui/ThemeToggle';
  import { Button } from '@/components/ui/button';
 import { LogIn, LogOut, LayoutDashboard, Wallet as WalletIcon } from 'lucide-react';
- import { useAuth } from '@/hooks/useAuth';
-
-/** Custom mark: an open compass-triangle with an algebra crossbar — a nod to
-    Al-Khwarizmi (father of algebra) rather than a generic stock icon. */
-function BrandMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 3.5 L20 19.5 L4 19.5 Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
-      <line x1="8.4" y1="14.5" x2="15.6" y2="14.5" stroke="hsl(var(--accent))" strokeWidth="1.6" strokeLinecap="round" />
-      <circle cx="12" cy="3.5" r="1.1" fill="currentColor" />
-    </svg>
-  );
-}
+import { useAuth } from '@/hooks/useAuth';
+import { Logo } from '@/components/brand/Logo';
 
 export function Header() {
   const { t } = useLanguage();
@@ -37,11 +26,8 @@ export function Header() {
       <div className="test-container">
         <div className="flex min-h-20 flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent/50 text-accent">
-              <BrandMark className="h-6 w-6" />
-            </div>
             <div className="flex flex-col">
-              <span className="font-serif text-xs sm:text-sm font-semibold leading-tight text-foreground">ALKHARAZMIY XYZ</span>
+              <Logo className="h-7 sm:h-8 w-auto text-foreground" />
               <span className="text-[11px] leading-tight text-muted-foreground">Barcha milliy sertifikat fanlari</span>
             </div>
           </Link>
