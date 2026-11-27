@@ -5,11 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, Lock } from 'lucide-react';
 import { RaschSurface } from './RaschSurface';
+import { LastResultCard } from './LastResultCard';
+import { useLastAttempt } from '@/hooks/useLastAttempt';
 
 export function HeroSection() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [testCode, setTestCode] = useState('');
+  const last = useLastAttempt();
+  const showLast = last.loading || !!last.attempt;
 
   const handlePrivateTest = () => {
     if (testCode.length === 5) {
@@ -68,6 +72,8 @@ export function HeroSection() {
             </dl>
           </div>
 
+          <div className={showLast ? 'flex flex-col gap-4' : 'contents'}>
+          {showLast && <LastResultCard {...last} />}
           {/* Private test code entry — framed as an access panel, not a floating card */}
           <form className="rounded-lg border bg-card/90 p-5 backdrop-blur-md" onSubmit={(event) => { event.preventDefault(); handlePrivateTest(); }}>
             <div className="mb-4 flex items-center gap-2 text-muted-foreground">
@@ -89,6 +95,7 @@ export function HeroSection() {
               </Button>
             </div>
           </form>
+          </div>
         </div>
       </div>
     </section>
